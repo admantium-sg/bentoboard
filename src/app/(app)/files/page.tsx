@@ -159,7 +159,7 @@ export default function FilesPage() {
           {files.length === 0 ? (
             <EmptyState title="No files yet" description="Drop files above to upload, or Bento will add files when it generates reports." />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 stagger-children">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {files.map((file) => <FileCard key={file.id} item={file} />)}
             </div>
           )}

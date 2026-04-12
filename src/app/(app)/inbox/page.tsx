@@ -173,7 +173,7 @@ export default function InboxPage() {
       {filtered.length === 0 ? (
         <EmptyState title="All caught up" description="No notifications in this category." />
       ) : (
-        <div className="space-y-3 stagger-children">
+        <div className="space-y-3">
           {filtered.map((n) => (
             <NotificationCard key={n.id} notification={n} onRead={markNotificationRead} />
           ))}

@@ -108,7 +108,7 @@ function DraftsContent() {
       {drafts.length === 0 ? (
         <EmptyState title="No drafts yet" description="Bento will create drafts here when there's content ready for your review." />
       ) : (
-        <div className="grid gap-3 stagger-children">
+        <div className="grid gap-3">
           {drafts.map((draft) => <DraftCard key={draft.id} item={draft} />)}
         </div>
       )}

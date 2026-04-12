@@ -147,7 +147,7 @@ function TasksContent() {
       {tasks.length === 0 ? (
         <EmptyState title="No tasks" description="Tasks assigned by you or created by Bento will appear here." />
       ) : (
-        <div className="space-y-2.5 stagger-children">
+        <div className="space-y-2.5">
           {tasks.map((task) => <TaskRow key={task.id} item={task} />)}
         </div>
       )}
