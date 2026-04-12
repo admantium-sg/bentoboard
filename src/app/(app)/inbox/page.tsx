@@ -31,17 +31,30 @@ function NotificationIcon({ type }: { type: NotificationType }) {
   }
 }
 
+function getNavTarget(n: Notification): string | null {
+  if (n.action_item_id) return `/items/${n.action_item_id}`
+  switch (n.type) {
+    case 'idea_proposed':   return '/ideas'
+    case 'task_complete':   return '/tasks'
+    case 'approval_needed': return '/drafts'
+    default:                return null // alert / vip_email → expand inline
+  }
+}
+
 function NotificationCard({ notification, onRead }: { notification: Notification; onRead: (id: string) => void }) {
   const config = NOTIFICATION_CONFIG[notification.type]
   const isUnread = !notification.read
   const router = useRouter()
+  const [expanded, setExpanded] = useState(false)
+
+  const navTarget = getNavTarget(notification)
 
   function handleClick() {
-    if (notification.action_item_id) {
-      onRead(notification.id)
-      router.push(`/items/${notification.action_item_id}`)
+    onRead(notification.id)
+    if (navTarget) {
+      router.push(navTarget)
     } else {
-      onRead(notification.id)
+      setExpanded((v) => !v)
     }
   }
 
@@ -90,12 +103,21 @@ function NotificationCard({ notification, onRead }: { notification: Notification
             {notification.title}
           </h3>
 
-          {notification.body && (
+          {/* Collapsed: show truncated body */}
+          {notification.body && !expanded && (
             <p className="text-[14px] line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {notification.body}
             </p>
           )}
 
+          {/* Expanded: show full body */}
+          {notification.body && expanded && (
+            <p className="text-[14px] leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>
+              {notification.body}
+            </p>
+          )}
+
+          {/* Navigate to linked item if present */}
           {notification.action_item_id && (
             <Link
               href={`/items/${notification.action_item_id}`}
@@ -105,6 +127,23 @@ function NotificationCard({ notification, onRead }: { notification: Notification
             >
               View item →
             </Link>
+          )}
+
+          {/* For typed navigations without a specific item */}
+          {!notification.action_item_id && navTarget && (
+            <span className="mt-2.5 text-[13px] font-medium inline-flex items-center gap-1"
+              style={{ color: 'var(--accent-text)' }}>
+              {notification.type === 'idea_proposed' && 'View ideas →'}
+              {notification.type === 'task_complete' && 'View tasks →'}
+              {notification.type === 'approval_needed' && 'View drafts →'}
+            </span>
+          )}
+
+          {/* Inline-only: tap to expand hint */}
+          {!navTarget && notification.body && (
+            <span className="mt-2 text-[12px] block" style={{ color: 'var(--text-muted)' }}>
+              {expanded ? 'Click to collapse' : 'Click to read more'}
+            </span>
           )}
         </div>
       </div>
