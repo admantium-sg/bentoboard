@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
-import { NOTIFICATION_CONFIG, formatRelativeTime, cn } from '@/lib/utils'
+import { NOTIFICATION_CONFIG, formatRelativeTime } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -37,9 +37,11 @@ function NotificationCard({ notification, onRead }: { notification: Notification
   const router = useRouter()
 
   function handleClick() {
-    onRead(notification.id)
     if (notification.action_item_id) {
+      onRead(notification.id)
       router.push(`/items/${notification.action_item_id}`)
+    } else {
+      onRead(notification.id)
     }
   }
 
@@ -114,18 +116,32 @@ export default function InboxPage() {
   const { notifications, markNotificationRead, markAllRead, unreadCount } = useBentoStore()
   const [activeFilter, setActiveFilter] = useState('all')
 
-  const filtered = notifications
-    .filter((n) => {
-      const tab = FILTER_TABS.find((t) => t.value === activeFilter)
-      if (!tab?.types) return true
-      return tab.types.includes(n.type)
-    })
-    .sort((a, b) => {
-      if (a.read !== b.read) return a.read ? 1 : -1
-      if (PRIORITY_ORDER[a.priority] !== PRIORITY_ORDER[b.priority])
-        return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    })
+  // Snapshot the sorted order so marking-read doesn't reshuffle mid-session.
+  // Re-snapshot only when filter changes or new notifications arrive (length/ids change).
+  const notifIds = notifications.map((n) => n.id).join(',')
+  const snapshotRef = useRef<Notification[]>([])
+  const snapshotKeyRef = useRef('')
+  const snapshotKey = `${activeFilter}:${notifIds}`
+
+  if (snapshotKey !== snapshotKeyRef.current) {
+    snapshotKeyRef.current = snapshotKey
+    snapshotRef.current = notifications
+      .filter((n) => {
+        const tab = FILTER_TABS.find((t) => t.value === activeFilter)
+        if (!tab?.types) return true
+        return tab.types.includes(n.type)
+      })
+      .sort((a, b) => {
+        if (a.read !== b.read) return a.read ? 1 : -1
+        if (PRIORITY_ORDER[a.priority] !== PRIORITY_ORDER[b.priority])
+          return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+  }
+
+  // Merge live read-state into the stable snapshot order
+  const notifMap = useMemo(() => new Map(notifications.map((n) => [n.id, n])), [notifications])
+  const filtered = snapshotRef.current.map((n) => notifMap.get(n.id) ?? n)
 
   return (
     <div className="animate-fade-in">
