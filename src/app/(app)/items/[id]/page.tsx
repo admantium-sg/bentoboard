@@ -285,7 +285,10 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="animate-fade-in">
       <Link
-        href={`/${item.type === 'draft' ? 'drafts' : item.type === 'idea' ? 'ideas' : item.type === 'file' ? 'files' : 'tasks'}`}
+        href={(() => {
+          const base = item.type === 'draft' ? 'drafts' : item.type === 'idea' ? 'ideas' : item.type === 'file' ? 'files' : 'tasks'
+          return item.project ? `/${base}?project=${item.project}` : `/${base}`
+        })()}
         className="inline-flex items-center gap-1.5 text-[14px] mb-6 transition-colors"
         style={{ color: 'var(--text-secondary)' }}
       >
