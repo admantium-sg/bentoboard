@@ -55,19 +55,56 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   )
 }
 
-function ContentPreview({ item }: { item: Item }) {
-  // 1. file_path → render as iframe (full-width HTML preview)
-  if (item.file_path) {
+function RemoteHtmlPreview({ url, title }: { url: string; title: string }) {
+  const [html, setHtml] = useState<string | null>(null)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    setHtml(null)
+    setError(false)
+    fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error('fetch failed')
+        return r.text()
+      })
+      .then(setHtml)
+      .catch(() => setError(true))
+  }, [url])
+
+  if (error) {
     return (
-      <div className="glass-card-flat rounded-2xl overflow-hidden">
-        <iframe
-          src={item.file_path}
-          className="w-full border-0"
-          style={{ minHeight: 600 }}
-          title={item.title}
-        />
+      <div className="glass-card-flat rounded-2xl p-8 text-center text-[14px]" style={{ color: 'var(--text-muted)' }}>
+        Could not load preview.{' '}
+        <a href={url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-text)' }}>Open in new tab</a>
       </div>
     )
+  }
+
+  if (!html) {
+    return (
+      <div className="glass-card-flat rounded-2xl p-8 text-center text-[14px]" style={{ color: 'var(--text-muted)' }}>
+        Loading preview…
+      </div>
+    )
+  }
+
+  return (
+    <div className="glass-card-flat rounded-2xl overflow-hidden">
+      <iframe
+        srcDoc={html}
+        className="w-full border-0"
+        style={{ minHeight: 600 }}
+        title={title}
+        sandbox="allow-same-origin allow-scripts"
+      />
+    </div>
+  )
+}
+
+function ContentPreview({ item }: { item: Item }) {
+  // 1. file_path → fetch HTML and render via srcDoc iframe
+  if (item.file_path) {
+    return <RemoteHtmlPreview url={item.file_path} title={item.title} />
   }
 
   // 2. content_html → render as HTML
