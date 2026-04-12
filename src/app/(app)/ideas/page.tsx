@@ -1,15 +1,16 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, Suspense } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { Avatar } from '@/components/ui/Avatar'
 import { PriorityBadge } from '@/components/ui/PriorityBadge'
 import { ProjectTag } from '@/components/ui/ProjectTag'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { formatRelativeTime } from '@/lib/utils'
+import { formatRelativeTime, DEFAULT_PROJECTS } from '@/lib/utils'
 import type { Item, ItemStatus } from '@/lib/types'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 const COLUMNS: { status: ItemStatus; label: string; color: string }[] = [
   { status: 'proposed',  label: 'Proposed',    color: '#3B82F6' },
@@ -73,9 +74,18 @@ function KanbanColumn({ status, label, color, items }: (typeof COLUMNS)[0] & { i
   )
 }
 
-export default function IdeasPage() {
+function IdeasContent() {
   const { items } = useBentoStore()
-  const ideas = useMemo(() => items.filter((i) => i.type === 'idea'), [items])
+  const searchParams = useSearchParams()
+  const projectFilter = searchParams.get('project')
+
+  const ideas = useMemo(
+    () => items
+      .filter((i) => i.type === 'idea')
+      .filter((i) => !projectFilter || i.project === projectFilter)
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
+    [items, projectFilter]
+  )
 
   const byStatus = useMemo(() => {
     const map: Record<ItemStatus, Item[]> = { proposed: [], approved: [], in_review: [], done: [], rejected: [] }
@@ -85,9 +95,14 @@ export default function IdeasPage() {
     return map
   }, [ideas])
 
+  const project = projectFilter ? DEFAULT_PROJECTS.find((p) => p.slug === projectFilter) : null
+
   return (
     <div className="animate-fade-in">
-      <PageHeader title="Ideas" description="Kanban board for ideas between you and Bento" />
+      <PageHeader
+        title={project ? `${project.name} — Ideas` : 'Ideas'}
+        description="Kanban board for ideas between you and Bento"
+      />
 
       {ideas.length === 0 ? (
         <EmptyState title="No ideas yet" description="Ideas proposed by you or Bento will appear here." />
@@ -101,5 +116,13 @@ export default function IdeasPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function IdeasPage() {
+  return (
+    <Suspense fallback={<div className="text-[14px] p-8" style={{ color: 'var(--text-muted)' }}>Loading...</div>}>
+      <IdeasContent />
+    </Suspense>
   )
 }

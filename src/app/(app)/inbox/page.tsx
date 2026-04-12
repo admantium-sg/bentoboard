@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
 import { NOTIFICATION_CONFIG, formatRelativeTime, cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -33,12 +34,20 @@ function NotificationIcon({ type }: { type: NotificationType }) {
 function NotificationCard({ notification, onRead }: { notification: Notification; onRead: (id: string) => void }) {
   const config = NOTIFICATION_CONFIG[notification.type]
   const isUnread = !notification.read
+  const router = useRouter()
+
+  function handleClick() {
+    onRead(notification.id)
+    if (notification.action_item_id) {
+      router.push(`/items/${notification.action_item_id}`)
+    }
+  }
 
   return (
     <div
       className="glass-card p-5 cursor-pointer relative"
       style={isUnread ? { boxShadow: `var(--shadow-card), 0 0 0 1px var(--accent-muted)` } : undefined}
-      onClick={() => onRead(notification.id)}
+      onClick={handleClick}
     >
       {isUnread && (
         <span className="absolute top-5 right-5 w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />

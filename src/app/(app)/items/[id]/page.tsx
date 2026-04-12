@@ -56,21 +56,33 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 }
 
 function ContentPreview({ item }: { item: Item }) {
-  if (item.type === 'file') {
+  // 1. file_path → render as iframe (full-width HTML preview)
+  if (item.file_path) {
     return (
-      <div className="glass-card-flat rounded-2xl p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
-        <div className="mb-4"><FilePreviewIcon fileType={item.file_type} /></div>
-        <p className="text-[13px] font-medium mb-1" style={{ color: 'var(--text-primary)' }}>{item.title}</p>
-        {item.file_path && (
-          <p className="text-[11px] font-mono mb-4" style={{ color: 'var(--text-muted)' }}>{item.file_path}</p>
-        )}
-        {item.file_path && (
-          <Button variant="secondary" size="sm" icon={<ArrowDownToLine size={13} strokeWidth={2} />}>Download</Button>
-        )}
+      <div className="glass-card-flat rounded-2xl overflow-hidden">
+        <iframe
+          src={item.file_path}
+          className="w-full border-0"
+          style={{ minHeight: 600 }}
+          title={item.title}
+        />
       </div>
     )
   }
 
+  // 2. content_html → render as HTML
+  if (item.content_html) {
+    return (
+      <div className="glass-card-flat rounded-2xl p-6 overflow-auto">
+        <div
+          className="prose-bentoboard"
+          dangerouslySetInnerHTML={{ __html: item.content_html }}
+        />
+      </div>
+    )
+  }
+
+  // 3. content_markdown → render with react-markdown
   if (item.content_markdown) {
     return (
       <div className="glass-card-flat rounded-2xl p-6 overflow-auto">
@@ -81,6 +93,7 @@ function ContentPreview({ item }: { item: Item }) {
     )
   }
 
+  // 4. description fallback
   if (item.description) {
     return (
       <div className="glass-card-flat rounded-2xl p-6">
@@ -230,7 +243,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const typeConfig = TYPE_CONFIG[item.type]
-  const isMarkdown = !!item.content_markdown
+  const isMarkdown = !!item.content_markdown && !item.file_path
 
   return (
     <div className="animate-fade-in">

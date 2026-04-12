@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { Avatar } from '@/components/ui/Avatar'
@@ -8,10 +8,11 @@ import { ProjectTag } from '@/components/ui/ProjectTag'
 import { PriorityBadge } from '@/components/ui/PriorityBadge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { formatRelativeTime } from '@/lib/utils'
+import { formatRelativeTime, DEFAULT_PROJECTS } from '@/lib/utils'
 import type { Item, ItemStatus } from '@/lib/types'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { useSearchParams } from 'next/navigation'
 
 const STATUS_TABS: { label: string; value: ItemStatus | 'all' }[] = [
   { label: 'All',      value: 'all' },
@@ -72,12 +73,15 @@ function TaskRow({ item }: { item: Item }) {
   )
 }
 
-export default function TasksPage() {
+function TasksContent() {
   const { items } = useBentoStore()
+  const searchParams = useSearchParams()
+  const projectFilter = searchParams.get('project')
   const [statusFilter, setStatusFilter] = useState<ItemStatus | 'all'>('all')
 
-  const tasks = items
-    .filter((i) => i.type === 'task')
+  const allProjectTasks = items.filter((i) => i.type === 'task' && (!projectFilter || i.project === projectFilter))
+
+  const tasks = allProjectTasks
     .filter((i) => {
       if (statusFilter === 'all') return true
       if (statusFilter === 'in_review') return i.status === 'in_review' || i.status === 'approved'
@@ -92,13 +96,14 @@ export default function TasksPage() {
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     })
 
-  const totalTasks = items.filter((i) => i.type === 'task').length
-  const doneTasks  = items.filter((i) => i.type === 'task' && i.status === 'done').length
+  const totalTasks = allProjectTasks.length
+  const doneTasks  = allProjectTasks.filter((i) => i.status === 'done').length
+  const project = projectFilter ? DEFAULT_PROJECTS.find((p) => p.slug === projectFilter) : null
 
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="Tasks"
+        title={project ? `${project.name} — Tasks` : 'Tasks'}
         description="Work items between you and Bento"
         actions={
           totalTasks > 0 ? (
@@ -121,10 +126,10 @@ export default function TasksPage() {
         {STATUS_TABS.map((f) => {
           const count =
             f.value === 'all'
-              ? items.filter((i) => i.type === 'task').length
+              ? allProjectTasks.length
               : f.value === 'in_review'
-              ? items.filter((i) => i.type === 'task' && (i.status === 'in_review' || i.status === 'approved')).length
-              : items.filter((i) => i.type === 'task' && i.status === f.value).length
+              ? allProjectTasks.filter((i) => i.status === 'in_review' || i.status === 'approved').length
+              : allProjectTasks.filter((i) => i.status === f.value).length
           const isActive = statusFilter === f.value
 
           return (
@@ -147,5 +152,13 @@ export default function TasksPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense fallback={<div className="text-[14px] p-8" style={{ color: 'var(--text-muted)' }}>Loading...</div>}>
+      <TasksContent />
+    </Suspense>
   )
 }
