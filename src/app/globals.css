@@ -1,0 +1,632 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   LIGHT THEME  (default)
+   Frosted white glass over a soft cool-white canvas
+───────────────────────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-base:          #F0F4F8;
+  --bg-gradient-a:    rgba(59, 130, 246, 0.10);
+  --bg-gradient-b:    rgba(139, 92, 246, 0.06);
+
+  --glass-bg:         rgba(255, 255, 255, 0.60);
+  --glass-bg-hover:   rgba(255, 255, 255, 0.80);
+  --glass-bg-flat:    rgba(255, 255, 255, 0.50);
+  --glass-sidebar:    rgba(245, 248, 255, 0.72);
+  --glass-blur:       blur(40px) saturate(160%);
+  --glass-blur-heavy: blur(56px) saturate(180%);
+
+  --border:           rgba(255, 255, 255, 0.70);
+  --border-top:       rgba(255, 255, 255, 0.95);
+  --border-subtle:    rgba(0, 0, 0, 0.07);
+  --border-sidebar:   rgba(0, 0, 0, 0.06);
+
+  --shadow-card:      0 2px 20px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.9) inset;
+  --shadow-card-hover:0 6px 36px rgba(0,0,0,0.11), 0 1px 0 rgba(255,255,255,1) inset;
+
+  --text-primary:     #111827;
+  --text-secondary:   #4B5563;
+  --text-muted:       #9CA3AF;
+  --text-placeholder: #C0C9D4;
+
+  --accent:           #3B82F6;
+  --accent-muted:     rgba(59, 130, 246, 0.12);
+  --accent-text:      #2563EB;
+
+  --success:          #10B981;
+  --warning:          #F59E0B;
+  --danger:           #EF4444;
+
+  /* status pills */
+  --pill-proposed-bg:  rgba(59, 130, 246, 0.10);
+  --pill-proposed-fg:  #2563EB;
+  --pill-proposed-bd:  rgba(59, 130, 246, 0.25);
+  --pill-review-bg:    rgba(245, 158, 11, 0.10);
+  --pill-review-fg:    #B45309;
+  --pill-review-bd:    rgba(245, 158, 11, 0.25);
+  --pill-approved-bg:  rgba(16, 185, 129, 0.10);
+  --pill-approved-fg:  #047857;
+  --pill-approved-bd:  rgba(16, 185, 129, 0.25);
+  --pill-rejected-bg:  rgba(239, 68, 68, 0.10);
+  --pill-rejected-fg:  #DC2626;
+  --pill-rejected-bd:  rgba(239, 68, 68, 0.25);
+  --pill-done-bg:      rgba(0,0,0,0.05);
+  --pill-done-fg:      #6B7280;
+  --pill-done-bd:      rgba(0,0,0,0.10);
+
+  --scrollbar-thumb:   rgba(0,0,0,0.12);
+  --scrollbar-hover:   rgba(0,0,0,0.20);
+
+  --input-bg:          rgba(255,255,255,0.80);
+  --input-border:      rgba(0,0,0,0.10);
+
+  --tab-active-bg:     rgba(255,255,255,0.90);
+  --tag-bg:            rgba(0,0,0,0.04);
+  --tag-border:        rgba(0,0,0,0.07);
+  --code-bg:           rgba(59,130,246,0.07);
+  --pre-bg:            rgba(0,0,0,0.04);
+
+  --nav-item-hover:    rgba(0,0,0,0.05);
+  --nav-item-active:   rgba(59,130,246,0.10);
+  --nav-item-active-text: #2563EB;
+  --nav-section-label: #9CA3AF;
+  --nav-item-text:     #6B7280;
+
+  --progress-track:    rgba(0,0,0,0.07);
+  --divider:           rgba(0,0,0,0.07);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK THEME  — obsidian + yellow
+───────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-base:          #111111;
+  --bg-gradient-a:    rgba(250, 204, 21, 0.06);
+  --bg-gradient-b:    rgba(180, 140, 0, 0.04);
+
+  --glass-bg:         rgba(255, 255, 255, 0.04);
+  --glass-bg-hover:   rgba(255, 255, 255, 0.07);
+  --glass-bg-flat:    rgba(255, 255, 255, 0.03);
+  --glass-sidebar:    rgba(10, 10, 10, 0.80);
+  --glass-blur:       blur(48px) saturate(160%);
+  --glass-blur-heavy: blur(60px) saturate(180%);
+
+  --border:           rgba(255, 255, 255, 0.07);
+  --border-top:       rgba(255, 255, 255, 0.11);
+  --border-subtle:    rgba(255, 255, 255, 0.05);
+  --border-sidebar:   rgba(255, 255, 255, 0.06);
+
+  --shadow-card:      0 4px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --shadow-card-hover:0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.08) inset;
+
+  --text-primary:     #F5F0E0;
+  --text-secondary:   #A89D80;
+  --text-muted:       #7A7060;
+  --text-placeholder: #4A4438;
+
+  --accent:           #FACC15;
+  --accent-muted:     rgba(250, 204, 21, 0.12);
+  --accent-text:      #EAB308;
+
+  --success:          #10B981;
+  --warning:          #F59E0B;
+  --danger:           #F43F5E;
+
+  --pill-proposed-bg:  rgba(250, 204, 21, 0.10);
+  --pill-proposed-fg:  #FACC15;
+  --pill-proposed-bd:  rgba(250, 204, 21, 0.22);
+  --pill-review-bg:    rgba(245, 158, 11, 0.10);
+  --pill-review-fg:    #FCD34D;
+  --pill-review-bd:    rgba(245, 158, 11, 0.22);
+  --pill-approved-bg:  rgba(16, 185, 129, 0.10);
+  --pill-approved-fg:  #34D399;
+  --pill-approved-bd:  rgba(16, 185, 129, 0.22);
+  --pill-rejected-bg:  rgba(244, 63, 94, 0.10);
+  --pill-rejected-fg:  #FB7185;
+  --pill-rejected-bd:  rgba(244, 63, 94, 0.22);
+  --pill-done-bg:      rgba(255,255,255,0.05);
+  --pill-done-fg:      #7A7060;
+  --pill-done-bd:      rgba(255,255,255,0.08);
+
+  --scrollbar-thumb:   rgba(255,255,255,0.08);
+  --scrollbar-hover:   rgba(255,255,255,0.14);
+
+  --input-bg:          rgba(255,255,255,0.05);
+  --input-border:      rgba(255,255,255,0.09);
+
+  --tab-active-bg:     rgba(255,255,255,0.08);
+  --tag-bg:            rgba(255,255,255,0.05);
+  --tag-border:        rgba(255,255,255,0.08);
+  --code-bg:           rgba(250,204,21,0.10);
+  --pre-bg:            rgba(255,255,255,0.04);
+
+  --nav-item-hover:    rgba(255,255,255,0.05);
+  --nav-item-active:   rgba(250,204,21,0.10);
+  --nav-item-active-text: #FACC15;
+  --nav-section-label: #5A5448;
+  --nav-item-text:     #7A7060;
+
+  --progress-track:    rgba(255,255,255,0.07);
+  --divider:           rgba(255,255,255,0.06);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FOREST THEME  — lush green background image + deep moss glass
+───────────────────────────────────────────────────────────── */
+[data-theme="forest"] {
+  color-scheme: dark;
+
+  --bg-base:          #0D1A0F;
+  --bg-gradient-a:    rgba(0, 0, 0, 0);
+  --bg-gradient-b:    rgba(0, 0, 0, 0);
+
+  /* glass is more opaque so content stays readable over photo */
+  --glass-bg:         rgba(10, 24, 12, 0.52);
+  --glass-bg-hover:   rgba(10, 24, 12, 0.68);
+  --glass-bg-flat:    rgba(10, 24, 12, 0.44);
+  --glass-sidebar:    rgba(6, 16, 8, 0.75);
+  --glass-blur:       blur(48px) saturate(140%);
+  --glass-blur-heavy: blur(64px) saturate(160%);
+
+  --border:           rgba(120, 200, 100, 0.14);
+  --border-top:       rgba(160, 230, 130, 0.22);
+  --border-subtle:    rgba(120, 200, 100, 0.10);
+  --border-sidebar:   rgba(120, 200, 100, 0.10);
+
+  --shadow-card:      0 4px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(160,230,130,0.10) inset;
+  --shadow-card-hover:0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(160,230,130,0.14) inset;
+
+  --text-primary:     #EAF5E8;
+  --text-secondary:   #A8CFA0;
+  --text-muted:       #7AAE72;
+  --text-placeholder: #4A6644;
+
+  --accent:           #6EE360;
+  --accent-muted:     rgba(110, 227, 96, 0.14);
+  --accent-text:      #5DD250;
+
+  --success:          #4ADE80;
+  --warning:          #FACC15;
+  --danger:           #F87171;
+
+  --pill-proposed-bg:  rgba(110, 227, 96, 0.12);
+  --pill-proposed-fg:  #6EE360;
+  --pill-proposed-bd:  rgba(110, 227, 96, 0.24);
+  --pill-review-bg:    rgba(250, 204, 21, 0.10);
+  --pill-review-fg:    #FDE047;
+  --pill-review-bd:    rgba(250, 204, 21, 0.22);
+  --pill-approved-bg:  rgba(74, 222, 128, 0.10);
+  --pill-approved-fg:  #4ADE80;
+  --pill-approved-bd:  rgba(74, 222, 128, 0.22);
+  --pill-rejected-bg:  rgba(248, 113, 113, 0.10);
+  --pill-rejected-fg:  #F87171;
+  --pill-rejected-bd:  rgba(248, 113, 113, 0.22);
+  --pill-done-bg:      rgba(255,255,255,0.05);
+  --pill-done-fg:      #7AAE72;
+  --pill-done-bd:      rgba(255,255,255,0.08);
+
+  --scrollbar-thumb:   rgba(110, 227, 96, 0.15);
+  --scrollbar-hover:   rgba(110, 227, 96, 0.25);
+
+  --input-bg:          rgba(10, 24, 12, 0.55);
+  --input-border:      rgba(120, 200, 100, 0.16);
+
+  --tab-active-bg:     rgba(110, 227, 96, 0.12);
+  --tag-bg:            rgba(110, 227, 96, 0.08);
+  --tag-border:        rgba(110, 227, 96, 0.15);
+  --code-bg:           rgba(110, 227, 96, 0.10);
+  --pre-bg:            rgba(10, 24, 12, 0.60);
+
+  --nav-item-hover:    rgba(110, 227, 96, 0.08);
+  --nav-item-active:   rgba(110, 227, 96, 0.14);
+  --nav-item-active-text: #6EE360;
+  --nav-section-label: #5A8052;
+  --nav-item-text:     #7AAE72;
+
+  --progress-track:    rgba(110, 227, 96, 0.10);
+  --divider:           rgba(120, 200, 100, 0.10);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DESERT THEME  — arid sandstone scene + warm amber glass
+───────────────────────────────────────────────────────────── */
+[data-theme="desert"] {
+  color-scheme: dark;
+
+  --bg-base:          #1A1208;
+  --bg-gradient-a:    rgba(0, 0, 0, 0);
+  --bg-gradient-b:    rgba(0, 0, 0, 0);
+
+  --glass-bg:         rgba(30, 18, 6, 0.52);
+  --glass-bg-hover:   rgba(30, 18, 6, 0.68);
+  --glass-bg-flat:    rgba(30, 18, 6, 0.44);
+  --glass-sidebar:    rgba(18, 10, 2, 0.78);
+  --glass-blur:       blur(48px) saturate(140%);
+  --glass-blur-heavy: blur(64px) saturate(160%);
+
+  --border:           rgba(220, 160, 80, 0.16);
+  --border-top:       rgba(240, 190, 110, 0.26);
+  --border-subtle:    rgba(220, 160, 80, 0.10);
+  --border-sidebar:   rgba(220, 160, 80, 0.10);
+
+  --shadow-card:      0 4px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(240,190,110,0.10) inset;
+  --shadow-card-hover:0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(240,190,110,0.16) inset;
+
+  --text-primary:     #F5ECD8;
+  --text-secondary:   #D4A870;
+  --text-muted:       #A07848;
+  --text-placeholder: #6B4E2A;
+
+  --accent:           #F0A040;
+  --accent-muted:     rgba(240, 160, 64, 0.14);
+  --accent-text:      #E8922A;
+
+  --success:          #6EE360;
+  --warning:          #FACC15;
+  --danger:           #F87171;
+
+  --pill-proposed-bg:  rgba(240, 160, 64, 0.12);
+  --pill-proposed-fg:  #F0A040;
+  --pill-proposed-bd:  rgba(240, 160, 64, 0.26);
+  --pill-review-bg:    rgba(250, 204, 21, 0.10);
+  --pill-review-fg:    #FDE047;
+  --pill-review-bd:    rgba(250, 204, 21, 0.22);
+  --pill-approved-bg:  rgba(110, 227, 96, 0.10);
+  --pill-approved-fg:  #6EE360;
+  --pill-approved-bd:  rgba(110, 227, 96, 0.22);
+  --pill-rejected-bg:  rgba(248, 113, 113, 0.10);
+  --pill-rejected-fg:  #F87171;
+  --pill-rejected-bd:  rgba(248, 113, 113, 0.22);
+  --pill-done-bg:      rgba(255,255,255,0.05);
+  --pill-done-fg:      #A07848;
+  --pill-done-bd:      rgba(255,255,255,0.08);
+
+  --scrollbar-thumb:   rgba(240, 160, 64, 0.18);
+  --scrollbar-hover:   rgba(240, 160, 64, 0.30);
+
+  --input-bg:          rgba(30, 18, 6, 0.55);
+  --input-border:      rgba(220, 160, 80, 0.18);
+
+  --tab-active-bg:     rgba(240, 160, 64, 0.14);
+  --tag-bg:            rgba(240, 160, 64, 0.08);
+  --tag-border:        rgba(240, 160, 64, 0.16);
+  --code-bg:           rgba(240, 160, 64, 0.10);
+  --pre-bg:            rgba(30, 18, 6, 0.60);
+
+  --nav-item-hover:    rgba(240, 160, 64, 0.08);
+  --nav-item-active:   rgba(240, 160, 64, 0.14);
+  --nav-item-active-text: #F0A040;
+  --nav-section-label: #7A5830;
+  --nav-item-text:     #A07848;
+
+  --progress-track:    rgba(240, 160, 64, 0.10);
+  --divider:           rgba(220, 160, 80, 0.10);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOUNTAIN THEME  — snow & steel-blue peaks + icy glass
+───────────────────────────────────────────────────────────── */
+[data-theme="mountain"] {
+  color-scheme: dark;
+
+  --bg-base:          #0C1525;
+  --bg-gradient-a:    rgba(0, 0, 0, 0);
+  --bg-gradient-b:    rgba(0, 0, 0, 0);
+
+  /* near-zero fill — photo bleeds raw through the blur, high saturation vivifies it */
+  --glass-bg:         rgba(20, 40, 90, 0.08);
+  --glass-bg-hover:   rgba(20, 40, 90, 0.14);
+  --glass-bg-flat:    rgba(20, 40, 90, 0.06);
+  --glass-sidebar:    rgba(10, 22, 55, 0.42);
+  --glass-blur:       blur(28px) saturate(280%) brightness(1.06);
+  --glass-blur-heavy: blur(44px) saturate(300%) brightness(1.08);
+
+  --border:           rgba(255, 255, 255, 0.45);
+  --border-top:       rgba(255, 255, 255, 0.82);
+  --border-subtle:    rgba(255, 255, 255, 0.18);
+  --border-sidebar:   rgba(255, 255, 255, 0.22);
+
+  --shadow-card:      0 4px 24px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.65) inset;
+  --shadow-card-hover:0 10px 44px rgba(0,0,0,0.30), 0 1px 0 rgba(255,255,255,0.88) inset;
+
+  --text-primary:     #EAF0FF;
+  --text-secondary:   #90AADE;
+  --text-muted:       #5A78B0;
+  --text-placeholder: #304060;
+
+  --accent:           #7ABAFF;
+  --accent-muted:     rgba(122, 186, 255, 0.14);
+  --accent-text:      #5AA0F0;
+
+  --success:          #4ADE80;
+  --warning:          #FACC15;
+  --danger:           #F87171;
+
+  --pill-proposed-bg:  rgba(122, 186, 255, 0.12);
+  --pill-proposed-fg:  #7ABAFF;
+  --pill-proposed-bd:  rgba(122, 186, 255, 0.24);
+  --pill-review-bg:    rgba(250, 204, 21, 0.10);
+  --pill-review-fg:    #FDE047;
+  --pill-review-bd:    rgba(250, 204, 21, 0.22);
+  --pill-approved-bg:  rgba(74, 222, 128, 0.10);
+  --pill-approved-fg:  #4ADE80;
+  --pill-approved-bd:  rgba(74, 222, 128, 0.22);
+  --pill-rejected-bg:  rgba(248, 113, 113, 0.10);
+  --pill-rejected-fg:  #F87171;
+  --pill-rejected-bd:  rgba(248, 113, 113, 0.22);
+  --pill-done-bg:      rgba(255,255,255,0.05);
+  --pill-done-fg:      #5A78B0;
+  --pill-done-bd:      rgba(255,255,255,0.08);
+
+  --scrollbar-thumb:   rgba(122, 186, 255, 0.15);
+  --scrollbar-hover:   rgba(122, 186, 255, 0.25);
+
+  --input-bg:          rgba(12, 28, 60, 0.55);
+  --input-border:      rgba(140, 180, 255, 0.18);
+
+  --tab-active-bg:     rgba(122, 186, 255, 0.12);
+  --tag-bg:            rgba(122, 186, 255, 0.08);
+  --tag-border:        rgba(122, 186, 255, 0.16);
+  --code-bg:           rgba(122, 186, 255, 0.10);
+  --pre-bg:            rgba(12, 28, 60, 0.60);
+
+  --nav-item-hover:    rgba(122, 186, 255, 0.08);
+  --nav-item-active:   rgba(122, 186, 255, 0.14);
+  --nav-item-active-text: #7ABAFF;
+  --nav-section-label: #304060;
+  --nav-item-text:     #5A78B0;
+
+  --progress-track:    rgba(122, 186, 255, 0.10);
+  --divider:           rgba(140, 180, 255, 0.10);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BASE STYLES
+───────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 55% at 15% -5%, var(--bg-gradient-a) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 88% 108%, var(--bg-gradient-b) 0%, transparent 55%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Forest: photo fills the viewport, overlay darkens it just enough */
+[data-theme="forest"] body {
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(6, 16, 8, 0.45) 0%,
+      rgba(6, 16, 8, 0.30) 50%,
+      rgba(6, 16, 8, 0.55) 100%
+    ),
+    url('/green.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Mountain: minimal overlay — cards do the frosting, not the page tint */
+[data-theme="mountain"] body {
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(8, 18, 50, 0.18) 0%,
+      rgba(8, 18, 50, 0.08) 50%,
+      rgba(8, 18, 50, 0.22) 100%
+    ),
+    url('/mountains.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Desert: warm haze overlay over the arid scene */
+[data-theme="desert"] body {
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(18, 10, 2, 0.38) 0%,
+      rgba(18, 10, 2, 0.20) 50%,
+      rgba(18, 10, 2, 0.50) 100%
+    ),
+    url('/desert.avif');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   GLASS SURFACES
+───────────────────────────────────────────────────────────── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-top-color: var(--border-top);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.glass-card:hover {
+  background: var(--glass-bg-hover);
+  border-top-color: var(--border-top);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.glass-card-flat {
+  background: var(--glass-bg-flat);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-top-color: var(--border-top);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.glass-sidebar {
+  background: var(--glass-sidebar);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  border-right: 1px solid var(--border-sidebar);
+  transition: background 0.25s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ─────────────────────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseRing {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.animate-fade-in-up  { animation: fadeInUp    0.25s ease forwards; }
+.animate-fade-in     { animation: fadeIn      0.20s ease forwards; }
+.animate-slide-in-left { animation: slideInLeft 0.25s ease forwards; }
+
+.stagger-children > * { opacity: 0; animation: fadeInUp 0.25s ease forwards; }
+.stagger-children > *:nth-child(1)  { animation-delay:   0ms; }
+.stagger-children > *:nth-child(2)  { animation-delay:  40ms; }
+.stagger-children > *:nth-child(3)  { animation-delay:  80ms; }
+.stagger-children > *:nth-child(4)  { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5)  { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6)  { animation-delay: 200ms; }
+.stagger-children > *:nth-child(7)  { animation-delay: 240ms; }
+.stagger-children > *:nth-child(8)  { animation-delay: 280ms; }
+.stagger-children > *:nth-child(9)  { animation-delay: 320ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 360ms; }
+
+.kanban-card-dragging { opacity: 0.4; cursor: grabbing !important; }
+
+/* ─────────────────────────────────────────────────────────────
+   PROSE (markdown)
+───────────────────────────────────────────────────────────── */
+.prose-bentoboard {
+  font-family: 'SF Pro Text', -apple-system, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+.prose-bentoboard h1,
+.prose-bentoboard h2,
+.prose-bentoboard h3 {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.prose-bentoboard h1 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+.prose-bentoboard h2 { font-size: 1.25rem; margin-bottom: 0.5rem; margin-top: 1.5rem; }
+.prose-bentoboard h3 { font-size: 1.1rem; margin-bottom: 0.5rem; margin-top: 1.25rem; }
+.prose-bentoboard p { margin-bottom: 0.875rem; }
+.prose-bentoboard a { color: var(--accent-text); text-decoration: underline; }
+.prose-bentoboard a:hover { opacity: 0.8; }
+.prose-bentoboard code {
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+  background: var(--code-bg);
+  color: var(--accent-text);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.prose-bentoboard pre {
+  background: var(--pre-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+}
+.prose-bentoboard blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  color: var(--text-muted);
+  margin: 1rem 0;
+}
+.prose-bentoboard ul  { list-style: disc;    padding-left: 1.5rem; }
+.prose-bentoboard ol  { list-style: decimal; padding-left: 1.5rem; }
+.prose-bentoboard li  { margin-bottom: 0.25rem; }
+.prose-bentoboard hr  { border-color: var(--divider); margin: 1.5rem 0; }
+
+/* ─────────────────────────────────────────────────────────────
+   INPUT
+───────────────────────────────────────────────────────────── */
+.input-glass {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+.input-glass:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+.input-glass::placeholder { color: var(--text-placeholder); }
+
+/* ─────────────────────────────────────────────────────────────
+   BADGE PULSE
+───────────────────────────────────────────────────────────── */
+.badge-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulseRing 1.5s ease-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FOCUS RING
+───────────────────────────────────────────────────────────── */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
