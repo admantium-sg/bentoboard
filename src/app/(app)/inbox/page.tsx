@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
 import { NOTIFICATION_CONFIG, formatRelativeTime } from '@/lib/utils'
@@ -31,13 +31,13 @@ function NotificationIcon({ type }: { type: NotificationType }) {
   }
 }
 
-function getNavTarget(n: Notification): string | null {
+function getNavTarget(n: Notification): string {
   if (n.action_item_id) return `/items/${n.action_item_id}`
   switch (n.type) {
     case 'idea_proposed':   return '/ideas'
     case 'task_complete':   return '/tasks'
     case 'approval_needed': return '/drafts'
-    default:                return null // alert / vip_email → expand inline
+    default:                return `/inbox/${n.id}` // alert / vip_email → own page
   }
 }
 
@@ -45,17 +45,10 @@ function NotificationCard({ notification, onRead }: { notification: Notification
   const config = NOTIFICATION_CONFIG[notification.type]
   const isUnread = !notification.read
   const router = useRouter()
-  const [expanded, setExpanded] = useState(false)
-
-  const navTarget = getNavTarget(notification)
 
   function handleClick() {
     onRead(notification.id)
-    if (navTarget) {
-      router.push(navTarget)
-    } else {
-      setExpanded((v) => !v)
-    }
+    router.push(getNavTarget(notification))
   }
 
   return (
@@ -103,47 +96,10 @@ function NotificationCard({ notification, onRead }: { notification: Notification
             {notification.title}
           </h3>
 
-          {/* Collapsed: show truncated body */}
-          {notification.body && !expanded && (
+          {notification.body && (
             <p className="text-[14px] line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {notification.body}
             </p>
-          )}
-
-          {/* Expanded: show full body */}
-          {notification.body && expanded && (
-            <p className="text-[14px] leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>
-              {notification.body}
-            </p>
-          )}
-
-          {/* Navigate to linked item if present */}
-          {notification.action_item_id && (
-            <Link
-              href={`/items/${notification.action_item_id}`}
-              className="mt-2.5 text-[13px] font-medium inline-flex items-center gap-1 transition-colors"
-              style={{ color: 'var(--accent-text)' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              View item →
-            </Link>
-          )}
-
-          {/* For typed navigations without a specific item */}
-          {!notification.action_item_id && navTarget && (
-            <span className="mt-2.5 text-[13px] font-medium inline-flex items-center gap-1"
-              style={{ color: 'var(--accent-text)' }}>
-              {notification.type === 'idea_proposed' && 'View ideas →'}
-              {notification.type === 'task_complete' && 'View tasks →'}
-              {notification.type === 'approval_needed' && 'View drafts →'}
-            </span>
-          )}
-
-          {/* Inline-only: tap to expand hint */}
-          {!navTarget && notification.body && (
-            <span className="mt-2 text-[12px] block" style={{ color: 'var(--text-muted)' }}>
-              {expanded ? 'Click to collapse' : 'Click to read more'}
-            </span>
           )}
         </div>
       </div>
