@@ -12,8 +12,9 @@ import type { OutreachCreator, OutreachStatus } from '@/lib/types'
 const STATUS_CONFIG: Record<OutreachStatus, { label: string; bg: string; color: string }> = {
   sent:            { label: 'Sent',            bg: 'rgba(99,102,241,0.15)',  color: '#818CF8' },
   follow_up:       { label: 'Follow Up',       bg: 'rgba(245,158,11,0.15)', color: '#FCD34D' },
-  in_conversation: { label: 'In Conversation', bg: 'rgba(16,185,129,0.15)', color: '#34D399' },
-  closed:          { label: 'Closed',          bg: 'rgba(107,114,128,0.15)',color: '#9CA3AF' },
+  in_conversation:    { label: 'In Conversation',  bg: 'rgba(16,185,129,0.15)', color: '#34D399' },
+  meeting_scheduled:  { label: 'Meeting Scheduled', bg: '#ECFDF5',              color: '#059669' },
+  closed:             { label: 'Closed',             bg: 'rgba(107,114,128,0.15)',color: '#9CA3AF' },
   no_response:     { label: 'No Response',     bg: 'rgba(239,68,68,0.15)',  color: '#F87171' },
 }
 
@@ -21,8 +22,9 @@ const STATUS_TABS: { label: string; value: OutreachStatus | 'all' }[] = [
   { label: 'All',            value: 'all' },
   { label: 'Sent',           value: 'sent' },
   { label: 'Follow Up',      value: 'follow_up' },
-  { label: 'In Conversation',value: 'in_conversation' },
-  { label: 'No Response',    value: 'no_response' },
+  { label: 'In Conversation',  value: 'in_conversation' },
+  { label: 'Meeting Scheduled', value: 'meeting_scheduled' },
+  { label: 'No Response',      value: 'no_response' },
   { label: 'Closed',         value: 'closed' },
 ]
 
@@ -30,7 +32,7 @@ const STATUS_TABS: { label: string; value: OutreachStatus | 'all' }[] = [
 
 function OutreachStatusPill({ status }: { status: OutreachStatus | null }) {
   if (!status) return <span style={{ color: 'var(--text-muted)' }} className="text-[12px]">—</span>
-  const cfg = STATUS_CONFIG[status]
+  const cfg = STATUS_CONFIG[status] ?? { label: status, bg: '#F3F4F6', color: '#6B7280' }
   return (
     <span
       className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide whitespace-nowrap"

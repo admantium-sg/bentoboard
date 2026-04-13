@@ -90,7 +90,7 @@ export interface Event {
   created_at: string
 }
 
-export type OutreachStatus = 'sent' | 'follow_up' | 'in_conversation' | 'closed' | 'no_response'
+export type OutreachStatus = 'sent' | 'follow_up' | 'in_conversation' | 'meeting_scheduled' | 'closed' | 'no_response'
 
 export interface OutreachCreator {
   id: string

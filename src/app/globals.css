@@ -334,55 +334,71 @@
   --shadow-card:      0 4px 24px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.65) inset;
   --shadow-card-hover:0 10px 44px rgba(0,0,0,0.30), 0 1px 0 rgba(255,255,255,0.88) inset;
 
-  --text-primary:     #EAF0FF;
-  --text-secondary:   #90AADE;
-  --text-muted:       #5A78B0;
-  --text-placeholder: #304060;
+  /* Board text — dark so it reads on the nearly-transparent glass cards
+     that let the bright mountain photo bleed through */
+  --text-primary:     #0D1B2E;
+  --text-secondary:   #1E3A5A;
+  --text-muted:       #3A5878;
+  --text-placeholder: #7A9BBE;
 
   --accent:           #7ABAFF;
-  --accent-muted:     rgba(122, 186, 255, 0.14);
-  --accent-text:      #5AA0F0;
+  --accent-muted:     rgba(122, 186, 255, 0.18);
+  --accent-text:      #1A63C0;
 
-  --success:          #4ADE80;
-  --warning:          #FACC15;
-  --danger:           #F87171;
+  --success:          #15803D;
+  --warning:          #B45309;
+  --danger:           #B91C1C;
 
-  --pill-proposed-bg:  rgba(122, 186, 255, 0.12);
-  --pill-proposed-fg:  #7ABAFF;
-  --pill-proposed-bd:  rgba(122, 186, 255, 0.24);
-  --pill-review-bg:    rgba(250, 204, 21, 0.10);
-  --pill-review-fg:    #FDE047;
-  --pill-review-bd:    rgba(250, 204, 21, 0.22);
-  --pill-approved-bg:  rgba(74, 222, 128, 0.10);
-  --pill-approved-fg:  #4ADE80;
-  --pill-approved-bd:  rgba(74, 222, 128, 0.22);
-  --pill-rejected-bg:  rgba(248, 113, 113, 0.10);
-  --pill-rejected-fg:  #F87171;
-  --pill-rejected-bd:  rgba(248, 113, 113, 0.22);
-  --pill-done-bg:      rgba(255,255,255,0.05);
-  --pill-done-fg:      #5A78B0;
-  --pill-done-bd:      rgba(255,255,255,0.08);
+  --pill-proposed-bg:  rgba(26, 99, 192, 0.10);
+  --pill-proposed-fg:  #1A63C0;
+  --pill-proposed-bd:  rgba(26, 99, 192, 0.22);
+  --pill-review-bg:    rgba(180, 83, 9, 0.10);
+  --pill-review-fg:    #B45309;
+  --pill-review-bd:    rgba(180, 83, 9, 0.22);
+  --pill-approved-bg:  rgba(21, 128, 61, 0.10);
+  --pill-approved-fg:  #15803D;
+  --pill-approved-bd:  rgba(21, 128, 61, 0.22);
+  --pill-rejected-bg:  rgba(185, 28, 28, 0.10);
+  --pill-rejected-fg:  #B91C1C;
+  --pill-rejected-bd:  rgba(185, 28, 28, 0.22);
+  --pill-done-bg:      rgba(0, 0, 0, 0.06);
+  --pill-done-fg:      #3A5878;
+  --pill-done-bd:      rgba(0, 0, 0, 0.10);
 
-  --scrollbar-thumb:   rgba(122, 186, 255, 0.15);
-  --scrollbar-hover:   rgba(122, 186, 255, 0.25);
+  --scrollbar-thumb:   rgba(13, 27, 46, 0.18);
+  --scrollbar-hover:   rgba(13, 27, 46, 0.28);
 
-  --input-bg:          rgba(12, 28, 60, 0.55);
-  --input-border:      rgba(140, 180, 255, 0.18);
+  --input-bg:          rgba(255, 255, 255, 0.55);
+  --input-border:      rgba(13, 27, 46, 0.18);
 
-  --tab-active-bg:     rgba(122, 186, 255, 0.12);
-  --tag-bg:            rgba(122, 186, 255, 0.08);
-  --tag-border:        rgba(122, 186, 255, 0.16);
-  --code-bg:           rgba(122, 186, 255, 0.10);
-  --pre-bg:            rgba(12, 28, 60, 0.60);
+  --tab-active-bg:     rgba(26, 99, 192, 0.12);
+  --tag-bg:            rgba(13, 27, 46, 0.07);
+  --tag-border:        rgba(13, 27, 46, 0.14);
+  --code-bg:           rgba(13, 27, 46, 0.08);
+  --pre-bg:            rgba(255, 255, 255, 0.55);
 
+  /* Nav vars here are overridden in the sidebar scope below */
   --nav-item-hover:    rgba(122, 186, 255, 0.08);
   --nav-item-active:   rgba(122, 186, 255, 0.14);
   --nav-item-active-text: #7ABAFF;
   --nav-section-label: #304060;
   --nav-item-text:     #5A78B0;
 
-  --progress-track:    rgba(122, 186, 255, 0.10);
-  --divider:           rgba(140, 180, 255, 0.10);
+  --progress-track:    rgba(13, 27, 46, 0.10);
+  --divider:           rgba(13, 27, 46, 0.12);
+}
+
+/* Sidebar in mountain mode has a dark opaque backing — restore white text */
+[data-theme="mountain"] aside {
+  --text-primary:     #EAF0FF;
+  --text-secondary:   #90AADE;
+  --text-muted:       #6A8EC8;
+  --nav-section-label:#4A6898;
+  --nav-item-text:    #90AADE;
+  --nav-item-active-text: #7ABAFF;
+  --nav-item-hover:   rgba(122, 186, 255, 0.10);
+  --nav-item-active:  rgba(122, 186, 255, 0.18);
+  --divider:          rgba(255, 255, 255, 0.10);
 }
 
 /* ─────────────────────────────────────────────────────────────

@@ -23,12 +23,13 @@ import {
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { href: '/inbox',    label: 'Inbox',    icon: <Inbox       size={18} strokeWidth={1.6} /> },
-  { href: '/drafts',   label: 'Drafts',   icon: <FileText     size={18} strokeWidth={1.6} /> },
-  { href: '/ideas',    label: 'Ideas',    icon: <Lightbulb    size={18} strokeWidth={1.6} /> },
-  { href: '/files',    label: 'Files',    icon: <FolderOpen   size={18} strokeWidth={1.6} /> },
-  { href: '/tasks',    label: 'Tasks',    icon: <CheckSquare  size={18} strokeWidth={1.6} /> },
-  { href: '/outreach', label: 'Outreach', icon: <span style={{ fontSize: 16, lineHeight: 1 }}>🎯</span> },
+  { href: '/inbox',      label: 'Inbox',      icon: <Inbox       size={18} strokeWidth={1.6} /> },
+  { href: '/drafts',     label: 'Drafts',    icon: <FileText     size={18} strokeWidth={1.6} /> },
+  { href: '/ideas',      label: 'Ideas',     icon: <Lightbulb    size={18} strokeWidth={1.6} /> },
+  { href: '/files',      label: 'Files',     icon: <FolderOpen   size={18} strokeWidth={1.6} /> },
+  { href: '/tasks',      label: 'Tasks',     icon: <CheckSquare  size={18} strokeWidth={1.6} /> },
+  { href: '/outreach',   label: 'Outreach',  icon: <span style={{ fontSize: 16, lineHeight: 1 }}>🎯</span> },
+  { href: '/architecture', label: 'Architecture', icon: <span style={{ fontSize: 16, lineHeight: 1 }}>🏗️</span> },
 ]
 
 export function Sidebar() {
