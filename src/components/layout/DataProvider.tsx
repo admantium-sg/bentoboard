@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react'
 import { useBentoStore } from '@/lib/store'
-import type { Item, Notification, Project, Comment } from '@/lib/types'
+import type { Item, Notification, Project, Comment, OutreachCreator } from '@/lib/types'
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment } = useBentoStore()
+  const { setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment, setOutreach, upsertOutreach } = useBentoStore()
 
   useEffect(() => {
     let mounted = true
@@ -15,10 +15,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabase()
 
       // ── Initial loads (parallel) ──────────────────────────────
-      const [projectsRes, notifRes, itemsRes] = await Promise.all([
+      const [projectsRes, notifRes, itemsRes, outreachRes] = await Promise.all([
         supabase.from('projects').select('*').order('name'),
         supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('items').select('*').order('updated_at', { ascending: false }).limit(200),
+        supabase.from('outreach').select('*').order('created_at', { ascending: false }),
       ])
 
       if (!mounted) return
@@ -31,6 +32,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
       if (itemsRes.data) {
         setItems(itemsRes.data as Item[])
+      }
+      if (outreachRes.data) {
+        setOutreach(outreachRes.data as OutreachCreator[])
       }
 
       // ── Realtime: items ───────────────────────────────────────
@@ -76,6 +80,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         )
         .subscribe()
 
+      // ── Realtime: outreach ────────────────────────────────────
+      const outreachChannel = supabase
+        .channel('rt-outreach')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'outreach' },
+          (payload) => {
+            if (!mounted) return
+            upsertOutreach(payload.new as OutreachCreator)
+          }
+        )
+        .subscribe()
+
       // ── Realtime: events (no store action needed — just triggers item refresh) ──
       const eventsChannel = supabase
         .channel('rt-events')
@@ -103,6 +120,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         supabase.removeChannel(notifChannel)
         supabase.removeChannel(commentsChannel)
         supabase.removeChannel(eventsChannel)
+        supabase.removeChannel(outreachChannel)
       }
     }
 
@@ -113,7 +131,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       // Run the async cleanup when it resolves
       cleanupPromise.then((cleanup) => cleanup?.())
     }
-  }, [setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment])
+  }, [setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment, setOutreach, upsertOutreach])
 
   return <>{children}</>
 }

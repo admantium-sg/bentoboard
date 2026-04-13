@@ -90,6 +90,30 @@ export interface Event {
   created_at: string
 }
 
+export type OutreachStatus = 'sent' | 'follow_up' | 'in_conversation' | 'closed' | 'no_response'
+
+export interface OutreachCreator {
+  id: string
+  niche: string | null
+  name: string | null
+  linkedin_url: string | null
+  followers: number | null
+  email: string | null
+  title: string | null
+  headline: string | null
+  organization: string | null
+  city: string | null
+  state: string | null
+  country: string | null
+  twitter_url: string | null
+  outreach_status: OutreachStatus | null
+  replied: boolean | null
+  reply_summary: string | null
+  reply_date: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Config {
   key: string
   value: Record<string, unknown>

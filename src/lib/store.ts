@@ -1,7 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
-import type { Item, Comment, Notification, Project } from './types'
+import type { Item, Comment, Notification, Project, OutreachCreator } from './types'
 
 interface BentoStore {
   // Items
@@ -25,6 +25,11 @@ interface BentoStore {
   // Projects
   projects: Project[]
   setProjects: (projects: Project[]) => void
+
+  // Outreach
+  outreach: OutreachCreator[]
+  setOutreach: (creators: OutreachCreator[]) => void
+  upsertOutreach: (creator: OutreachCreator) => void
 
   // UI state
   sidebarCollapsed: boolean
@@ -90,6 +95,20 @@ export const useBentoStore = create<BentoStore>((set, get) => ({
       const unread = next.filter((n) => !n.read).length
       return { notifications: next, unreadCount: unread }
     }),
+
+  outreach: [],
+  setOutreach: (creators) => set({ outreach: creators }),
+  upsertOutreach: (creator) => {
+    const { outreach } = get()
+    const idx = outreach.findIndex((c) => c.id === creator.id)
+    if (idx >= 0) {
+      const next = [...outreach]
+      next[idx] = creator
+      set({ outreach: next })
+    } else {
+      set({ outreach: [creator, ...outreach] })
+    }
+  },
 
   projects: [],
   setProjects: (projects) => set({ projects }),
