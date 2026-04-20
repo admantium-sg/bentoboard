@@ -256,7 +256,7 @@ export default function OutreachPage() {
   const [statusFilter, setStatusFilter] = useState<OutreachStatus | 'all'>('all')
   const [nicheFilter, setNicheFilter] = useState<string>('all')
   const [repliedFilter, setRepliedFilter] = useState<'all' | 'yes' | 'no'>('all')
-  const [sortKey, setSortKey] = useState<SortKey>('created_at')
+  const [sortKey, setSortKey] = useState<SortKey>('replied')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
