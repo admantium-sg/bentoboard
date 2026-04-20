@@ -12,7 +12,7 @@ import type { Item, ItemStatus } from '@/lib/types'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable, closestCenter } from '@dnd-kit/core'
-import { Trash2 } from 'lucide-react'
+import { GripVertical, Trash2 } from 'lucide-react'
 
 const COLUMNS: { status: ItemStatus; label: string; color: string }[] = [
   { status: 'proposed',  label: 'Proposed',    color: '#3B82F6' },
@@ -38,45 +38,40 @@ function DraggableIdeaCard({ item }: DraggableIdeaCardProps) {
   })
 
   return (
-    <Link
-      ref={setNodeRef}
-      href={`/items/${item.id}`}
-      className="block"
-      onClick={(e) => {
-        if (isDragging) {
-          e.preventDefault()
-          e.stopPropagation()
-        }
-      }}
-    >
+    <div ref={setNodeRef} className="glass-card p-4 flex gap-2" style={{ opacity: isDragging ? 0.5 : 1 }}>
+      <div className="flex-1">
+        <Link href={`/items/${item.id}`} className="block">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h3 className="text-[14px] font-semibold leading-snug flex-1" style={{ color: 'var(--text-primary)' }}>
+              {item.title}
+            </h3>
+            <Avatar author={item.created_by} size="sm" />
+          </div>
+
+          {item.description && (
+            <p className="text-[13px] line-clamp-2 leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>
+              {item.description}
+            </p>
+          )}
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <ProjectTag slug={item.project} size="sm" />
+            <PriorityBadge priority={item.priority} />
+            <span className="text-[12px] ml-auto" style={{ color: 'var(--text-muted)' }}>
+              {formatRelativeTime(item.updated_at)}
+            </span>
+          </div>
+        </Link>
+      </div>
       <div
         {...attributes}
         {...listeners}
-        className="glass-card p-4 cursor-grab active:cursor-grabbing"
-        style={{ opacity: isDragging ? 0.5 : 1 }}
+        className="flex items-start pt-1 cursor-grab active:cursor-grabbing text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+        title="Drag to move"
       >
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-[14px] font-semibold leading-snug flex-1" style={{ color: 'var(--text-primary)' }}>
-            {item.title}
-          </h3>
-          <Avatar author={item.created_by} size="sm" />
-        </div>
-
-        {item.description && (
-          <p className="text-[13px] line-clamp-2 leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>
-            {item.description}
-          </p>
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <ProjectTag slug={item.project} size="sm" />
-          <PriorityBadge priority={item.priority} />
-          <span className="text-[12px] ml-auto" style={{ color: 'var(--text-muted)' }}>
-            {formatRelativeTime(item.updated_at)}
-          </span>
-        </div>
+        <GripVertical size={16} />
       </div>
-    </Link>
+    </div>
   )
 }
 
