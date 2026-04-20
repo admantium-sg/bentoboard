@@ -91,7 +91,7 @@ export function Sidebar() {
               : '0 2px 10px rgba(59,130,246,0.30)',
           }}
         >
-          <span className="text-white text-[11px] font-bold tracking-tight">BB</span>
+          <span className="text-[16px]">🍣</span>
         </div>
         {!sidebarCollapsed && (
           <div>
