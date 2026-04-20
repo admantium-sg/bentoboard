@@ -59,6 +59,20 @@ function SortArrow({ active, dir }: { active: boolean; dir: SortDir }) {
   )
 }
 
+// ── URL normalization ─────────────────────────────────────────────────────────
+
+function normalizeUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `https://${url}`
+}
+
+function displayUrl(url: string | null | undefined, pattern: RegExp, replace: string): string {
+  if (!url) return ''
+  const normalized = normalizeUrl(url) || ''
+  return normalized.replace(pattern, replace).replace(/\/$/, '')
+}
+
 // ── Expanded detail row ────────────────────────────────────────────────────────
 
 function ExpandedDetail({ creator }: { creator: OutreachCreator }) {
@@ -118,14 +132,14 @@ function ExpandedDetail({ creator }: { creator: OutreachCreator }) {
           <div>
             <span className="text-[11px] font-medium uppercase tracking-wider block mb-0.5" style={{ color: 'var(--text-muted)' }}>LinkedIn</span>
             <a
-              href={creator.linkedin_url}
+              href={normalizeUrl(creator.linkedin_url) ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[13px] hover:underline truncate block"
               style={{ color: 'var(--accent-text)' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {creator.linkedin_url.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '').replace(/\/$/, '')}
+              {displayUrl(creator.linkedin_url, /^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}
             </a>
           </div>
         )}
@@ -135,14 +149,14 @@ function ExpandedDetail({ creator }: { creator: OutreachCreator }) {
           <div>
             <span className="text-[11px] font-medium uppercase tracking-wider block mb-0.5" style={{ color: 'var(--text-muted)' }}>Twitter / X</span>
             <a
-              href={creator.twitter_url}
+              href={normalizeUrl(creator.twitter_url) ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[13px] hover:underline truncate block"
               style={{ color: 'var(--accent-text)' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {creator.twitter_url.replace(/^https?:\/\/(www\.)?twitter\.com\//, '@').replace(/^https?:\/\/(www\.)?x\.com\//, '@').replace(/\/$/, '')}
+              {displayUrl(creator.twitter_url, /^https?:\/\/(www\.)?twitter\.com\//, '@').replace(/^https?:\/\/(www\.)?x\.com\//, '@')}
             </a>
           </div>
         )}
