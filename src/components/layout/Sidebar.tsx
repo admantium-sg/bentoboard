@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useMemo } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { cn } from '@/lib/utils'
@@ -34,8 +35,19 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { unreadCount, sidebarCollapsed, setSidebarCollapsed } = useBentoStore()
+  const { unreadCount, sidebarCollapsed, setSidebarCollapsed, items } = useBentoStore()
   const { theme, cycle, setTheme } = useThemeStore()
+
+  // Count active (non-done, non-rejected) ideas per project
+  const ideaCountByProject = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const item of items) {
+      if (item.type === 'idea' && item.status !== 'done' && item.status !== 'rejected' && item.project) {
+        counts[item.project] = (counts[item.project] ?? 0) + 1
+      }
+    }
+    return counts
+  }, [items])
   const isDark = theme === 'dark'
   const isForest = theme === 'forest'
   const isDesert = theme === 'desert'
@@ -158,8 +170,10 @@ export function Sidebar() {
         )}
 
         {DEFAULT_PROJECTS.map((project) => {
-          const href = `/drafts?project=${project.slug}`
-          const isActive = pathname.includes(`project=${project.slug}`)
+          const href = `/ideas?project=${project.slug}`
+          const isActive = pathname.startsWith('/ideas') && pathname.includes(`project=${project.slug}`)
+            || pathname.includes(`project=${project.slug}`)
+          const ideaCount = ideaCountByProject[project.slug] ?? 0
 
           return (
             <Link
@@ -179,7 +193,17 @@ export function Sidebar() {
             >
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: project.color }} />
               {!sidebarCollapsed && (
-                <span className="truncate text-[13px]">{project.name}</span>
+                <>
+                  <span className="truncate text-[13px] flex-1">{project.name}</span>
+                  {ideaCount > 0 && (
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      style={{ background: project.color + '22', color: project.color }}
+                    >
+                      {ideaCount}
+                    </span>
+                  )}
+                </>
               )}
             </Link>
           )

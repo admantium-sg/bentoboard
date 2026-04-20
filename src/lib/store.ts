@@ -63,6 +63,7 @@ export const useBentoStore = create<BentoStore>((set, get) => ({
   addComment: (comment) =>
     set((state) => {
       const existing = state.comments[comment.item_id] || []
+      if (existing.some((c) => c.id === comment.id)) return state
       return {
         comments: {
           ...state.comments,
