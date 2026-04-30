@@ -208,9 +208,35 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   const { items, comments, setComments, addComment, upsertItem } = useBentoStore()
   const [updatingStatus, setUpdatingStatus] = useState<ItemStatus | null>(null)
   const [rejectPending, setRejectPending] = useState(false)
+  const [fetchState, setFetchState] = useState<'idle' | 'loading' | 'done'>('idle')
 
   const item = items.find((i) => i.id === id)
   const itemComments = comments[id] || []
+
+  // Fallback: if the item isn't in the zustand store (older than the loaded window,
+  // or deep-linked from outside), fetch it directly from Supabase and upsert.
+  useEffect(() => {
+    if (item || fetchState !== 'idle') return
+    setFetchState('loading')
+    let cancelled = false
+    async function fetchItem() {
+      try {
+        const { getSupabase } = await import('@/lib/supabase')
+        const client = getSupabase()
+        const { data } = await client
+          .from('items')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle()
+        if (cancelled) return
+        if (data) upsertItem(data as Item)
+      } catch (e) { console.error(e) } finally {
+        if (!cancelled) setFetchState('done')
+      }
+    }
+    fetchItem()
+    return () => { cancelled = true }
+  }, [id, item, fetchState, upsertItem])
 
   // Load comments once per item
   useEffect(() => {
@@ -268,6 +294,14 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   if (!item) {
+    // Still fetching the fallback? Show a neutral loading state instead of "not found".
+    if (fetchState !== 'done') {
+      return (
+        <div className="animate-fade-in flex items-center justify-center py-20 text-[14px]" style={{ color: 'var(--text-muted)' }}>
+          Loading item…
+        </div>
+      )
+    }
     return (
       <div className="animate-fade-in">
         <EmptyState

@@ -15,10 +15,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabase()
 
       // ── Initial loads (parallel) ──────────────────────────────
-      const [projectsRes, notifRes, itemsRes, outreachRes] = await Promise.all([
+      // Load drafts/tasks/files in full (long-lived, low volume).
+      // Ideas churn fast — pull the most recent 300 only so they don't crowd
+      // older artifacts out of the window.
+      const [projectsRes, notifRes, persistentRes, ideasRes, outreachRes] = await Promise.all([
         supabase.from('projects').select('*').order('name'),
         supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('items').select('*').order('updated_at', { ascending: false }).limit(200),
+        supabase.from('items').select('*').in('type', ['draft', 'task', 'file']).order('updated_at', { ascending: false }).limit(500),
+        supabase.from('items').select('*').eq('type', 'idea').order('updated_at', { ascending: false }).limit(300),
         supabase.from('outreach').select('*').order('created_at', { ascending: false }),
       ])
 
@@ -30,8 +34,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (notifRes.data) {
         setNotifications(notifRes.data as Notification[])
       }
-      if (itemsRes.data) {
-        setItems(itemsRes.data as Item[])
+      const combined = [
+        ...((persistentRes.data as Item[] | null) ?? []),
+        ...((ideasRes.data as Item[] | null) ?? []),
+      ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      if (combined.length) {
+        setItems(combined)
       }
       if (outreachRes.data) {
         setOutreach(outreachRes.data as OutreachCreator[])
@@ -102,12 +110,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           async () => {
             if (!mounted) return
             // A new event may have triggered new items/notifications — refresh both
-            const [freshItems, freshNotifs] = await Promise.all([
-              supabase.from('items').select('*').order('updated_at', { ascending: false }).limit(200),
+            const [freshPersistent, freshIdeas, freshNotifs] = await Promise.all([
+              supabase.from('items').select('*').in('type', ['draft', 'task', 'file']).order('updated_at', { ascending: false }).limit(500),
+              supabase.from('items').select('*').eq('type', 'idea').order('updated_at', { ascending: false }).limit(300),
               supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
             ])
             if (!mounted) return
-            if (freshItems.data) setItems(freshItems.data as Item[])
+            const fresh = [
+              ...((freshPersistent.data as Item[] | null) ?? []),
+              ...((freshIdeas.data as Item[] | null) ?? []),
+            ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+            if (fresh.length) setItems(fresh)
             if (freshNotifs.data) setNotifications(freshNotifs.data as Notification[])
           }
         )
