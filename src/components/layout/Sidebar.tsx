@@ -34,7 +34,6 @@ export function Sidebar() {
   const { sidebarCollapsed, setSidebarCollapsed, projects, selectedProject, setSelectedProject } = useBentoStore()
   const { theme, cycle } = useThemeStore()
   const [workspaceFolders, setWorkspaceFolders] = useState<WorkspaceFolder[]>([])
-  const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceFolder | null>(null)
   const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -52,20 +51,17 @@ export function Sidebar() {
     fetchFolders()
   }, [])
 
-  // Determine current workspace based on pathname
-  useEffect(() => {
+  // Compute current workspace from pathname
+  const currentWorkspace = (() => {
     const workspaceMatch = pathname.match(/^\/workspace\/([^\/]+)/)
     if (workspaceMatch) {
       const workspacePath = workspaceMatch[1]
-      const folder = workspaceFolders.find(f => f.path === workspacePath)
-      setCurrentWorkspace(folder || null)
-    } else {
-      setCurrentWorkspace(null)
+      return workspaceFolders.find(f => f.path === workspacePath) || null
     }
-  }, [pathname, workspaceFolders])
+    return null
+  })()
 
   function handleWorkspaceSelect(folder: WorkspaceFolder) {
-    setCurrentWorkspace(folder)
     setIsWorkspaceDialogOpen(false)
     router.push(`/workspace/${folder.path}`)
   }
