@@ -2,149 +2,92 @@
 
 import { useEffect } from 'react'
 import { useBentoStore } from '@/lib/store'
-import type { Item, Notification, Project, Comment, OutreachCreator } from '@/lib/types'
+import { getFileWatcher } from '@/lib/fileWatcher'
+
+const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment, setOutreach, upsertOutreach } = useBentoStore()
+  const { setProjects, setAgentStatus, setLastPollTime, addRecentChange } = useBentoStore()
 
   useEffect(() => {
-    let mounted = true
+    let cleanup: (() => void) | null = null
 
-    async function bootstrap() {
-      const { getSupabase } = await import('@/lib/supabase')
-      const supabase = getSupabase()
+    async function init() {
+      console.log('[DataProvider] Initializing with workspace:', DEFAULT_WORKSPACE)
 
-      // ── Initial loads (parallel) ──────────────────────────────
-      // Load drafts/tasks/files in full (long-lived, low volume).
-      // Ideas churn fast — pull the most recent 300 only so they don't crowd
-      // older artifacts out of the window.
-      const [projectsRes, notifRes, persistentRes, ideasRes, outreachRes] = await Promise.all([
-        supabase.from('projects').select('*').order('name'),
-        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('items').select('*').in('type', ['draft', 'task', 'file']).order('updated_at', { ascending: false }).limit(500),
-        supabase.from('items').select('*').eq('type', 'idea').order('updated_at', { ascending: false }).limit(300),
-        supabase.from('outreach').select('*').order('created_at', { ascending: false }),
-      ])
+      // Initial data load
+      try {
+        // Load projects
+        const projectsRes = await fetch('/api/kanban/projects')
+        if (projectsRes.ok) {
+          const data = await projectsRes.json()
+          setProjects(data.projects || [])
+        }
 
-      if (!mounted) return
-
-      if (projectsRes.data?.length) {
-        setProjects(projectsRes.data as Project[])
-      }
-      if (notifRes.data) {
-        setNotifications(notifRes.data as Notification[])
-      }
-      const combined = [
-        ...((persistentRes.data as Item[] | null) ?? []),
-        ...((ideasRes.data as Item[] | null) ?? []),
-      ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-      if (combined.length) {
-        setItems(combined)
-      }
-      if (outreachRes.data) {
-        setOutreach(outreachRes.data as OutreachCreator[])
+        // Load agent statuses
+        const statusRes = await fetch('/api/status')
+        if (statusRes.ok) {
+          const data = await statusRes.json()
+          setAgentStatus(data.statuses || [])
+        }
+      } catch (error) {
+        console.error('[DataProvider] Failed to load initial data:', error)
       }
 
-      // ── Realtime: items ───────────────────────────────────────
-      const itemsChannel = supabase
-        .channel('rt-items')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'items' },
-          (payload) => {
-            if (!mounted) return
-            if (payload.eventType === 'DELETE') {
-              removeItem((payload.old as { id: string }).id)
-            } else {
-              upsertItem(payload.new as Item)
-            }
-          }
-        )
-        .subscribe()
+      // Start file watcher
+      const watcher = getFileWatcher(DEFAULT_WORKSPACE)
+      cleanup = watcher.start((changes) => {
+        console.log('[DataProvider] File changes detected:', changes.length)
 
-      // ── Realtime: notifications ───────────────────────────────
-      const notifChannel = supabase
-        .channel('rt-notifications')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'notifications' },
-          (payload) => {
-            if (!mounted) return
-            addNotification(payload.new as Notification)
-          }
-        )
-        .subscribe()
+        for (const change of changes) {
+          addRecentChange({
+            path: change.path,
+            type: change.type,
+            timestamp: change.modifiedAt,
+          })
+        }
 
-      // ── Realtime: comments ────────────────────────────────────
-      const commentsChannel = supabase
-        .channel('rt-comments')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'comments' },
-          (payload) => {
-            if (!mounted) return
-            addComment(payload.new as Comment)
-          }
-        )
-        .subscribe()
+        // Refresh data on changes
+        refreshData()
+      })
 
-      // ── Realtime: outreach ────────────────────────────────────
-      const outreachChannel = supabase
-        .channel('rt-outreach')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'outreach' },
-          (payload) => {
-            if (!mounted) return
-            upsertOutreach(payload.new as OutreachCreator)
-          }
-        )
-        .subscribe()
+      setLastPollTime(new Date().toISOString())
 
-      // ── Realtime: events (no store action needed — just triggers item refresh) ──
-      const eventsChannel = supabase
-        .channel('rt-events')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'events' },
-          async () => {
-            if (!mounted) return
-            // A new event may have triggered new items/notifications — refresh both
-            const [freshPersistent, freshIdeas, freshNotifs] = await Promise.all([
-              supabase.from('items').select('*').in('type', ['draft', 'task', 'file']).order('updated_at', { ascending: false }).limit(500),
-              supabase.from('items').select('*').eq('type', 'idea').order('updated_at', { ascending: false }).limit(300),
-              supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
-            ])
-            if (!mounted) return
-            const fresh = [
-              ...((freshPersistent.data as Item[] | null) ?? []),
-              ...((freshIdeas.data as Item[] | null) ?? []),
-            ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-            if (fresh.length) setItems(fresh)
-            if (freshNotifs.data) setNotifications(freshNotifs.data as Notification[])
-          }
-        )
-        .subscribe()
+      console.log('[DataProvider] Initialization complete')
+    }
 
-      // Cleanup on unmount
-      return () => {
-        mounted = false
-        supabase.removeChannel(itemsChannel)
-        supabase.removeChannel(notifChannel)
-        supabase.removeChannel(commentsChannel)
-        supabase.removeChannel(eventsChannel)
-        supabase.removeChannel(outreachChannel)
+    async function refreshData() {
+      try {
+        // Refresh projects
+        const projectsRes = await fetch('/api/kanban/projects')
+        if (projectsRes.ok) {
+          const data = await projectsRes.json()
+          setProjects(data.projects || [])
+        }
+
+        // Refresh agent statuses
+        const statusRes = await fetch('/api/status')
+        if (statusRes.ok) {
+          const data = await statusRes.json()
+          setAgentStatus(data.statuses || [])
+        }
+
+        setLastPollTime(new Date().toISOString())
+      } catch (error) {
+        console.error('[DataProvider] Failed to refresh data:', error)
       }
     }
 
-    const cleanupPromise = bootstrap()
+    init()
 
+    // Cleanup on unmount
     return () => {
-      mounted = false
-      // Run the async cleanup when it resolves
-      cleanupPromise.then((cleanup) => cleanup?.())
+      if (cleanup) {
+        cleanup()
+      }
+      getFileWatcher().stop()
     }
-  }, [setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment, setOutreach, upsertOutreach])
+  }, [setProjects, setAgentStatus, setLastPollTime, addRecentChange])
 
   return <>{children}</>
 }

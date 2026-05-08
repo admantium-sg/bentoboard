@@ -2,17 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { cn } from '@/lib/utils'
-import { DEFAULT_PROJECTS } from '@/lib/utils'
 import {
-  Inbox,
   FileText,
-  Lightbulb,
   FolderOpen,
-  CheckSquare,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -21,33 +17,37 @@ import {
   TreePine,
   Sunset,
   MountainSnow,
+  Layers,
 } from 'lucide-react'
 
-const NAV_ITEMS = [
-  { href: '/inbox',      label: 'Inbox',      icon: <Inbox       size={18} strokeWidth={1.6} /> },
-  { href: '/drafts',     label: 'Drafts',    icon: <FileText     size={18} strokeWidth={1.6} /> },
-  { href: '/ideas',      label: 'Ideas',     icon: <Lightbulb    size={18} strokeWidth={1.6} /> },
-  { href: '/files',      label: 'Files',     icon: <FolderOpen   size={18} strokeWidth={1.6} /> },
-  { href: '/tasks',      label: 'Tasks',     icon: <CheckSquare  size={18} strokeWidth={1.6} /> },
-  { href: '/outreach',   label: 'Outreach',  icon: <span style={{ fontSize: 16, lineHeight: 1 }}>🎯</span> },
-  { href: '/architecture', label: 'Architecture', icon: <span style={{ fontSize: 16, lineHeight: 1 }}>🏗️</span> },
-]
+interface WorkspaceFolder {
+  name: string
+  displayName: string
+  path: string
+  modifiedAt: string
+}
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { unreadCount, sidebarCollapsed, setSidebarCollapsed, items } = useBentoStore()
+  const { sidebarCollapsed, setSidebarCollapsed, projects, selectedProject, setSelectedProject } = useBentoStore()
   const { theme, cycle, setTheme } = useThemeStore()
+  const [workspaceFolders, setWorkspaceFolders] = useState<WorkspaceFolder[]>([])
 
-  // Count active (non-done, non-rejected) ideas per project
-  const ideaCountByProject = useMemo(() => {
-    const counts: Record<string, number> = {}
-    for (const item of items) {
-      if (item.type === 'idea' && item.status !== 'done' && item.status !== 'rejected' && item.project) {
-        counts[item.project] = (counts[item.project] ?? 0) + 1
+  useEffect(() => {
+    async function fetchFolders() {
+      try {
+        const res = await fetch('/api/fs/folders?exclude=kanban')
+        if (res.ok) {
+          const data = await res.json()
+          setWorkspaceFolders(data.folders || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch workspace folders:', error)
       }
     }
-    return counts
-  }, [items])
+    fetchFolders()
+  }, [])
+
   const isDark = theme === 'dark'
   const isForest = theme === 'forest'
   const isDesert = theme === 'desert'
@@ -99,7 +99,7 @@ export function Sidebar() {
               BentoBoard
             </div>
             <div className="text-[12px] mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>
-              Brian &amp; Bento
+              Shared Workspace
             </div>
           </div>
         )}
@@ -107,145 +107,98 @@ export function Sidebar() {
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-          const badgeCount = item.href === '/inbox' ? unreadCount : undefined
+        {/* Projects link */}
+        <Link
+          href="/projects"
+          className={cn(
+            'flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150',
+            sidebarCollapsed ? 'justify-center px-0' : ''
+          )}
+          style={{
+            background: pathname === '/projects' ? 'var(--nav-item-active)' : 'transparent',
+            color: pathname === '/projects' ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
+          }}
+          onMouseEnter={(e) => { if (pathname !== '/projects') (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
+          onMouseLeave={(e) => { if (pathname !== '/projects') (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+        >
+          <Layers size={18} strokeWidth={1.6} />
+          {!sidebarCollapsed && <span className="flex-1 text-[14px]">Projects</span>}
+        </Link>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150 relative',
-                sidebarCollapsed ? 'justify-center px-0' : ''
-              )}
-              style={{
-                background: isActive ? 'var(--nav-item-active)' : 'transparent',
-                color: isActive ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
-              }}
-              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
-              onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
-              <span className="flex-shrink-0 relative">
-                {item.icon}
-                {badgeCount && badgeCount > 0 && (
-                  <span
-                    className={cn(
-                      'absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-bold text-white px-1',
-                      !sidebarCollapsed && 'hidden'
-                    )}
-                    style={{ background: 'var(--danger)' }}
-                  >
-                    {badgeCount > 99 ? '99+' : badgeCount}
-                  </span>
-                )}
-              </span>
-              {!sidebarCollapsed && (
-                <>
-                  <span className="flex-1 text-[14px]">{item.label}</span>
-                  {badgeCount && badgeCount > 0 && (
-                    <span
-                      className="min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1.5"
-                      style={{ background: 'var(--danger)' }}
-                    >
-                      {badgeCount > 99 ? '99+' : badgeCount}
-                    </span>
-                  )}
-                </>
-              )}
-            </Link>
-          )
-        })}
-
-        {/* Projects section */}
-        {!sidebarCollapsed && (
-          <div className="px-3 pt-6 pb-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--nav-section-label)' }}>
-              Projects
+        {/* Workspace Folders */}
+        {!sidebarCollapsed && workspaceFolders.length > 0 && (
+          <>
+            <div className="h-px mx-2 my-3" style={{ background: 'var(--divider)' }} />
+            <span className="text-[11px] font-medium uppercase tracking-wider block px-3" style={{ color: 'var(--nav-section-label)' }}>
+              Workspace
             </span>
-          </div>
+            {workspaceFolders.map((folder) => (
+              <Link
+                key={folder.path}
+                href={`/workspace/${folder.path}`}
+                className={cn(
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150',
+                  sidebarCollapsed ? 'justify-center px-0' : ''
+                )}
+                style={{
+                  background: pathname.startsWith(`/workspace/${folder.path}`) ? 'var(--nav-item-active)' : 'transparent',
+                  color: pathname.startsWith(`/workspace/${folder.path}`) ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
+                }}
+                onMouseEnter={(e) => { if (!pathname.startsWith(`/workspace/${folder.path}`)) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
+                onMouseLeave={(e) => { if (!pathname.startsWith(`/workspace/${folder.path}`)) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              >
+                <FolderOpen size={18} strokeWidth={1.6} />
+                {!sidebarCollapsed && <span className="flex-1 text-[14px]">{folder.displayName}</span>}
+              </Link>
+            ))}
+          </>
         )}
-        {sidebarCollapsed && (
+
+        {/* Divider */}
+        {!sidebarCollapsed && (
           <div className="h-px mx-2 my-3" style={{ background: 'var(--divider)' }} />
         )}
 
-        {DEFAULT_PROJECTS.map((project) => {
-          const href = `/ideas?project=${project.slug}`
-          const isActive = pathname.startsWith('/ideas') && pathname.includes(`project=${project.slug}`)
-            || pathname.includes(`project=${project.slug}`)
-          const ideaCount = ideaCountByProject[project.slug] ?? 0
-
-          return (
-            <Link
-              key={project.slug}
-              href={href}
-              className={cn(
-                'flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150',
-                sidebarCollapsed ? 'justify-center px-0' : ''
-              )}
-              style={{
-                background: isActive ? 'var(--nav-item-active)' : 'transparent',
-                color: isActive ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
-              }}
-              title={project.name}
-              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
-              onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
-              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: project.color }} />
-              {!sidebarCollapsed && (
-                <>
-                  <span className="truncate text-[13px] flex-1">{project.name}</span>
-                  {ideaCount > 0 && (
-                    <span
-                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0"
-                      style={{ background: project.color + '22', color: project.color }}
-                    >
-                      {ideaCount}
-                    </span>
-                  )}
-                </>
-              )}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Bottom controls */}
-      <div className="px-3 py-3 space-y-1" style={{ borderTop: '1px solid var(--divider)' }}>
-        {/* Theme cycle */}
-        <button
-          onClick={cycle}
-          className={cn(
-            'w-full flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150',
-            sidebarCollapsed ? 'justify-center px-0' : ''
-          )}
-          style={{ color: 'var(--nav-item-text)' }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)')}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-          title={
-            theme === 'light'    ? 'Switch to dark'
-            : theme === 'dark'   ? 'Switch to forest'
-            : theme === 'forest' ? 'Switch to desert'
-            : theme === 'desert' ? 'Switch to mountain'
-            : 'Switch to light'
-          }
-        >
-          {theme === 'light'    && <Moon         size={18} strokeWidth={1.6} />}
-          {theme === 'dark'     && <TreePine     size={18} strokeWidth={1.6} style={{ color: 'var(--accent)' }} />}
-          {theme === 'forest'   && <Sunset       size={18} strokeWidth={1.6} style={{ color: 'var(--accent)' }} />}
-          {theme === 'desert'   && <MountainSnow size={18} strokeWidth={1.6} style={{ color: 'var(--accent)' }} />}
-          {theme === 'mountain' && <Sun          size={18} strokeWidth={1.6} style={{ color: 'var(--accent)' }} />}
-          {!sidebarCollapsed && (
-            <span className="text-[14px]">
-              {theme === 'light'    ? 'Dark mode'
-               : theme === 'dark'   ? 'Forest mode'
-               : theme === 'forest' ? 'Desert mode'
-               : theme === 'desert' ? 'Mountain mode'
-               : 'Light mode'}
+        {/* Projects section */}
+        {!sidebarCollapsed && projects.length > 0 && (
+          <>
+            <span className="text-[11px] font-medium uppercase tracking-wider block px-3" style={{ color: 'var(--nav-section-label)' }}>
+              Projects
             </span>
-          )}
-        </button>
+            {projects.map((project) => {
+              const href = `/projects/${project.slug}`
+              const isActive = pathname === href
 
+              return (
+                <Link
+                  key={project.slug}
+                  href={href}
+                  onClick={() => setSelectedProject(project.slug)}
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150"
+                  style={{
+                    background: isActive ? 'var(--nav-item-active)' : 'transparent',
+                    color: isActive ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
+                  onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                >
+                  <FolderOpen size={16} strokeWidth={1.5} />
+                  <span className="flex-1 min-w-0">
+                    <span className="text-[13px] font-medium block truncate">{project.name}</span>
+                    <span className="text-[11px] font-mono truncate block" style={{ color: 'var(--text-muted)' }}>{project.slug}</span>
+                  </span>
+                </Link>
+              )
+            })}
+          </>
+        )}
+
+        {/* Divider */}
+        {!sidebarCollapsed && (
+          <div className="h-px mx-2 my-3" style={{ background: 'var(--divider)' }} />
+        )}
+
+        {/* Bottom sections */}
         <Link
           href="/settings"
           className={cn(
@@ -260,21 +213,51 @@ export function Sidebar() {
           onMouseLeave={(e) => { if (pathname !== '/settings') (e.currentTarget as HTMLElement).style.background = 'transparent' }}
         >
           <Settings size={18} strokeWidth={1.6} />
-          {!sidebarCollapsed && <span className="text-[14px]">Settings</span>}
+          {!sidebarCollapsed && <span className="flex-1 text-[14px]">Settings</span>}
         </Link>
 
+        {/* Collapse toggle */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className={cn(
-            'w-full flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150',
-            sidebarCollapsed ? 'justify-center px-0' : ''
-          )}
+          className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150"
           style={{ color: 'var(--text-muted)' }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)')}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+          onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)'}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
         >
           {sidebarCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronLeft size={16} strokeWidth={2} />}
-          {!sidebarCollapsed && <span className="text-[13px]">Collapse</span>}
+          {!sidebarCollapsed && <span className="flex-1 text-[14px]">Collapse</span>}
+        </button>
+      </nav>
+
+      {/* Bottom controls */}
+      <div className="px-3 py-3 space-y-1" style={{ borderTop: '1px solid var(--divider)' }}>
+        {/* Theme cycle */}
+        <button
+          onClick={cycle}
+          className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150"
+          style={{ color: 'var(--nav-item-text)' }}
+          onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)'}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+          title={
+            theme === 'light'    ? 'Switch to dark'
+            : theme === 'dark'   ? 'Switch to forest'
+            : theme === 'forest' ? 'Switch to desert'
+            : theme === 'desert' ? 'Switch to mountain'
+            : 'Switch to light'
+          }
+        >
+          {theme === 'light'    && <Moon         size={18} strokeWidth={1.6} />}
+          {theme === 'dark'     && <TreePine     size={18} strokeWidth={1.6} />}
+          {theme === 'forest'   && <Sunset       size={18} strokeWidth={1.6} />}
+          {theme === 'desert'   && <MountainSnow size={18} strokeWidth={1.6} />}
+          {theme === 'mountain' && <Sun          size={18} strokeWidth={1.6} />}
+          {!sidebarCollapsed && <span className="flex-1 text-[14px]">
+            {theme === 'light'    ? 'Dark mode'
+             : theme === 'dark'   ? 'Forest mode'
+             : theme === 'forest' ? 'Desert mode'
+             : theme === 'desert' ? 'Mountain mode'
+             : 'Light mode'}
+          </span>}
         </button>
       </div>
     </aside>
