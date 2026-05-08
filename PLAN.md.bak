@@ -1,0 +1,1195 @@
+# BentoBoard File System Migration Plan
+
+## Overview
+
+Transform BentoBoard from a Supabase-backed application to a file system-based dashboard that visualizes and manages content from `/home/devcon/.openclaw/shared-workspace/`. The application will read, write, and watch files in the shared-workspace directory, removing all Supabase dependencies.
+
+---
+
+## High-Level Architecture
+
+### Current Architecture (To Be Removed)
+```
+BentoBoard Frontend (Next.js)
+         ↓
+    Supabase (PostgreSQL + Realtime)
+    - Items table
+    - Notifications table
+    - Comments table
+    - Projects table
+    - Outreach table
+```
+
+### New Architecture
+```
+BentoBoard Frontend (Next.js)
+         ↓
+    API Routes (/api/*)
+         ↓
+    File System (/home/devcon/.openclaw/shared-workspace/)
+    - kanban/{project}/
+      - backlog/
+      - to-do/
+      - blocked/
+      - in-progress/
+      - in-review/
+      - pull-request/
+      - done/
+      - cancelled/
+      - sessions/
+    - brainstorming/{project}/
+    - research/{topic}/
+    - code-bugfix/{project}/
+    - status/
+```
+
+---
+
+## Section 1: Data Model Changes
+
+### 1.1 New Types
+
+Add file-system specific types to `src/lib/types.ts`:
+
+```typescript
+// Kanban Ticket Phases (from auto-kanban-flow skill)
+export type KanbanPhase =
+  | 'backlog'
+  | 'to-do'
+  | 'blocked'
+  | 'in-progress'
+  | 'in-review'
+  | 'pull-request'
+  | 'done'
+  | 'cancelled'
+
+// File-based Content Types
+export type ContentType = 'kanban-ticket' | 'markdown-doc' | 'session-registry' | 'status-file'
+
+// File Node Structure (for directory tree)
+export interface FileNode {
+  name: string
+  path: string
+  type: 'file' | 'directory'
+  children?: FileNode[]
+  size?: number
+  modifiedAt: string
+}
+
+// Kanban Ticket (parsed from markdown)
+export interface KanbanTicket {
+  id: string                // e.g., "DASH-019"
+  project: string           // e.g., "openclaw-kanban-dashboard"
+  acronym: string          // e.g., "DASH"
+  number: number           // e.g., 19
+  title: string
+  description: string
+  tasks: TicketTask[]
+  acceptanceCriteria: string[]
+  questions: string[]
+  assumptions: string[]
+  priority?: string
+  metadata: Record<string, string>
+  phase: KanbanPhase
+  phaseHistory: PhaseHistoryEntry[]
+  attempts: AttemptEntry[]
+  symbol?: string          // e.g., "⏳" or "❌"
+  filePath: string         // Absolute path to file
+  modifiedAt: string
+}
+
+interface TicketTask {
+  checked: boolean
+  text: string
+}
+
+interface PhaseHistoryEntry {
+  phase: KanbanPhase
+  date: string
+  notes?: string
+}
+
+interface AttemptEntry {
+  number: number
+  phase: KanbanPhase
+  questionBlock: string
+  attempts: number
+  resolution?: string
+}
+
+// Session Registry (from kanban/sessions/{PROJECT_ACR}-session.json)
+export interface SessionRegistry {
+  startedAt: string
+  lastHeartbeat: string
+  activeTicket: string | null
+  activeBranch: string | null
+  phase: KanbanPhase | null
+  project: string
+}
+
+// Project Status (from status/maintenance-engineer.json)
+export interface AgentStatus {
+  agent: string
+  state: string
+  currentTask: string
+  progress: string
+  blockers: string[]
+  inputFiles: string[]
+  outputFiles: string[]
+  updatedAt: string
+}
+
+// Markdown Document (non-kanban files)
+export interface MarkdownDoc {
+  path: string
+  title: string
+  content: string
+  category: string       // e.g., "research-findings", "feature-ideas", "run-report"
+  project: string
+  modifiedAt: string
+}
+```
+
+### 1.2 Remove Supabase Types
+
+Remove or deprecate the following types (no longer used):
+- `Item` → Replace with `KanbanTicket` or `MarkdownDoc`
+- `ItemStatus` → Replace with `KanbanPhase`
+- `ItemType` → Replace with `ContentType`
+- `Notification` → Will be derived from file system events
+- `Comment` → Will be derived from ticket attempts/questions
+- `Project` → Derived from kanban directory structure
+- `OutreachCreator` → Can be kept if needed as markdown-doc type
+
+---
+
+## Section 2: Backend API Routes
+
+### 2.1 Directory Structure
+
+Create new API routes under `src/app/api/`:
+
+```
+src/app/api/
+├── fs/
+│   ├── ls/route.ts              # List directory contents
+│   ├── read/route.ts            # Read file content
+│   ├── write/route.ts           # Write file content
+│   ├── move/route.ts            # Move file between directories
+│   └── watch/route.ts           # Polling endpoint for file changes
+├── kanban/
+│   ├── projects/route.ts         # List all kanban projects
+│   ├── tickets/route.ts         # List tickets by project/phase
+│   ├── ticket/[id]/route.ts     # Get single ticket details
+│   ├── ticket/[id]/phase/route.ts  # Update ticket phase
+│   ├── ticket/[id]/content/route.ts # Update ticket content
+│   ├── sessions/route.ts         # Get active session for project
+│   └── stats/route.ts          # Project statistics
+├── docs/
+│   ├── list/route.ts            # List all markdown docs
+│   ├── [path]/route.ts          # Get doc by path
+│   └── [path]/write/route.ts   # Update doc content
+└── status/route.ts              # Get agent status
+```
+
+### 2.2 API Route Implementations
+
+#### 2.2.1 File System Routes (`src/app/api/fs/`)
+
+**GET /api/fs/ls**
+- Query params: `path` (relative to shared-workspace)
+- Returns: `FileNode[]` (directory tree)
+- Error handling: Validate path doesn't escape shared-workspace root
+
+**GET /api/fs/read**
+- Query params: `path` (relative to shared-workspace)
+- Returns: `{ content: string, modifiedAt: string }`
+- Error handling: File not found, permission denied
+
+**POST /api/fs/write**
+- Body: `{ path, content }`
+- Writes file atomically (write to temp, then rename)
+- Returns: `{ success: true, modifiedAt: string }`
+- Creates parent directories if needed
+
+**POST /api/fs/move**
+- Body: `{ fromPath, toPath }`
+- Moves file between directories (for phase transitions)
+- Returns: `{ success: true }`
+- Updates file's Phase History
+
+**GET /api/fs/watch**
+- Query params: `since` (timestamp)
+- Returns: `{ changed: string[] }` (list of changed file paths)
+- Uses file mtime comparison
+
+#### 2.2.2 Kanban Routes (`src/app/api/kanban/`)
+
+**GET /api/kanban/projects**
+- Scans `/kanban/` directory for project subdirectories
+- Returns: `{ name, acronym, ticketCounts }[]`
+
+**GET /api/kanban/tickets**
+- Query params: `project`, `phase` (optional)
+- Parses all markdown files in project/phase directories
+- Returns: `KanbanTicket[]`
+- Caching: Store parsed results in memory for performance
+
+**GET /api/kanban/ticket/[id]**
+- Search for ticket ID across all phases
+- Returns: `KanbanTicket | null`
+- Parses full ticket markdown
+
+**POST /api/kanban/ticket/[id]/phase**
+- Body: `{ phase, notes }`
+- Moves ticket file to new phase directory
+- Updates Phase History in markdown
+- Returns: `{ success: true }`
+
+**POST /api/kanban/ticket/[id]/content**
+- Body: `{ content }`
+- Overwrites ticket markdown content
+- Returns: `{ success: true, modifiedAt: string }`
+
+**GET /api/kanban/sessions**
+- Query params: `project`
+- Reads `sessions/{PROJECT_ACR}-session.json`
+- Returns: `SessionRegistry | null`
+
+**GET /api/kanban/stats**
+- Query params: `project`
+- Calculates: tickets per phase, tasks completion rate
+- Returns: `{ total, byPhase, completedTasks, totalTasks }`
+
+#### 2.2.3 Docs Routes (`src/app/api/docs/`)
+
+**GET /api/docs/list**
+- Scans all non-kanban directories for markdown files
+- Returns: `MarkdownDoc[]` with category info
+
+**GET /api/docs/[...path]**
+- Reads markdown file from path
+- Returns: `{ content: string, metadata }`
+
+**POST /api/docs/[...path]/write**
+- Body: `{ content }`
+- Writes markdown file
+- Returns: `{ success: true }`
+
+#### 2.2.4 Status Route (`src/app/api/status/`)
+
+**GET /api/status**
+- Reads all `status/*.json` files
+- Returns: `AgentStatus[]`
+
+---
+
+## Section 3: Store Refactoring
+
+### 3.1 Update Store Structure
+
+Refactor `src/lib/store.ts`:
+
+```typescript
+interface FilesystemStore {
+  // Projects
+  projects: KanbanProject[]
+  setProjects: (projects: KanbanProject[]) => void
+
+  // Tickets (indexed by ID for O(1) lookup)
+  tickets: Record<string, KanbanTicket>
+  setTickets: (tickets: Record<string, KanbanTicket>) => void
+  upsertTicket: (ticket: KanbanTicket) => void
+  removeTicket: (id: string) => void
+  moveTicketPhase: (id: string, phase: KanbanPhase, notes?: string) => Promise<void>
+
+  // Docs
+  docs: MarkdownDoc[]
+  setDocs: (docs: MarkdownDoc[]) => void
+  upsertDoc: (doc: MarkdownDoc) => void
+
+  // Agent Status
+  agentStatus: AgentStatus[]
+  setAgentStatus: (status: AgentStatus[]) => void
+
+  // File Watcher
+  lastPollTime: string
+  setLastPollTime: (time: string) => void
+
+  // UI State
+  selectedProject: string | null
+  selectedPhase: KanbanPhase | 'all'
+  setSelectedProject: (project: string | null) => void
+  setSelectedPhase: (phase: KanbanPhase | 'all') => void
+
+  // Editor State
+  editingPath: string | null
+  editingContent: string
+  setEditingPath: (path: string | null) => void
+  setEditingContent: (content: string) => void
+}
+```
+
+### 3.2 Remove Supabase Dependencies
+
+- Delete `src/lib/supabase.ts`
+- Remove all Supabase realtime subscription code
+- Replace with file polling mechanism
+
+---
+
+## Section 4: UI Changes
+
+### 4.1 Navigation Updates
+
+Update `src/components/layout/Sidebar.tsx`:
+
+```typescript
+const NAV_ITEMS = [
+  { href: '/projects',   label: 'Projects',   icon: <Board     size={18} /> },
+  { href: '/drafts',     label: 'Drafts',     icon: <FileText   size={18} /> },
+  { href: '/research',   label: 'Research',   icon: <Search    size={18} /> },
+  { href: '/status',     label: 'Status',     icon: <Activity   size={18} /> },
+  { href: '/architecture', label: 'Architecture', icon: <span>🏗️</span> },
+]
+
+// Projects dropdown (expandable)
+const projectsNav = useMemo(() => {
+  return projects.map(p => ({
+    href: `/projects/${p.slug}`,
+    label: p.name,
+    icon: <span style={{ fontSize: 16 }}>📋</span>
+  }))
+}, [projects])
+```
+
+**Remove:**
+- Inbox, Ideas, Tasks, Files, Outreach sections
+- Notification badges (replace with file change indicators)
+
+**Add:**
+- Projects section (kanban boards)
+- Drafts section (all non-kanban markdown docs)
+- Research section (grouped by topic)
+- Status section (agent status monitors)
+
+### 4.2 New Pages
+
+Create new pages under `src/app/(app)/`:
+
+```
+src/app/(app)/
+├── projects/
+│   ├── page.tsx                # List all projects with summary stats
+│   ├── [project]/
+│   │   ├── page.tsx            # Kanban board view (drag-drop)
+│   │   ├── ticket/
+│   │   │   └── [id]/
+│   │   │       └── page.tsx    # Ticket detail/editor
+│   │   └── phase/
+│   │       └── [phase]/
+│   │           └── page.tsx    # Filtered phase view
+├── drafts/
+│   ├── page.tsx                # List all markdown docs
+│   └── [path]/
+│       └── page.tsx            # Markdown editor
+├── research/
+│   ├── page.tsx                # Research topics
+│   └── [topic]/
+│       └── page.tsx            # Topic details
+└── status/
+    └── page.tsx                # Agent status dashboard
+```
+
+### 4.3 Projects Page (`src/app/(app)/projects/page.tsx`)
+
+Features:
+- List all kanban projects from `/kanban/`
+- Show summary stats per project:
+  - Total tickets
+  - Tickets per phase (backlog, to-do, in-progress, etc.)
+  - Active session indicator
+- Click to navigate to project board
+- Visual indicators:
+  - In-progress tickets count
+  - Blocked tickets count
+  - Pull requests waiting
+
+### 4.4 Project Kanban Board (`src/app/(app)/projects/[project]/page.tsx`)
+
+Features:
+- Columns for phases (as defined in auto-kanban-flow):
+  - backlog → to-do → blocked → in-progress → in-review → pull-request → done | cancelled
+- Drag-and-drop ticket cards between phases
+- Ticket card shows:
+  - ID (e.g., DASH-019)
+  - Title
+  - Priority badge (if metadata includes)
+  - Task completion progress bar
+  - Symbol indicator (⏳ for blocked, ❌ for error)
+  - Last modified time
+- Filter by ticket type (bug vs regular)
+- Search tickets by title/ID
+- Create new ticket button (opens editor)
+
+### 4.5 Ticket Detail/Edit Page (`src/app/(app)/projects/[project]/ticket/[id]/page.tsx`)
+
+Features:
+- Full markdown editor for ticket content
+- Live preview
+- Task checkboxes (update on check/uncheck)
+- Phase history table (read-only)
+- Attempts table (read-only)
+- Move to phase dropdown
+- Save button (commits changes to file)
+- Keyboard shortcuts: Ctrl+S to save
+- Breadcrumb navigation
+
+### 4.6 Drafts Page (`src/app/(app)/drafts/page.tsx`)
+
+Features:
+- List all markdown docs from:
+  - `/brainstorming/{project}/*.md`
+  - `/research/{topic}/*.md`
+  - `/code-bugfix/{project}/*.md`
+  - Other non-kanban markdown files
+- Group by category:
+  - Feature Ideas
+  - Research Findings
+  - Run Reports
+  - Status Files
+- Search and filter
+- Create new doc button
+
+### 4.7 Markdown Editor Component
+
+Create `src/components/editor/MarkdownEditor.tsx`:
+
+Features:
+- Textarea for raw markdown
+- Live preview panel
+- Toolbar with:
+  - Bold, Italic, Code, Link
+  - Heading levels
+  - Lists
+  - Checkbox
+  - Code block
+- Syntax highlighting in preview
+- Auto-save (debounced)
+- Word/character count
+- Last saved indicator
+
+### 4.8 Status Page (`src/app/(app)/status/page.tsx`)
+
+Features:
+- List all agent statuses from `/status/*.json`
+- Show:
+  - Agent name
+  - Current state
+  - Progress indicator
+  - Active task
+  - Blockers (if any)
+- Auto-refresh every 30 seconds
+- Color-coded status indicators
+
+---
+
+## Section 5: File Watcher & Polling
+
+### 5.1 Polling Mechanism
+
+Create `src/lib/fileWatcher.ts`:
+
+```typescript
+class FileWatcher {
+  private pollInterval: number = 5000  // 5 seconds
+  private lastCheckTime: string
+  private intervalId: NodeJS.Timeout | null
+
+  async poll(): Promise<ChangedFile[]> {
+    // Compare file mtimes with lastCheckTime
+    // Return list of changed files
+  }
+
+  start(callback: (changes: ChangedFile[]) => void): void {
+    this.intervalId = setInterval(() => {
+      this.poll().then(callback)
+    }, this.pollInterval)
+  }
+
+  stop(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    }
+  }
+}
+```
+
+### 5.2 Store Updates on File Changes
+
+In `DataProvider.tsx`, replace Supabase subscriptions:
+
+```typescript
+useEffect(() => {
+  const watcher = new FileWatcher(SHARED_WORKSPACE_PATH)
+
+  const handleChanges = async (changes: ChangedFile[]) => {
+    // Determine change type (ticket, doc, status)
+    // Fetch updated data via API
+    // Update store accordingly
+
+    for (const change of changes) {
+      if (change.path.includes('/kanban/')) {
+        await refreshTickets(change.project)
+      } else if (change.path.endsWith('.md')) {
+        await refreshDocs()
+      } else if (change.path.includes('/status/')) {
+        await refreshStatus()
+      }
+    }
+  }
+
+  watcher.start(handleChanges)
+
+  return () => watcher.stop()
+}, [])
+```
+
+---
+
+## Section 6: Markdown Parsing
+
+### 6.1 Ticket Parser
+
+Create `src/lib/parsers/ticketParser.ts`:
+
+```typescript
+export function parseTicketMarkdown(
+  content: string,
+  filePath: string
+): KanbanTicket {
+  // Parse frontmatter (if any)
+  // Extract:
+  //   - Title (h1 header)
+  //   - Description
+  //   - Tasks (checkbox list)
+  //   - Acceptance Criteria (checkbox list)
+  //   - Questions & Assumptions
+  //   - Metadata section
+  //   - Phase History table
+  //   - Attempts table
+  //   - Priority (from metadata or derived)
+
+  // Extract ID from filename: {ACRONYM}-{NUMBER}-{SYMBOL}-{title}.md
+  // Determine phase from directory path
+}
+```
+
+### 6.2 Ticket Serializer
+
+Create `src/lib/serializers/ticketSerializer.ts`:
+
+```typescript
+export function serializeTicketToMarkdown(ticket: KanbanTicket): string {
+  // Reconstruct markdown from parsed object
+  // Maintain original formatting where possible
+  // Update phase history entry
+}
+```
+
+---
+
+## Section 7: File Path Management
+
+### 7.1 Constants
+
+Create `src/lib/paths.ts`:
+
+```typescript
+export const SHARED_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+export const KANBAN_ROOT = `${SHARED_WORKSPACE}/kanban`
+export const SESSIONS_DIR = `${KANBAN_ROOT}/sessions`
+
+export const PHASES = [
+  'backlog',
+  'to-do',
+  'blocked',
+  'in-progress',
+  'in-review',
+  'pull-request',
+  'done',
+  'cancelled'
+] as const
+
+export function getProjectPath(project: string): string {
+  return `${KANBAN_ROOT}/${project}`
+}
+
+export function getPhasePath(project: string, phase: KanbanPhase): string {
+  return `${getProjectPath(project)}/${phase}`
+}
+
+export function getTicketPath(project: string, phase: KanbanPhase, id: string): string {
+  // Need to find the actual filename
+}
+
+export function getSessionPath(acronym: string): string {
+  return `${SESSIONS_DIR}/${acronym}-session.json`
+}
+```
+
+### 7.2 Path Security
+
+Create `src/lib/security.ts`:
+
+```typescript
+export function validatePath(path: string): boolean {
+  const resolved = resolve(path)
+  const workspaceRoot = resolve(SHARED_WORKSPACE)
+
+  return resolved.startsWith(workspaceRoot)
+}
+
+export function sanitizePath(path: string): string {
+  // Remove "..", absolute paths, etc.
+  return path.split('/').filter(Boolean).join('/')
+}
+```
+
+---
+
+## Section 8: Configuration Changes
+
+### 8.1 Environment Variables
+
+Add to `.env.local`:
+
+```bash
+# File System
+NEXT_PUBLIC_SHARED_WORKSPACE=/home/devcon/.openclaw/shared-workspace
+NEXT_PUBLIC_POLL_INTERVAL=5000
+
+# API
+NEXT_PUBLIC_API_BASE=http://localhost:3000/api
+```
+
+### 8.2 Next.js Config
+
+Update `next.config.ts`:
+
+```typescript
+const nextConfig: NextConfig = {
+  // Enable file system access in API routes
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
+  },
+  // Disable ISR (no longer needed)
+  isrMemoryCacheSize: 0,
+}
+```
+
+---
+
+## Section 9: Migration Steps
+
+### Phase 1: Remove Supabase (Foundation)
+1. Delete `src/lib/supabase.ts`
+2. Remove `@supabase/supabase-js` from dependencies
+3. Remove Supabase references from `package.json`
+4. Update `DataProvider.tsx` to remove Supabase subscriptions
+
+### Phase 2: Create File System API
+1. Create `src/app/api/fs/` routes
+2. Implement path validation and security
+3. Test with Postman/curl
+
+### Phase 3: Implement Kanban Parsing
+1. Create `src/lib/parsers/ticketParser.ts`
+2. Parse ticket markdown format
+3. Handle all ticket sections and edge cases
+
+### Phase 4: Create Store Layer
+1. Refactor `src/lib/store.ts`
+2. Add ticket, doc, status state
+3. Implement CRUD operations using API
+
+### Phase 5: Build UI - Projects
+1. Create Projects page
+2. Implement project listing and stats
+3. Add navigation to individual project boards
+
+### Phase 6: Build UI - Kanban Board
+1. Create project kanban board page
+2. Implement phase columns
+3. Add drag-and-drop using @dnd-kit
+4. Implement ticket card component
+
+### Phase 7: Build UI - Ticket Editor
+1. Create ticket detail page
+2. Implement markdown editor with live preview
+3. Add save functionality
+4. Update phase history on moves
+
+### Phase 8: Build UI - Drafts/Research
+1. Create Drafts page
+2. Scan and list non-kanban markdown files
+3. Implement markdown editor for docs
+4. Add category grouping
+
+### Phase 9: Implement File Watcher
+1. Create file watcher utility
+2. Integrate with store updates
+3. Handle file changes gracefully
+
+### Phase 10: Polish & Testing
+1. Add error handling and loading states
+2. Implement optimistic updates
+3. Add keyboard shortcuts
+4. Test all CRUD operations
+5. Verify file watching works
+
+---
+
+## Section 10: Open Questions
+
+### Technical Questions
+
+1. **File System Access in Production**
+   - Q: How will the Next.js API routes access the file system in production?
+   - Q: Will the app run on the same machine as the shared-workspace?
+   - Q: Do we need a separate backend service for file operations?
+
+2. **Authentication & Security**
+   - Q: Should there be any authentication for the API routes?
+   - Q: How do we restrict access to the shared-workspace directory?
+   - Q: Should we implement rate limiting on file write operations?
+
+3. **File Watching Performance**
+   - Q: What is the optimal polling interval (currently 5 seconds)?
+   - Q: Should we use file system events (inotify) instead of polling?
+   - Q: How do we handle rapid file changes during git operations?
+
+4. **Concurrent Access**
+   - Q: How do we handle multiple users editing the same file?
+   - Q: Should we implement file locking for write operations?
+   - Q: How do we detect conflicts when external agents modify files?
+
+5. **Large File Handling**
+   - Q: What's the maximum file size we should support?
+   - Q: Should we implement pagination for large directory listings?
+   - Q: How do we handle binary files in the workspace?
+
+6. **Git Integration**
+   - Q: Should the UI show git status/branch information?
+   - Q: Should we integrate with git operations (commit, branch)?
+   - Q: How do we handle files that are not committed?
+
+7. **Error Handling**
+   - Q: What should happen if the shared-workspace is not accessible?
+   - Q: How do we show file system errors to the user?
+   - Q: Should we implement offline mode (cache last known state)?
+
+8. **Markdown Editor**
+   - Q: Should we use a rich text editor (like Tiptap) or plain textarea?
+   - Q: Do we need syntax highlighting for code blocks?
+   - Q: Should we support file attachments in markdown docs?
+
+### UX Questions
+
+9. **Project Discovery**
+   - Q: How should new projects in the kanban directory appear?
+   - Q: Should there be a "create new project" feature?
+   - Q: How do we handle projects without tickets yet?
+
+10. **Ticket Navigation**
+    - Q: Should the board show all phases or allow filtering?
+    - Q: How do we navigate to blocked tickets that need attention?
+    - Q: Should there be a "recent tickets" quick access?
+
+11. **Editor Experience**
+    - Q: Should the editor show line numbers?
+    - Q: Should we implement collaborative editing (like VS Code Live Share)?
+    - Q: How do we handle unsaved changes when navigating away?
+
+12. **Drafts Organization**
+    - Q: How should we categorize docs from different subdirectories?
+    - Q: Should there be a search across all docs?
+    - Q: Can users create new categories/subdirectories?
+
+13. **Status Monitoring**
+    - Q: Should we alert users when agents have errors?
+    - Q: How do we show stale session registries?
+    - Q: Should there be a "force stop session" button?
+
+14. **Notifications**
+    - Q: How should we notify users of file changes?
+    - Q: Should we use browser notifications?
+    - Q: How do we show changes made by external agents?
+
+### Data Questions
+
+15. **Ticket ID Parsing**
+    - Q: How do we handle tickets with non-standard filenames?
+    - Q: What if the acronym in the filename differs from the project name?
+    - Q: How do we extract the project acronym automatically?
+
+16. **Phase History Tracking**
+    - Q: Should we automatically update phase history on file moves?
+    - Q: How do we handle manual edits to phase history in markdown?
+    - Q: What timestamp format should we use (ISO, Unix, custom)?
+
+17. **Task & AC Tracking**
+    - Q: How do we map checkbox changes back to markdown format?
+    - Q: Should we enforce all tasks must be completed before phase transition?
+    - Q: How do we handle task reordering?
+
+18. **Search & Filtering**
+    - Q: Should search index be computed on server or client?
+    - Q: What fields should be searchable (title, description, content)?
+    - Q: How do we implement fuzzy search?
+
+### Performance Questions
+
+19. **Caching Strategy**
+    - Q: Should we cache parsed tickets in memory?
+    - Q: How do we invalidate cache on file changes?
+    - Q: Should we implement localStorage caching for offline support?
+
+20. **Pagination & Virtualization**
+    - Q: Do we need virtual scrolling for large ticket lists?
+    - Q: What's the maximum number of tickets we expect per phase?
+    - Q: Should we implement lazy loading for ticket content?
+
+### Deployment Questions
+
+21. **Deployment Architecture**
+    - Q: Will the app run on the same host as the shared-workspace?
+    - Q: How do we configure the workspace path in different environments?
+    - Q: Should the workspace path be configurable at runtime?
+
+22. **Environment Management**
+    - Q: Should we support multiple workspace directories?
+    - Q: How do we handle different workspace paths for dev/staging/prod?
+    - Q: Should workspace path be set via env var or config file?
+
+23. **Monitoring & Logging**
+    - Q: Should we log all file system operations?
+    - Q: How do we track performance of file watching?
+    - Q: Should we implement error reporting for file system issues?
+
+---
+
+## Section 11: Dependencies
+
+### Remove Dependencies
+
+```bash
+npm uninstall @supabase/supabase-js
+```
+
+### Add Dependencies (if needed)
+
+```bash
+# Markdown parsing
+npm install marked remark-gfm
+
+# Code highlighting (if implementing)
+npm install prismjs react-syntax-highlighter
+
+# File watching (if using inotify)
+npm install chokidar
+
+# Rich text editor (if choosing over textarea)
+npm install @tiptap/react @tiptap/starter-kit
+```
+
+---
+
+## Section 12: Testing Strategy
+
+### Unit Tests
+
+- Parser tests for ticket markdown format
+- Serializer tests for ticket to markdown conversion
+- Path validation tests
+- Security tests for path traversal
+
+### Integration Tests
+
+- API route tests for all CRUD operations
+- File watcher tests with mock file system
+- Store update tests on file changes
+
+### E2E Tests
+
+- Create ticket via UI, save, verify file created
+- Move ticket via drag-drop, verify file moved
+- Edit ticket, save, verify markdown updated
+- Create markdown doc in drafts, verify file written
+
+---
+
+## Section 13: Risk Assessment
+
+### High Risk
+
+1. **File System Race Conditions**
+   - Risk: Multiple processes writing to same file
+   - Mitigation: File locking, atomic writes
+
+2. **Path Traversal Attacks**
+   - Risk: Malicious paths escaping workspace
+   - Mitigation: Strict path validation
+
+### Medium Risk
+
+3. **Performance Degradation**
+   - Risk: Polling too frequently or scanning too many files
+   - Mitigation: Optimize polling interval, implement caching
+
+4. **Data Loss**
+   - Risk: File write failures or accidental deletions
+   - Mitigation: Backup before writes, confirm destructive actions
+
+### Low Risk
+
+5. **UX Confusion**
+   - Risk: Users confused by file-based workflow
+   - Mitigation: Clear UI feedback, undo functionality
+
+---
+
+## Section 14: Success Criteria
+
+### Must Have (P0)
+
+- [ ] Can view all kanban projects from shared-workspace
+- [ ] Can view tickets by phase for a project
+- [ ] Can move tickets between phases
+- [ ] Can edit ticket content (markdown)
+- [ ] Can view non-kanban markdown docs
+- [ ] Can create/edit markdown docs
+- [ ] File changes are detected and UI updates automatically
+- [ ] All CRUD operations persist to file system
+
+### Should Have (P1)
+
+- [ ] Drag-and-drop ticket movement
+- [ ] Task checkbox completion updates markdown
+- [ ] Phase history auto-updates on moves
+- [ ] Search/filter tickets
+- [ ] Agent status monitoring
+- [ ] Keyboard shortcuts for editor
+
+### Nice to Have (P2)
+
+- [ ] Git integration (show branch, status)
+- [ ] File upload/attachment support
+- [ ] Rich text editor
+- [ ] Offline mode
+- [ ] Export functionality
+- [ ] Dark mode for code blocks
+
+---
+
+## Implementation Estimate
+
+| Phase | Tasks | Estimated Time |
+|--------|--------|----------------|
+| 1: Remove Supabase | 4 tasks | 2 hours |
+| 2: Create File System API | 5 tasks | 6 hours |
+| 3: Implement Kanban Parsing | 3 tasks | 4 hours |
+| 4: Create Store Layer | 4 tasks | 3 hours |
+| 5: Build UI - Projects | 3 tasks | 4 hours |
+| 6: Build UI - Kanban Board | 5 tasks | 8 hours |
+| 7: Build UI - Ticket Editor | 4 tasks | 6 hours |
+| 8: Build UI - Drafts/Research | 4 tasks | 5 hours |
+| 9: Implement File Watcher | 3 tasks | 3 hours |
+| 10: Polish & Testing | 6 tasks | 8 hours |
+
+**Total Estimated Time**: ~49 hours (~6-7 working days)
+
+---
+
+## Appendix A: Directory Structure (Post-Migration)
+
+```
+src/
+├── app/
+│   ├── (app)/
+│   │   ├── projects/
+│   │   │   ├── page.tsx
+│   │   │   └── [project]/
+│   │   │       ├── page.tsx
+│   │   │       └── ticket/
+│   │   │           └── [id]/
+│   │   │               └── page.tsx
+│   │   ├── drafts/
+│   │   │   ├── page.tsx
+│   │   │   └── [path]/
+│   │   │       └── page.tsx
+│   │   ├── research/
+│   │   │   ├── page.tsx
+│   │   │   └── [topic]/
+│   │   │       └── page.tsx
+│   │   ├── status/
+│   │   │   └── page.tsx
+│   │   └── architecture/
+│   │       └── page.tsx
+│   └── api/
+│       ├── fs/
+│       │   ├── ls/route.ts
+│       │   ├── read/route.ts
+│       │   ├── write/route.ts
+│       │   ├── move/route.ts
+│       │   └── watch/route.ts
+│       ├── kanban/
+│       │   ├── projects/route.ts
+│       │   ├── tickets/route.ts
+│       │   ├── ticket/[id]/
+│       │   │   ├── route.ts
+│       │   │   ├── phase/route.ts
+│       │   │   └── content/route.ts
+│       │   ├── sessions/route.ts
+│       │   └── stats/route.ts
+│       ├── docs/
+│       │   ├── list/route.ts
+│       │   ├── [...path]/route.ts
+│       │   └── [...path]/write/route.ts
+│       └── status/route.ts
+├── components/
+│   ├── editor/
+│   │   └── MarkdownEditor.tsx
+│   ├── kanban/
+│   │   ├── Board.tsx
+│   │   ├── Column.tsx
+│   │   ├── TicketCard.tsx
+│   │   └── PhaseHeader.tsx
+│   └── ui/ (existing)
+├── lib/
+│   ├── parsers/
+│   │   └── ticketParser.ts
+│   ├── serializers/
+│   │   └── ticketSerializer.ts
+│   ├── fileWatcher.ts
+│   ├── paths.ts
+│   ├── security.ts
+│   ├── store.ts (refactored)
+│   ├── types.ts (refactored)
+│   ├── utils.ts (keep)
+│   └── theme.ts (keep)
+└── app/layout.tsx
+```
+
+---
+
+## Appendix B: Example API Responses
+
+### GET /api/kanban/projects
+
+```json
+[
+  {
+    "name": "openclaw-kanban-dashboard",
+    "slug": "openclaw-kanban-dashboard",
+    "acronym": "DASH",
+    "ticketCounts": {
+      "backlog": 0,
+      "to-do": 0,
+      "blocked": 0,
+      "in-progress": 0,
+      "in-review": 0,
+      "pull-request": 0,
+      "done": 84,
+      "cancelled": 17
+    },
+    "totalTickets": 101,
+    "hasActiveSession": false
+  }
+]
+```
+
+### GET /api/kanban/tickets?project=openclaw-kanban-dashboard
+
+```json
+[
+  {
+    "id": "DASH-019",
+    "project": "openclaw-kanban-dashboard",
+    "acronym": "DASH",
+    "number": 19,
+    "title": "Dark Mode",
+    "description": "Add dark mode toggle for the dashboard...",
+    "tasks": [
+      { "checked": true, "text": "Add theme toggle button in header" },
+      { "checked": true, "text": "Detect system preference via prefers-color-scheme" }
+    ],
+    "acceptanceCriteria": [
+      "Dark mode visually complete (no white flashes)",
+      "Theme persists across page reloads"
+    ],
+    "questions": [],
+    "assumptions": [],
+    "priority": "low",
+    "metadata": { "Priority": "low" },
+    "phase": "done",
+    "phaseHistory": [
+      { "phase": "backlog", "date": "2026-04-20 18:24:00", "notes": "Self-drafted" },
+      { "phase": "done", "date": "2026-04-21", "notes": "Merged PR #22" }
+    ],
+    "attempts": [],
+    "symbol": null,
+    "filePath": "/home/devcon/.openclaw/shared-workspace/kanban/openclaw-kanban-dashboard/done/DASH-019-dark-mode.md",
+    "modifiedAt": "2026-04-21T00:00:00Z"
+  }
+]
+```
+
+---
+
+## Appendix C: Ticket Markdown Format (For Reference)
+
+```markdown
+# DASH-019 Dark Mode
+
+## Description
+Add dark mode toggle for the dashboard. Respects system preference by default, with manual override.
+
+## Tasks
+- [x] Add theme toggle button in header
+- [x] Detect system preference via prefers-color-scheme
+- [x] Apply dark theme CSS variables
+- [x] Persist theme preference in localStorage
+- [x] Ensure all components respect theme colors
+
+## Acceptance Criteria
+- [x] Dark mode visually complete (no white flashes)
+- [x] Theme persists across page reloads
+- [x] All UI elements readable in both modes
+- [x] Toggle smoothly transitions colors
+- [x] System preference detected on first load
+
+## Questions & Assumption Check
+- [x] Assume CSS custom properties for theming
+- [x] No external library needed for basic dark mode
+
+## Metadata
+- Priority: low
+
+## Phase History
+| Phase | Date | Notes |
+|-------|------|-------|
+| backlog | 2026-04-20 18:24:00 | Self-drafted |
+| to-do | 2026-04-20 20:54:59 | Auto-filled from backlog |
+| in-progress | 2026-04-21 11:15:06 | GO received |
+| in-review | 2026-04-21 | |
+| pull-request | 2026-04-21 | PR #22 |
+| done | 2026-04-21 | Merged PR #22 |
+
+## Attempts
+| # | Phase | Question/Block | Attempts | Resolution |
+|---|-------|----------------|---------|------------|
+```

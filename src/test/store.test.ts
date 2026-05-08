@@ -25,7 +25,7 @@ describe('store.ts', () => {
 
   describe('projects state', () => {
     it('should set projects', () => {
-      const projects = [{ slug: 'test', name: 'Test', acronym: 'TST', ticketCounts: {}, totalTickets: 0, hasActiveSession: false }]
+      const projects = [{ slug: 'test', name: 'Test', acronym: 'TST', color: '#3B82F6', ticketCounts: {}, totalTickets: 0, hasActiveSession: false }]
       useBentoStore.getState().setProjects(projects)
       expect(useBentoStore.getState().projects).toEqual(projects)
     })

@@ -19,9 +19,9 @@ describe('ticketSerializer', () => {
     assumptions: ['Assume CSS custom properties'],
     priority: 'low',
     metadata: { Priority: 'low' },
-    phase: 'backlog',
+    phase: 'backlog' as const,
     phaseHistory: [
-      { phase: 'backlog', date: '2026-04-20 18:24:00', notes: 'Self-drafted' },
+      { phase: 'backlog' as const, date: '2026-04-20 18:24:00', notes: 'Self-drafted' },
     ],
     attempts: [],
     symbol: undefined,
@@ -94,7 +94,7 @@ describe('ticketSerializer', () => {
         ...sampleTicket,
         attempts: [{
           number: 1,
-          phase: 'in-progress',
+          phase: 'in-progress' as const,
           questionBlock: 'How do I implement this?',
           attempts: 3,
           resolution: 'Used CSS variables',
@@ -126,13 +126,13 @@ describe('ticketSerializer', () => {
 
   describe('addPhaseHistoryEntry', () => {
     it('should add new phase entry to history', () => {
-      const updated = addPhaseHistoryEntry(sampleTicket, 'to-do', 'Moving to todo')
+      const updated = addPhaseHistoryEntry(sampleTicket, 'to-do' as const, 'Moving to todo')
       expect(updated.phase).toBe('to-do')
       expect(updated.phaseHistory.length).toBeGreaterThan(sampleTicket.phaseHistory.length)
     })
 
     it('should add entry without notes', () => {
-      const updated = addPhaseHistoryEntry(sampleTicket, 'in-progress')
+      const updated = addPhaseHistoryEntry(sampleTicket, 'in-progress' as const)
       expect(updated.phase).toBe('in-progress')
     })
   })
