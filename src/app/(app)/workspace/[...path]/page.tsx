@@ -9,7 +9,7 @@ import { JsonViewer } from '@/components/ui/JsonViewer'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
 import { formatRelativeTime } from '@/lib/utils'
-import { FileText, FolderOpen, ChevronRight, Plus, FolderPlus, FilePlus } from 'lucide-react'
+import { FileText, FolderOpen, ChevronRight, Plus, FolderPlus, FilePlus, Trash2, MoreVertical } from 'lucide-react'
 
 interface FileNode {
   name: string
@@ -28,10 +28,13 @@ export default function WorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false)
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [newFileName, setNewFileName] = useState('')
   const [newFileContent, setNewFileContent] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<{ path: string; name: string; type: 'file' | 'directory' } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Extract the workspace path from the URL
   // URL format: /workspace/{folder}/{subfolder}/{...}
@@ -131,6 +134,43 @@ export default function WorkspacePage() {
       setError(err instanceof Error ? err.message : 'Failed to create file')
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  function openDeleteDialog(path: string, name: string, type: 'file' | 'directory') {
+    setItemToDelete({ path, name, type })
+    setIsDeleteDialogOpen(true)
+  }
+
+  async function handleDelete() {
+    if (!itemToDelete) return
+    setIsDeleting(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/fs/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: itemToDelete.path }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to delete item')
+      }
+
+      setIsDeleteDialogOpen(false)
+      setItemToDelete(null)
+      // Refresh the directory
+      const listRes = await fetch(`/api/fs/ls?path=${encodeURIComponent(workspacePath)}`)
+      if (listRes.ok) {
+        const data = await listRes.json()
+        setNodes(data.entries || [])
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -235,22 +275,37 @@ export default function WorkspacePage() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {directories.map((dir) => (
-                  <Link
+                  <div
                     key={dir.path}
-                    href={`/workspace/${dir.path}`}
-                    className="glass-card p-4 flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                    className="glass-card p-4 flex items-center gap-3 hover:opacity-80 transition-opacity relative group"
                   >
-                    <FolderOpen size={20} className="flex-shrink-0" style={{ color: 'var(--accent)' }} />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-[14px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                        {dir.name.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                      </h3>
-                      <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                        {formatRelativeTime(dir.modifiedAt)}
-                      </p>
-                    </div>
-                    <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
-                  </Link>
+                    <Link
+                      href={`/workspace/${dir.path}`}
+                      className="flex items-center gap-3 flex-1 min-w-0"
+                    >
+                      <FolderOpen size={20} className="flex-shrink-0" style={{ color: 'var(--accent)' }} />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[14px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                          {dir.name.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                        </h3>
+                        <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                          {formatRelativeTime(dir.modifiedAt)}
+                        </p>
+                      </div>
+                      <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
+                    </Link>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        openDeleteDialog(dir.path, dir.name, 'directory')
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete folder"
+                    >
+                      <Trash2 size={14} style={{ color: 'var(--text-muted)' }} />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -269,27 +324,42 @@ export default function WorkspacePage() {
                   const href = isMarkdown ? `/drafts/${file.path}` : isJson ? `/workspace/${file.path}` : '#'
 
                   return (
-                    <Link
+                    <div
                       key={file.path}
-                      href={href}
-                      className="glass-card p-3 flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                      className="glass-card p-3 flex items-center gap-3 hover:opacity-80 transition-opacity relative group"
                     >
-                      <FileText size={16} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-[14px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                          {file.name}
-                        </h3>
-                        <div className="flex items-center gap-3 mt-0.5">
-                          <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                            {file.size ? `${(file.size / 1024).toFixed(1)} KB` : ''}
-                          </span>
-                          <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                            {formatRelativeTime(file.modifiedAt)}
-                          </span>
+                      <Link
+                        href={href}
+                        className="flex items-center gap-3 flex-1 min-w-0"
+                      >
+                        <FileText size={16} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[14px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                            {file.name}
+                          </h3>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                              {file.size ? `${(file.size / 1024).toFixed(1)} KB` : ''}
+                            </span>
+                            <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                              {formatRelativeTime(file.modifiedAt)}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
-                    </Link>
+                        <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          openDeleteDialog(file.path, file.name, 'file')
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete file"
+                      >
+                        <Trash2 size={14} style={{ color: 'var(--text-muted)' }} />
+                      </button>
+                    </div>
                   )
                 })}
               </div>
@@ -380,6 +450,39 @@ export default function WorkspacePage() {
               disabled={!newFileName.trim() || isCreating}
             >
               Create
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        title={itemToDelete?.type === 'directory' ? 'Delete Folder' : 'Delete File'}
+        description={
+          itemToDelete?.type === 'directory'
+            ? 'This will permanently delete this folder and all its contents.'
+            : 'This will permanently delete this file.'
+        }
+      >
+        <div className="space-y-4">
+          <p style={{ color: 'var(--text-muted)' }}>
+            Are you sure you want to delete <strong>{itemToDelete?.name}</strong>? This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleDelete}
+              loading={isDeleting}
+              disabled={isDeleting}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Delete
             </Button>
           </div>
         </div>
