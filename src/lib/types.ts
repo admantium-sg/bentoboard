@@ -1,5 +1,106 @@
+// ============================================
+// FILE SYSTEM TYPES (Active)
+// ============================================
+
+export type KanbanPhase =
+  | 'backlog'
+  | 'to-do'
+  | 'in-progress'
+  | 'in-review'
+  | 'pull-request'
+  | 'blocked'
+  | 'cancelled'
+  | 'done'
+
+export type ContentType = 'kanban-ticket' | 'markdown-doc' | 'session-registry' | 'status-file'
+
+export interface FileNode {
+  name: string
+  path: string
+  type: 'file' | 'directory'
+  children?: FileNode[]
+  size?: number
+  modifiedAt: string
+}
+
+export interface KanbanTicket {
+  id: string                  // e.g., "DASH-019"
+  project: string           // e.g., "openclaw-kanban-dashboard"
+  acronym: string          // e.g., "DASH"
+  number: number           // e.g., 19
+  title: string
+  description: string
+  tasks: TicketTask[]
+  acceptanceCriteria: string[]
+  questions: string[]
+  assumptions: string[]
+  priority?: string
+  metadata: Record<string, string>
+  phase: KanbanPhase
+  phaseHistory: PhaseHistoryEntry[]
+  attempts: AttemptEntry[]
+  symbol?: string          // e.g., "⏳" or "❌"
+  filePath: string         // Absolute path to file
+  modifiedAt: string
+}
+
+export interface TicketTask {
+  checked: boolean
+  text: string
+}
+
+export interface PhaseHistoryEntry {
+  phase: KanbanPhase
+  date: string
+  notes?: string
+}
+
+export interface AttemptEntry {
+  number: number
+  phase: KanbanPhase
+  questionBlock: string
+  attempts: number
+  resolution?: string
+}
+
+export interface SessionRegistry {
+  startedAt: string
+  lastHeartbeat: string
+  activeTicket: string | null
+  activeBranch: string | null
+  phase: KanbanPhase | null
+  project: string
+}
+
+export interface AgentStatus {
+  agent: string
+  state: string
+  currentTask: string
+  progress: string
+  blockers: string[]
+  inputFiles: string[]
+  outputFiles: string[]
+  updatedAt: string
+}
+
+export interface MarkdownDoc {
+  path: string
+  title: string
+  content: string
+  category: string       // e.g., "research-findings", "feature-ideas", "run-report"
+  project: string
+  modifiedAt: string
+}
+
+// ============================================
+// DEPRECATED TYPES (Kept for migration compatibility)
+// These will be removed in a future version
+// ============================================
+
+/** @deprecated Use KanbanTicket instead */
 export type ItemType = 'draft' | 'idea' | 'file' | 'task'
 
+/** @deprecated Use KanbanPhase instead */
 export type ItemStatus =
   | 'proposed'
   | 'in_review'
@@ -7,10 +108,13 @@ export type ItemStatus =
   | 'rejected'
   | 'done'
 
+/** @deprecated Use string priority in KanbanTicket.metadata instead */
 export type Priority = 'normal' | 'high' | 'urgent'
 
+/** @deprecated Use author from session/auth context */
 export type Author = 'bento' | 'brian'
 
+/** @deprecated Use file system events for notifications */
 export type NotificationType =
   | 'vip_email'
   | 'approval_needed'
@@ -18,6 +122,7 @@ export type NotificationType =
   | 'task_complete'
   | 'alert'
 
+/** @deprecated Use KanbanTicket instead */
 export interface Item {
   id: string
   type: ItemType
@@ -33,7 +138,6 @@ export interface Item {
   tags: string[]
   priority: Priority
   due_date?: string | null
-  // Extended fields from DB
   trigger_event_ids?: string[] | null
   trigger_context_id?: string | null
   trigger_reason?: string | null
@@ -44,6 +148,7 @@ export interface Item {
   updated_at: string
 }
 
+/** @deprecated Use ticket attempts field instead */
 export interface Comment {
   id: string
   item_id: string
@@ -53,6 +158,7 @@ export interface Comment {
   created_at: string
 }
 
+/** @deprecated Use file system derived notifications */
 export interface Notification {
   id: string
   type: NotificationType
@@ -64,6 +170,7 @@ export interface Notification {
   created_at: string
 }
 
+/** @deprecated Use kanban project discovery instead */
 export interface Project {
   slug: string
   name: string
@@ -73,6 +180,7 @@ export interface Project {
   created_at: string
 }
 
+/** @deprecated Use status files instead */
 export interface Event {
   id: string
   type: string
@@ -90,8 +198,10 @@ export interface Event {
   created_at: string
 }
 
+/** @deprecated Use markdown-doc type instead */
 export type OutreachStatus = 'sent' | 'follow_up' | 'in_conversation' | 'meeting_scheduled' | 'closed' | 'no_response'
 
+/** @deprecated Use markdown-doc type instead */
 export interface OutreachCreator {
   id: string
   niche: string | null
@@ -114,6 +224,7 @@ export interface OutreachCreator {
   updated_at: string
 }
 
+/** @deprecated Use configuration files instead */
 export interface Config {
   key: string
   value: Record<string, unknown>
