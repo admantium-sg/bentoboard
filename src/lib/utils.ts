@@ -7,6 +7,9 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
 
 export function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) {
+    return 'Unknown'
+  }
   if (isToday(date)) {
     return formatDistanceToNow(date, { addSuffix: true })
   }
