@@ -281,7 +281,7 @@ function parseTicketFile(filePath: string, phase: string): ParsedTicket {
   const phaseHistory: Array<{ phase: string; date: string; notes?: string }> = []
 
   let currentSection: string | null = null
-  let descriptionLines: string[] = []
+  const descriptionLines: string[] = []
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
