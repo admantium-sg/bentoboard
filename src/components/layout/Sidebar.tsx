@@ -1,14 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { cn } from '@/lib/utils'
+import { Dialog } from '@/components/ui/Dialog'
+import { Button } from '@/components/ui/Button'
 import {
-  FileText,
-  FolderOpen,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -18,6 +18,7 @@ import {
   Sunset,
   MountainSnow,
   Layers,
+  ArrowRight,
 } from 'lucide-react'
 
 interface WorkspaceFolder {
@@ -29,9 +30,12 @@ interface WorkspaceFolder {
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { sidebarCollapsed, setSidebarCollapsed, projects, selectedProject, setSelectedProject } = useBentoStore()
-  const { theme, cycle, setTheme } = useThemeStore()
+  const { theme, cycle } = useThemeStore()
   const [workspaceFolders, setWorkspaceFolders] = useState<WorkspaceFolder[]>([])
+  const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceFolder | null>(null)
+  const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false)
 
   useEffect(() => {
     async function fetchFolders() {
@@ -47,6 +51,24 @@ export function Sidebar() {
     }
     fetchFolders()
   }, [])
+
+  // Determine current workspace based on pathname
+  useEffect(() => {
+    const workspaceMatch = pathname.match(/^\/workspace\/([^\/]+)/)
+    if (workspaceMatch) {
+      const workspacePath = workspaceMatch[1]
+      const folder = workspaceFolders.find(f => f.path === workspacePath)
+      setCurrentWorkspace(folder || null)
+    } else {
+      setCurrentWorkspace(null)
+    }
+  }, [pathname, workspaceFolders])
+
+  function handleWorkspaceSelect(folder: WorkspaceFolder) {
+    setCurrentWorkspace(folder)
+    setIsWorkspaceDialogOpen(false)
+    router.push(`/workspace/${folder.path}`)
+  }
 
   const isDark = theme === 'dark'
   const isForest = theme === 'forest'
@@ -107,31 +129,39 @@ export function Sidebar() {
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {/* Projects link */}
-        <Link
-          href="/projects"
+        {/* Workspace selector */}
+        <button
+          onClick={() => setIsWorkspaceDialogOpen(true)}
           className={cn(
-            'flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-all duration-150',
+            'w-full flex flex-col items-start gap-0.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150',
             sidebarCollapsed ? 'justify-center px-0' : ''
           )}
           style={{
-            background: pathname === '/projects' ? 'var(--nav-item-active)' : 'transparent',
-            color: pathname === '/projects' ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
+            background: pathname.startsWith('/workspace') ? 'var(--nav-item-active)' : 'transparent',
+            color: pathname.startsWith('/workspace') ? 'var(--nav-item-active-text)' : 'var(--nav-item-text)',
           }}
-          onMouseEnter={(e) => { if (pathname !== '/projects') (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
-          onMouseLeave={(e) => { if (pathname !== '/projects') (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+          onMouseEnter={(e) => { if (!pathname.startsWith('/workspace')) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
+          onMouseLeave={(e) => { if (!pathname.startsWith('/workspace')) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
         >
-          <Layers size={18} strokeWidth={1.6} />
-          {!sidebarCollapsed && <span className="flex-1 text-[14px]">Projects</span>}
-        </Link>
+          <div className={cn('flex items-center gap-3 w-full', sidebarCollapsed ? 'justify-center' : '')}>
+            <Layers size={18} strokeWidth={1.6} />
+            {!sidebarCollapsed && <span className="text-[14px]">Workspace</span>}
+          </div>
+          {!sidebarCollapsed && currentWorkspace && (
+            <div className="text-[11px] ml-8 truncate" style={{ color: 'var(--nav-section-label)' }}>
+              {currentWorkspace.displayName}
+            </div>
+          )}
+        </button>
 
-        {/* Workspace Folders */}
+        {/* Divider */}
+        {!sidebarCollapsed && (
+          <div className="h-px mx-2 my-3" style={{ background: 'var(--divider)' }} />
+        )}
+
+        {/* Workspace Folders - shown when not collapsed */}
         {!sidebarCollapsed && workspaceFolders.length > 0 && (
           <>
-            <div className="h-px mx-2 my-3" style={{ background: 'var(--divider)' }} />
-            <span className="text-[11px] font-medium uppercase tracking-wider block px-3" style={{ color: 'var(--nav-section-label)' }}>
-              Workspace
-            </span>
             {workspaceFolders.map((folder) => (
               <Link
                 key={folder.path}
@@ -147,7 +177,7 @@ export function Sidebar() {
                 onMouseEnter={(e) => { if (!pathname.startsWith(`/workspace/${folder.path}`)) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
                 onMouseLeave={(e) => { if (!pathname.startsWith(`/workspace/${folder.path}`)) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
               >
-                <FolderOpen size={18} strokeWidth={1.6} />
+                <Layers size={18} strokeWidth={1.6} />
                 {!sidebarCollapsed && <span className="flex-1 text-[14px]">{folder.displayName}</span>}
               </Link>
             ))}
@@ -182,7 +212,7 @@ export function Sidebar() {
                   onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
                   onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                 >
-                  <FolderOpen size={16} strokeWidth={1.5} />
+                  <Layers size={16} strokeWidth={1.5} />
                   <span className="flex-1 min-w-0">
                     <span className="text-[13px] font-medium block truncate">{project.name}</span>
                     <span className="text-[11px] font-mono truncate block" style={{ color: 'var(--text-muted)' }}>{project.slug}</span>
@@ -260,6 +290,47 @@ export function Sidebar() {
           </span>}
         </button>
       </div>
+
+      {/* Workspace Selection Dialog */}
+      <Dialog
+        isOpen={isWorkspaceDialogOpen}
+        onClose={() => setIsWorkspaceDialogOpen(false)}
+        title="Select Workspace"
+        description="Choose a workspace folder to work in"
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {workspaceFolders.map((folder) => (
+              <button
+                key={folder.path}
+                onClick={() => handleWorkspaceSelect(folder)}
+                className="w-full glass-card p-3 flex items-center gap-3 hover:opacity-80 transition-opacity"
+              >
+                <Layers size={20} style={{ color: 'var(--accent)' }} />
+                <div className="flex-1 text-left">
+                  <h3 className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {folder.displayName}
+                  </h3>
+                  <p className="text-[12px] font-mono" style={{ color: 'var(--text-muted)' }}>
+                    {folder.path}
+                  </p>
+                </div>
+                <ArrowRight size={16} style={{ color: 'var(--text-muted)' }} />
+              </button>
+            ))}
+            {workspaceFolders.length === 0 && (
+              <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[14px]">No workspace folders found.</p>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setIsWorkspaceDialogOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </aside>
   )
 }
