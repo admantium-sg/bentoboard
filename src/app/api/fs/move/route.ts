@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
-const KANBAN_ROOT = `${DEFAULT_WORKSPACE}/kanban`
+import { getWorkspacePath } from '@/lib/workspace'
+
+const getWorkspace = () => getWorkspacePath()
+const getKanbanRoot = () => `${getWorkspace()}/kanban`
 
 /**
  * Move file between directories
@@ -34,8 +37,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const fromFullPath = path.join(DEFAULT_WORKSPACE, fromPath)
-    const toFullPath = path.join(DEFAULT_WORKSPACE, toPath)
+    const fromFullPath = path.join(getWorkspace(), fromPath)
+    const toFullPath = path.join(getWorkspace(), toPath)
 
     // Validate source exists
     if (!fs.existsSync(fromFullPath)) {

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
-const KANBAN_ROOT = `${DEFAULT_WORKSPACE}/kanban`
+import { getWorkspacePath } from '@/lib/workspace'
+const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
 
 const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
@@ -24,22 +25,22 @@ interface ProjectInfo {
 export async function GET(request: NextRequest) {
   try {
     // Check if workspace exists
-    if (!fs.existsSync(KANBAN_ROOT)) {
+    if (!fs.existsSync(getKanbanRoot())) {
       return NextResponse.json({
         projects: [],
-        workspace: KANBAN_ROOT,
+        workspace: getKanbanRoot(),
         message: 'Kanban directory not found',
       })
     }
 
     // Read kanban directory
-    const entries = fs.readdirSync(KANBAN_ROOT, { withFileTypes: true })
+    const entries = fs.readdirSync(getKanbanRoot(), { withFileTypes: true })
     const projectDirs = entries.filter(
       (entry) => entry.isDirectory() && entry.name !== 'sessions'
     )
 
     const projects: ProjectInfo[] = projectDirs.map((dir) => {
-      const projectPath = path.join(KANBAN_ROOT, dir.name)
+      const projectPath = path.join(getKanbanRoot(), dir.name)
       const ticketCounts: Record<string, number> = {}
       let totalTickets = 0
       let hasActiveSession = false
@@ -109,7 +110,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       projects,
-      workspace: KANBAN_ROOT,
+      workspace: getKanbanRoot(),
     })
   } catch (error) {
     console.error('Error in /api/kanban/projects:', error)

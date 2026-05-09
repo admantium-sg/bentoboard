@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
 
 /**
  * Get doc by path
@@ -16,7 +17,7 @@ export async function GET(
     const resolvedParams = await params
     const pathSegments = resolvedParams.path
     const docPath = pathSegments.join('/')
-    const fullPath = path.join(DEFAULT_WORKSPACE, docPath)
+    const fullPath = path.join(getWorkspacePath(), docPath)
 
     // Security: Prevent path traversal
     if (docPath.includes('..') || docPath.startsWith('/')) {
@@ -72,7 +73,7 @@ export async function POST(
     const resolvedParams = await params
     const pathSegments = resolvedParams.path
     const docPath = pathSegments.join('/')
-    const fullPath = path.join(DEFAULT_WORKSPACE, docPath)
+    const fullPath = path.join(getWorkspacePath(), docPath)
 
     // Security: Prevent path traversal
     if (docPath.includes('..') || docPath.startsWith('/')) {

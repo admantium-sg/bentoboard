@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
 
 /**
  * List all markdown docs from non-kanban directories
@@ -13,10 +14,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
 
-    if (!fs.existsSync(DEFAULT_WORKSPACE)) {
+    if (!fs.existsSync(getWorkspacePath())) {
       return NextResponse.json({
         docs: [],
-        workspace: DEFAULT_WORKSPACE,
+        workspace: getWorkspacePath(),
         message: 'Workspace not found',
       })
     }
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     const scanDirs = ['brainstorming', 'research', 'code-bugfix', 'code-bugfix/openclaw-kanban-dashboard', 'drafts', 'inbox']
 
     for (const scanDir of scanDirs) {
-      const fullPath = path.join(DEFAULT_WORKSPACE, scanDir)
+      const fullPath = path.join(getWorkspacePath(), scanDir)
 
       if (!fs.existsSync(fullPath)) continue
 
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       docs,
-      workspace: DEFAULT_WORKSPACE,
+      workspace: getWorkspacePath(),
       count: docs.length,
     })
   } catch (error) {

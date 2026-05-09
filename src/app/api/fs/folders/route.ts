@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
+
+const getWorkspace = () => getWorkspacePath()
 
 /**
  * List all folders in the workspace (excluding specified ones)
@@ -13,15 +16,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const exclude = searchParams.get('exclude')?.split(',') || ['kanban']
 
-    if (!fs.existsSync(DEFAULT_WORKSPACE)) {
+    if (!fs.existsSync(getWorkspace())) {
       return NextResponse.json({
         folders: [],
-        workspace: DEFAULT_WORKSPACE,
+        workspace: getWorkspace(),
         message: 'Workspace not found',
       })
     }
 
-    const entries = fs.readdirSync(DEFAULT_WORKSPACE, { withFileTypes: true })
+    const entries = fs.readdirSync(getWorkspace(), { withFileTypes: true })
     const folders = entries
       .filter((entry) => {
         if (!entry.isDirectory()) return false
@@ -31,7 +34,7 @@ export async function GET(request: NextRequest) {
         return true
       })
       .map((entry) => {
-        const folderPath = path.join(DEFAULT_WORKSPACE, entry.name)
+        const folderPath = path.join(getWorkspace(), entry.name)
         const stats = fs.statSync(folderPath)
         return {
           name: entry.name,
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       folders,
-      workspace: DEFAULT_WORKSPACE,
+      workspace: getWorkspace(),
       count: folders.length,
     })
   } catch (error) {

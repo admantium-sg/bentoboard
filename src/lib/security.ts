@@ -1,16 +1,17 @@
 /**
+import 'server-only'
  * Path validation and security utilities for file system operations
  */
 
 import { resolve } from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
 
 /**
  * Validate that a path is within the allowed workspace
  * Prevents directory traversal attacks
  */
-export function validatePath(path: string, workspace: string = DEFAULT_WORKSPACE): boolean {
+export function validatePath(path: string, workspace: string = getWorkspacePath()): boolean {
   try {
     const resolvedPath = resolve(path)
     const workspaceRoot = resolve(workspace)

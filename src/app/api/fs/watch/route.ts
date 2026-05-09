@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
+
+const getWorkspace = () => getWorkspacePath()
 
 /**
  * Poll for file changes
@@ -56,7 +59,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    scanDirectory(DEFAULT_WORKSPACE)
+    scanDirectory(getWorkspace())
 
     return NextResponse.json({
       since: sinceParam,

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
+
+const getWorkspace = () => getWorkspacePath()
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 /**
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const fullPath = path.join(DEFAULT_WORKSPACE, relativePath)
+    const fullPath = path.join(getWorkspace(), relativePath)
 
     // Check if file exists
     if (!fs.existsSync(fullPath)) {

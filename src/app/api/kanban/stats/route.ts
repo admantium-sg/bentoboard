@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
-const KANBAN_ROOT = `${DEFAULT_WORKSPACE}/kanban`
+import { getWorkspacePath } from '@/lib/workspace'
+const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
 const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
 interface Stats {
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const projectPath = path.join(KANBAN_ROOT, project)
+    const projectPath = path.join(getKanbanRoot(), project)
 
     if (!fs.existsSync(projectPath)) {
       return NextResponse.json(

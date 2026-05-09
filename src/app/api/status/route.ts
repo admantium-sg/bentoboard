@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
-const STATUS_DIR = `${DEFAULT_WORKSPACE}/status`
+import { getWorkspacePath } from '@/lib/workspace'
+const getStatusDir = () => `${getWorkspacePath()}/status`
 
 /**
  * Get agent status
@@ -11,15 +12,15 @@ const STATUS_DIR = `${DEFAULT_WORKSPACE}/status`
  */
 export async function GET(request: NextRequest) {
   try {
-    if (!fs.existsSync(STATUS_DIR)) {
+    if (!fs.existsSync(getStatusDir())) {
       return NextResponse.json({
         statuses: [],
-        workspace: DEFAULT_WORKSPACE,
+        workspace: getWorkspacePath(),
         message: 'Status directory not found',
       })
     }
 
-    const entries = fs.readdirSync(STATUS_DIR)
+    const entries = fs.readdirSync(getStatusDir())
     const jsonFiles = entries.filter((f) => f.endsWith('.json'))
 
     const statuses: {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     for (const file of jsonFiles) {
       try {
-        const filePath = path.join(STATUS_DIR, file)
+        const filePath = path.join(getStatusDir(), file)
         const content = fs.readFileSync(filePath, 'utf-8')
         const data = JSON.parse(content)
 
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       statuses,
-      workspace: DEFAULT_WORKSPACE,
+      workspace: getWorkspacePath(),
     })
   } catch (error) {
     console.error('Error in /api/status:', error)

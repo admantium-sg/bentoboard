@@ -1,35 +1,36 @@
 import { describe, it, expect } from 'vitest'
 import { validatePath, sanitizePath, calculateHash } from '../lib/security'
 
+// Use environment variable or fallback to test workspace path
+const TEST_WORKSPACE = process.env.BENTOBOARD_WORKSPACE_FOLDER || '/tmp/test-workspace'
+
 describe('security.ts', () => {
   describe('validatePath', () => {
     it('should allow paths within workspace', () => {
-      const workspace = '/home/devcon/.openclaw/shared-workspace'
-      expect(validatePath('/home/devcon/.openclaw/shared-workspace/kanban', workspace)).toBe(true)
+      const validPath = TEST_WORKSPACE + '/kanban'
+      expect(validatePath(validPath, TEST_WORKSPACE)).toBe(true)
     })
 
     it('should reject paths outside workspace', () => {
-      const workspace = '/home/devcon/.openclaw/shared-workspace'
-      expect(validatePath('/etc/passwd', workspace)).toBe(false)
-      expect(validatePath('/home/devcon/.openclaw/shared-workspace/../../../etc/passwd', workspace)).toBe(false)
+      expect(validatePath('/etc/passwd', TEST_WORKSPACE)).toBe(false)
+      const traversalPath = TEST_WORKSPACE + '/../../../etc/passwd'
+      expect(validatePath(traversalPath, TEST_WORKSPACE)).toBe(false)
     })
 
     it('should handle paths with traversal attempts', () => {
-      const workspace = '/home/devcon/.openclaw/shared-workspace'
       // These use path.resolve which normalizes the path
-      expect(validatePath('../etc/passwd', workspace)).toBe(false)
+      expect(validatePath('../etc/passwd', TEST_WORKSPACE)).toBe(false)
     })
 
     it('should handle empty string path', () => {
-      const workspace = '/home/devcon/.openclaw/shared-workspace'
-      const result = validatePath('', workspace)
+      const result = validatePath('', TEST_WORKSPACE)
       // Empty string resolves to CWD which won't start with workspace
       expect(typeof result).toBe('boolean')
     })
 
     it('should handle paths with special characters', () => {
-      const workspace = '/home/devcon/.openclaw/shared-workspace'
-      expect(validatePath('/home/devcon/.openclaw/shared-workspace/kanban/my-project', workspace)).toBe(true)
+      const validPath = TEST_WORKSPACE + '/kanban/my-project'
+      expect(validatePath(validPath, TEST_WORKSPACE)).toBe(true)
     })
   })
 

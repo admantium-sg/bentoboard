@@ -1,3 +1,5 @@
+import { getWorkspacePath } from '@/lib/workspace'
+import 'server-only'
 /**
  * File watcher utility for monitoring file changes in the workspace
  * Uses polling with mtime comparison as a fallback for chokidar
@@ -156,7 +158,7 @@ let watcherInstance: FileWatcher | null = null
  */
 export function getFileWatcher(workspace?: string): FileWatcher {
   if (!watcherInstance) {
-    const ws = workspace || '/home/devcon/.openclaw/shared-workspace'
+    const ws = workspace || getWorkspacePath()
     watcherInstance = new FileWatcher({
       workspace: ws,
       pollInterval: 5000,

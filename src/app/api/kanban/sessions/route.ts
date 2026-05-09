@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
-const SESSIONS_DIR = `${DEFAULT_WORKSPACE}/kanban/sessions`
+import { getWorkspacePath } from '@/lib/workspace'
+const getSessionsDir = () => `${getWorkspacePath()}/kanban/sessions`
 
 interface SessionRegistry {
   startedAt: string
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Derive acronym from project name (first 4 chars uppercase or pattern)
     const acronym = project.slice(0, 4).toUpperCase()
-    const sessionPath = path.join(SESSIONS_DIR, `${acronym}-session.json`)
+    const sessionPath = path.join(getSessionsDir(), `${acronym}-session.json`)
 
     // Check if session file exists
     if (!fs.existsSync(sessionPath)) {

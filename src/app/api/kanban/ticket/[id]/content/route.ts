@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
-const KANBAN_ROOT = `${DEFAULT_WORKSPACE}/kanban`
+import { getWorkspacePath } from '@/lib/workspace'
+const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
 const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
 /**
  * Search for a ticket file by ID
  */
 function findTicketFile(ticketId: string): { filePath: string; phase: string } | null {
-  if (!fs.existsSync(KANBAN_ROOT)) return null
+  if (!fs.existsSync(getKanbanRoot())) return null
 
-  const entries = fs.readdirSync(KANBAN_ROOT, { withFileTypes: true })
+  const entries = fs.readdirSync(getKanbanRoot(), { withFileTypes: true })
   for (const entry of entries) {
     if (!entry.isDirectory()) continue
-    const projectPath = path.join(KANBAN_ROOT, entry.name)
+    const projectPath = path.join(getKanbanRoot(), entry.name)
 
     for (const phase of PHASES) {
       const phasePath = path.join(projectPath, phase)

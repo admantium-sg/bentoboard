@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { getWorkspacePath } from '@/lib/workspace'
+
+const getWorkspace = () => getWorkspacePath()
 
 /**
  * Delete a file or directory
@@ -29,7 +32,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const fullPath = path.join(DEFAULT_WORKSPACE, filePath)
+    const fullPath = path.join(getWorkspace(), filePath)
 
     // Check if exists
     if (!fs.existsSync(fullPath)) {

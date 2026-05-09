@@ -2,59 +2,14 @@
 
 import { useEffect } from 'react'
 import { useBentoStore } from '@/lib/store'
-import { getFileWatcher } from '@/lib/fileWatcher'
-
-const DEFAULT_WORKSPACE = '/home/devcon/.openclaw/shared-workspace'
+import { useClientWorkspace } from '@/lib/workspace-client'
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const { setProjects, setAgentStatus, setLastPollTime, addRecentChange } = useBentoStore()
+  const workspace = useClientWorkspace()
 
   useEffect(() => {
-    let cleanup: (() => void) | null = null
-
-    async function init() {
-      console.log('[DataProvider] Initializing with workspace:', DEFAULT_WORKSPACE)
-
-      // Initial data load
-      try {
-        // Load projects
-        const projectsRes = await fetch('/api/kanban/projects')
-        if (projectsRes.ok) {
-          const data = await projectsRes.json()
-          setProjects(data.projects || [])
-        }
-
-        // Load agent statuses
-        const statusRes = await fetch('/api/status')
-        if (statusRes.ok) {
-          const data = await statusRes.json()
-          setAgentStatus(data.statuses || [])
-        }
-      } catch (error) {
-        console.error('[DataProvider] Failed to load initial data:', error)
-      }
-
-      // Start file watcher
-      const watcher = getFileWatcher(DEFAULT_WORKSPACE)
-      cleanup = watcher.start((changes) => {
-        console.log('[DataProvider] File changes detected:', changes.length)
-
-        for (const change of changes) {
-          addRecentChange({
-            path: change.path,
-            type: change.type,
-            timestamp: change.modifiedAt,
-          })
-        }
-
-        // Refresh data on changes
-        refreshData()
-      })
-
-      setLastPollTime(new Date().toISOString())
-
-      console.log('[DataProvider] Initialization complete')
-    }
+    if (!workspace) return
 
     async function refreshData() {
       try {
@@ -78,16 +33,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    init()
+    // Initial data load
+    refreshData()
 
-    // Cleanup on unmount
-    return () => {
-      if (cleanup) {
-        cleanup()
-      }
-      getFileWatcher().stop()
-    }
-  }, [setProjects, setAgentStatus, setLastPollTime, addRecentChange])
+    // Set up polling interval
+    const intervalId = setInterval(refreshData, 30000) // Poll every 30 seconds
+
+    return () => clearInterval(intervalId)
+  }, [workspace, setProjects, setAgentStatus, setLastPollTime, addRecentChange])
 
   return <>{children}</>
 }
