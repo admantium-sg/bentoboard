@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
 import {
+  FolderOpen,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -173,7 +174,7 @@ export function Sidebar() {
                 onMouseEnter={(e) => { if (!pathname.startsWith(`/workspace/${folder.path}`)) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
                 onMouseLeave={(e) => { if (!pathname.startsWith(`/workspace/${folder.path}`)) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
               >
-                <Layers size={18} strokeWidth={1.6} />
+                <FolderOpen size={18} strokeWidth={1.6} />
                 {!sidebarCollapsed && <span className="flex-1 text-[14px]">{folder.displayName}</span>}
               </Link>
             ))}
@@ -208,7 +209,7 @@ export function Sidebar() {
                   onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--nav-item-hover)' }}
                   onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                 >
-                  <Layers size={16} strokeWidth={1.5} />
+                  <FolderOpen size={16} strokeWidth={1.5} />
                   <span className="flex-1 min-w-0">
                     <span className="text-[13px] font-medium block truncate">{project.name}</span>
                     <span className="text-[11px] font-mono truncate block" style={{ color: 'var(--text-muted)' }}>{project.slug}</span>
@@ -302,7 +303,7 @@ export function Sidebar() {
                 onClick={() => handleWorkspaceSelect(folder)}
                 className="w-full glass-card p-3 flex items-center gap-3 hover:opacity-80 transition-opacity"
               >
-                <Layers size={20} style={{ color: 'var(--accent)' }} />
+                <FolderOpen size={20} style={{ color: 'var(--accent)' }} />
                 <div className="flex-1 text-left">
                   <h3 className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>
                     {folder.displayName}
