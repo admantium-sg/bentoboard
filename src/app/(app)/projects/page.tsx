@@ -110,11 +110,20 @@ export default function ProjectsPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: project.color }}
-                    >
-                      <span className="text-lg">📋</span>
+                    <div className="relative">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: project.color }}
+                      >
+                        <span className="text-lg">📋</span>
+                      </div>
+                      {/* Stack icon badge */}
+                      <div
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-md flex items-center justify-center"
+                        style={{ background: 'var(--accent)' }}
+                      >
+                        <Layers size={12} className="text-white" strokeWidth={2.5} />
+                      </div>
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-[16px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
