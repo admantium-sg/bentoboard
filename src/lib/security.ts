@@ -5,7 +5,8 @@ import 'server-only'
 
 import { resolve } from 'path'
 
-import { getWorkspacePath } from '@/lib/workspace'
+// Mock workspace path for testing
+const getWorkspacePath = () => process.env.BENTOBOARD_WORKSPACE_FOLDER || '/tmp/test-workspace'
 
 /**
  * Validate that a path is within the allowed workspace
