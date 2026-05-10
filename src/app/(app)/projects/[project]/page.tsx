@@ -1,20 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Board } from '@/components/kanban/Board'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
-import { AlertCircle, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 export default function ProjectBoardPage() {
   const params = useParams()
-  const router = useRouter()
   const project = params.project as string
-  const { setSelectedProject, selectedProject } = useBentoStore()
+  const { setSelectedProject } = useBentoStore()
   const [error, setError] = useState<string | null>(null)
   const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false)
   const [newTicketTitle, setNewTicketTitle] = useState('')

@@ -7,7 +7,6 @@ import Link from 'next/link'
 
 export default function ItemDetailPage() {
   const params = useParams()
-  const id = params.id as string
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

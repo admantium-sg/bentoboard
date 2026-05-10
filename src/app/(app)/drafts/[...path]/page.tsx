@@ -6,7 +6,7 @@ import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useBentoStore } from '@/lib/store'
-import { PageHeader } from '@/components/ui/PageHeader'
+
 import { Button } from '@/components/ui/Button'
 import { ChevronLeft, Check, RotateCcw } from 'lucide-react'
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
 import { PageHeader } from '@/components/ui/PageHeader'

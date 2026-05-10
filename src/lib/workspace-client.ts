@@ -35,11 +35,11 @@ export function useClientWorkspace(): string {
     // Listen for workspace path changes
     const stored = localStorage.getItem('workspacePath')
     if (stored) {
-      setWorkspace(stored)
+      setTimeout(() => setWorkspace(stored), 0)
     } else {
       const envPath = process.env[ENV_VAR]
       if (envPath) {
-        setWorkspace(envPath)
+        setTimeout(() => setWorkspace(envPath), 0)
       }
     }
 

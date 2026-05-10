@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
-import { Upload, FolderOpen } from 'lucide-react'
+import { Upload } from 'lucide-react'
 
 export default function FilesPage() {
   const [isDragging, setIsDragging] = useState(false)
