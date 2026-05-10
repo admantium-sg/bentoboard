@@ -76,15 +76,21 @@ export default function SettingsPage() {
           type: 'directory' as const,
         }))
         setWorkspaceDirectories(enriched)
-        // Also initialize browse path to workspace root
-        setBrowsePath(data.basePath || '')
-        // Set current workspace path from localStorage if available
+        // Initialize browse path to empty string (relative to workspace root)
+        setBrowsePath('')
+        // Set current workspace path from localStorage if available and valid
         const savedPath = localStorage.getItem('workspacePath')
-        if (savedPath) {
+        if (savedPath && savedPath !== '/home/devcon/.openclaw') {
           setCurrentWorkspacePath(savedPath)
+        } else {
+          // Clear invalid saved path
+          localStorage.removeItem('workspacePath')
+          setCurrentWorkspacePath('')
         }
       } catch (error) {
         console.error('Failed to fetch workspaces:', error)
+        // Clear invalid data on error
+        localStorage.removeItem('workspacePath')
       }
     }
     fetchWorkspaces()
@@ -139,6 +145,8 @@ export default function SettingsPage() {
     setBrowsePath(path)
     setIsBrowsing(false)
     setDirectoryContents([])
+    // Save the selected workspace to localStorage
+    localStorage.setItem('workspacePath', path)
   }
 
   function handleBrowseDirectory(path: string) {

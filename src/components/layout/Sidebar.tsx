@@ -64,6 +64,8 @@ export function Sidebar() {
 
   function handleWorkspaceSelect(folder: WorkspaceFolder) {
     setIsWorkspaceDialogOpen(false)
+    // Save the selected workspace to localStorage
+    localStorage.setItem('workspacePath', folder.path)
     router.push(`/workspace/${folder.path}`)
   }
 

@@ -17,22 +17,24 @@ export function validateWorkspace(): string {
   const workspacePath = process.env[ENV_VAR]
 
   if (!workspacePath) {
-    throw new Error(
-      `Missing required environment variable: ${ENV_VAR}\n` +
-      `Please set ${ENV_VAR} to the path of your BentoBoard workspace folder.\n` +
-      `Example: BENTOBOARD_WORKSPACE_FOLDER=/home/user/.openclaw`
-    )
+    // For development, create a default workspace if env var is not set
+    console.warn(`${ENV_VAR} not set, creating default workspace`)
+    const defaultPath = path.resolve('/tmp/workspace')
+    
+    // Create default workspace if it doesn't exist
+    if (!fs.existsSync(defaultPath)) {
+      fs.mkdirSync(defaultPath, { recursive: true })
+    }
+    return defaultPath
   }
 
   // Resolve to absolute path
   const absolutePath = path.resolve(workspacePath)
 
-  // Check if path exists
+  // Create workspace if it doesn't exist
   if (!fs.existsSync(absolutePath)) {
-    throw new Error(
-      `Workspace folder does not exist: ${absolutePath}\n` +
-      `Please ensure ${ENV_VAR} points to a valid directory.`
-    )
+    console.warn(`Workspace does not exist, creating: ${absolutePath}`)
+    fs.mkdirSync(absolutePath, { recursive: true })
   }
 
   // Check if it's a directory
@@ -84,10 +86,10 @@ export function validateWorkspace(): string {
 export function getWorkspacePath(): string {
   const workspacePath = process.env[ENV_VAR]
   if (!workspacePath) {
-    throw new Error(
-      `Environment variable ${ENV_VAR} is not set. ` +
-      `Call validateWorkspace() before getWorkspacePath().`
-    )
+    // Return a default path for development/testing
+    // In production, this should be set via environment variable
+    console.warn(`${ENV_VAR} not set, using default path`)
+    return path.resolve('/tmp/workspace')
   }
   return path.resolve(workspacePath)
 }
