@@ -1,125 +1,146 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
-import { StatusPill } from '@/components/ui/StatusPill'
-import { ProjectTag } from '@/components/ui/ProjectTag'
-import { Avatar } from '@/components/ui/Avatar'
-import { PriorityBadge } from '@/components/ui/PriorityBadge'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { formatRelativeTime, DEFAULT_PROJECTS, cn } from '@/lib/utils'
-import type { Item, ItemStatus } from '@/lib/types'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { formatRelativeTime } from '@/lib/utils'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { FileText, Search } from 'lucide-react'
 
-const STATUS_FILTERS: { label: string; value: ItemStatus | 'all' }[] = [
-  { label: 'All',       value: 'all' },
-  { label: 'In review', value: 'in_review' },
-  { label: 'Proposed',  value: 'proposed' },
-  { label: 'Approved',  value: 'approved' },
-  { label: 'Rejected',  value: 'rejected' },
-]
-
-function DraftCard({ item }: { item: Item }) {
-  return (
-    <Link href={`/items/${item.id}`} className="block">
-      <div className="glass-card p-5 cursor-pointer">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <StatusPill status={item.status} size="sm" />
-              <PriorityBadge priority={item.priority} showLabel />
-            </div>
-            <h3 className="text-[16px] font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
-              {item.title}
-            </h3>
-          </div>
-          <Avatar author={item.created_by} size="sm" />
-        </div>
-
-        {item.description && (
-          <p className="text-[14px] line-clamp-2 leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>
-            {item.description}
-          </p>
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <ProjectTag slug={item.project} size="sm" />
-          {item.tags?.slice(0, 2).map((tag) => (
-            <span key={tag} className="text-[12px] px-2 py-0.5 rounded-md"
-              style={{ color: 'var(--text-muted)', background: 'var(--tag-bg)', border: '1px solid var(--tag-border)' }}>
-              {tag}
-            </span>
-          ))}
-          <span className="text-[12px] ml-auto" style={{ color: 'var(--text-muted)' }}>
-            {formatRelativeTime(item.updated_at)}
-          </span>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function DraftsContent() {
-  const { items } = useBentoStore()
-  const searchParams = useSearchParams()
-  const projectFilter = searchParams.get('project')
-  const [statusFilter, setStatusFilter] = useState<ItemStatus | 'all'>('all')
-
-  const drafts = items
-    .filter((i) => i.type === 'draft')
-    .filter((i) => !projectFilter || i.project === projectFilter)
-    .filter((i) => statusFilter === 'all' || i.status === statusFilter)
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-
-  const project = projectFilter ? DEFAULT_PROJECTS.find((p) => p.slug === projectFilter) : null
-
-  return (
-    <div className="animate-fade-in">
-      <PageHeader
-        title={project ? `${project.name} — Drafts` : 'Drafts'}
-        description="Content created by Bento for your review"
-      />
-
-      <div className="flex gap-1 mb-6" style={{ borderBottom: '1px solid var(--divider)' }}>
-        {STATUS_FILTERS.map((f) => {
-          const count =
-            f.value === 'all'
-              ? items.filter((i) => i.type === 'draft' && (!projectFilter || i.project === projectFilter)).length
-              : items.filter((i) => i.type === 'draft' && i.status === f.value && (!projectFilter || i.project === projectFilter)).length
-          const isActive = statusFilter === f.value
-
-          return (
-            <button
-              key={f.value}
-              onClick={() => setStatusFilter(f.value)}
-              className="flex items-center gap-2 px-1 py-2.5 mr-4 text-[14px] font-medium transition-all relative"
-              style={{ color: isActive ? 'var(--accent-text)' : 'var(--text-secondary)' }}
-            >
-              {f.label}
-              {count > 0 && <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>({count})</span>}
-              {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" style={{ background: 'var(--accent)' }} />}
-            </button>
-          )
-        })}
-      </div>
-
-      {drafts.length === 0 ? (
-        <EmptyState title="No drafts yet" description="Bento will create drafts here when there's content ready for your review." />
-      ) : (
-        <div className="grid gap-3">
-          {drafts.map((draft) => <DraftCard key={draft.id} item={draft} />)}
-        </div>
-      )}
-    </div>
-  )
+interface Doc {
+  path: string
+  title: string
+  content: string
+  category: string
+  project: string
+  modifiedAt: string
 }
 
 export default function DraftsPage() {
+  const { docs, setDocs } = useBentoStore()
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    async function fetchDocs() {
+      setIsLoading(true)
+      try {
+        const res = await fetch('/api/docs/list')
+        if (!res.ok) throw new Error('Failed to fetch docs')
+        const data = await res.json()
+        setDocs(data.docs || [])
+      } catch (error) {
+        console.error('Failed to fetch docs:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDocs()
+  }, [setDocs])
+
+  // Filter to only drafts category, then by search query
+  const filteredDocs = docs.filter((doc) =>
+    doc.category === 'drafts' &&
+    (searchQuery
+      ? doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      : true)
+  )
+
+  // Group docs by category
+  const docGroups = filteredDocs.reduce((acc, doc) => {
+    const category = doc.category || 'other'
+    if (!acc[category]) {
+      acc[category] = []
+    }
+    acc[category].push(doc)
+    return acc
+  }, {} as Record<string, Doc[]>)
+
+  if (isLoading) {
+    return (
+      <div className="animate-fade-in max-w-5xl">
+        <PageHeader title="Drafts" description="All markdown documents from shared-workspace" />
+        <div className="glass-card p-12 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-transparent border-t-[var(--accent)] mx-auto"></div>
+          <p className="mt-4" style={{ color: 'var(--text-muted)' }}>Loading documents...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <Suspense fallback={<div className="text-[14px] p-8" style={{ color: 'var(--text-muted)' }}>Loading...</div>}>
-      <DraftsContent />
-    </Suspense>
+    <div className="animate-fade-in max-w-5xl">
+      <PageHeader
+        title="Drafts"
+        description={`${docs.length} documents from shared-workspace`}
+        actions={
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search docs..."
+              className="input-glass pl-10 pr-4 py-2 text-[14px] w-64"
+            />
+          </div>
+        }
+      />
+
+      {docs.length === 0 ? (
+        <EmptyState
+          title="No documents yet"
+          description="Markdown files from brainstorming/, research/, and other folders will appear here."
+        />
+      ) : (
+        <div className="space-y-6">
+          {Object.entries(docGroups).map(([category, categoryDocs]) => (
+            <div key={category}>
+              <h2 className="text-[18px] font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                {category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ')}
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {categoryDocs.map((doc) => (
+                  <Link
+                    key={doc.path}
+                    href={`/drafts/${doc.path}`}
+                    className="glass-card p-4 cursor-pointer hover:opacity-80 transition-opacity block"
+                  >
+                    <div className="flex items-start gap-3">
+                      <FileText size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[15px] font-medium mb-1 truncate" style={{ color: 'var(--text-primary)' }}>
+                          {doc.title}
+                        </h3>
+                        <p className="text-[12px] font-mono truncate mb-2" style={{ color: 'var(--text-muted)' }}>
+                          {doc.path}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="text-[11px] px-2 py-0.5 rounded-md"
+                            style={{
+                              background: 'var(--tag-bg)',
+                              color: 'var(--text-secondary)',
+                            }}
+                          >
+                            {doc.project}
+                          </span>
+                          <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                            {formatRelativeTime(doc.modifiedAt)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

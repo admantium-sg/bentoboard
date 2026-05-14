@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { ThemeProvider } from '@/components/layout/ThemeProvider'
+import { Providers } from '@/components/layout/Providers'
 
 export const metadata: Metadata = {
   title: 'BentoBoard',
@@ -29,7 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body className="h-full">
-        <ThemeProvider>{children}</ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

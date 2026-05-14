@@ -15,7 +15,6 @@ const TABS = [
 
 export function MobileNav() {
   const pathname = usePathname()
-  const { unreadCount } = useBentoStore()
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
@@ -30,7 +29,6 @@ export function MobileNav() {
       >
         {TABS.map((tab) => {
           const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/')
-          const badge = tab.href === '/inbox' ? unreadCount : 0
 
           return (
             <Link
@@ -39,17 +37,7 @@ export function MobileNav() {
               className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-150 relative"
               style={{ color: isActive ? 'var(--nav-item-active-text)' : 'var(--text-muted)' }}
             >
-              <span className="relative">
-                {tab.icon}
-                {badge > 0 && (
-                  <span
-                    className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] flex items-center justify-center rounded-full text-[8px] font-bold text-white px-1"
-                    style={{ background: 'var(--danger)' }}
-                  >
-                    {badge > 99 ? '99+' : badge}
-                  </span>
-                )}
-              </span>
+              {tab.icon}
               <span className="text-[9px] font-medium tracking-wide">
                 {tab.label}
               </span>

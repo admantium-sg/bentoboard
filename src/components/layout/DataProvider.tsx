@@ -2,149 +2,45 @@
 
 import { useEffect } from 'react'
 import { useBentoStore } from '@/lib/store'
-import type { Item, Notification, Project, Comment, OutreachCreator } from '@/lib/types'
+import { useClientWorkspace } from '@/lib/workspace-client'
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment, setOutreach, upsertOutreach } = useBentoStore()
+  const { setProjects, setAgentStatus, setLastPollTime, addRecentChange } = useBentoStore()
+  const workspace = useClientWorkspace()
 
   useEffect(() => {
-    let mounted = true
+    if (!workspace) return
 
-    async function bootstrap() {
-      const { getSupabase } = await import('@/lib/supabase')
-      const supabase = getSupabase()
+    async function refreshData() {
+      try {
+        // Refresh projects
+        const projectsRes = await fetch('/api/kanban/projects')
+        if (projectsRes.ok) {
+          const data = await projectsRes.json()
+          setProjects(data.projects || [])
+        }
 
-      // ── Initial loads (parallel) ──────────────────────────────
-      // Load drafts/tasks/files in full (long-lived, low volume).
-      // Ideas churn fast — pull the most recent 300 only so they don't crowd
-      // older artifacts out of the window.
-      const [projectsRes, notifRes, persistentRes, ideasRes, outreachRes] = await Promise.all([
-        supabase.from('projects').select('*').order('name'),
-        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('items').select('*').in('type', ['draft', 'task', 'file']).order('updated_at', { ascending: false }).limit(500),
-        supabase.from('items').select('*').eq('type', 'idea').order('updated_at', { ascending: false }).limit(300),
-        supabase.from('outreach').select('*').order('created_at', { ascending: false }),
-      ])
+        // Refresh agent statuses
+        const statusRes = await fetch('/api/status')
+        if (statusRes.ok) {
+          const data = await statusRes.json()
+          setAgentStatus(data.statuses || [])
+        }
 
-      if (!mounted) return
-
-      if (projectsRes.data?.length) {
-        setProjects(projectsRes.data as Project[])
-      }
-      if (notifRes.data) {
-        setNotifications(notifRes.data as Notification[])
-      }
-      const combined = [
-        ...((persistentRes.data as Item[] | null) ?? []),
-        ...((ideasRes.data as Item[] | null) ?? []),
-      ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-      if (combined.length) {
-        setItems(combined)
-      }
-      if (outreachRes.data) {
-        setOutreach(outreachRes.data as OutreachCreator[])
-      }
-
-      // ── Realtime: items ───────────────────────────────────────
-      const itemsChannel = supabase
-        .channel('rt-items')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'items' },
-          (payload) => {
-            if (!mounted) return
-            if (payload.eventType === 'DELETE') {
-              removeItem((payload.old as { id: string }).id)
-            } else {
-              upsertItem(payload.new as Item)
-            }
-          }
-        )
-        .subscribe()
-
-      // ── Realtime: notifications ───────────────────────────────
-      const notifChannel = supabase
-        .channel('rt-notifications')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'notifications' },
-          (payload) => {
-            if (!mounted) return
-            addNotification(payload.new as Notification)
-          }
-        )
-        .subscribe()
-
-      // ── Realtime: comments ────────────────────────────────────
-      const commentsChannel = supabase
-        .channel('rt-comments')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'comments' },
-          (payload) => {
-            if (!mounted) return
-            addComment(payload.new as Comment)
-          }
-        )
-        .subscribe()
-
-      // ── Realtime: outreach ────────────────────────────────────
-      const outreachChannel = supabase
-        .channel('rt-outreach')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'outreach' },
-          (payload) => {
-            if (!mounted) return
-            upsertOutreach(payload.new as OutreachCreator)
-          }
-        )
-        .subscribe()
-
-      // ── Realtime: events (no store action needed — just triggers item refresh) ──
-      const eventsChannel = supabase
-        .channel('rt-events')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'events' },
-          async () => {
-            if (!mounted) return
-            // A new event may have triggered new items/notifications — refresh both
-            const [freshPersistent, freshIdeas, freshNotifs] = await Promise.all([
-              supabase.from('items').select('*').in('type', ['draft', 'task', 'file']).order('updated_at', { ascending: false }).limit(500),
-              supabase.from('items').select('*').eq('type', 'idea').order('updated_at', { ascending: false }).limit(300),
-              supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
-            ])
-            if (!mounted) return
-            const fresh = [
-              ...((freshPersistent.data as Item[] | null) ?? []),
-              ...((freshIdeas.data as Item[] | null) ?? []),
-            ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-            if (fresh.length) setItems(fresh)
-            if (freshNotifs.data) setNotifications(freshNotifs.data as Notification[])
-          }
-        )
-        .subscribe()
-
-      // Cleanup on unmount
-      return () => {
-        mounted = false
-        supabase.removeChannel(itemsChannel)
-        supabase.removeChannel(notifChannel)
-        supabase.removeChannel(commentsChannel)
-        supabase.removeChannel(eventsChannel)
-        supabase.removeChannel(outreachChannel)
+        setLastPollTime(new Date().toISOString())
+      } catch (error) {
+        console.error('[DataProvider] Failed to refresh data:', error)
       }
     }
 
-    const cleanupPromise = bootstrap()
+    // Initial data load
+    refreshData()
 
-    return () => {
-      mounted = false
-      // Run the async cleanup when it resolves
-      cleanupPromise.then((cleanup) => cleanup?.())
-    }
-  }, [setProjects, setNotifications, setItems, upsertItem, removeItem, addNotification, addComment, setOutreach, upsertOutreach])
+    // Set up polling interval
+    const intervalId = setInterval(refreshData, 30000) // Poll every 30 seconds
+
+    return () => clearInterval(intervalId)
+  }, [workspace, setProjects, setAgentStatus, setLastPollTime, addRecentChange])
 
   return <>{children}</>
 }
