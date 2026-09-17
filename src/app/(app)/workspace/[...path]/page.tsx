@@ -9,7 +9,7 @@ import { JsonViewer } from '@/components/ui/JsonViewer'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
 import { formatRelativeTime } from '@/lib/utils'
-import { FileText, FolderOpen, ChevronRight, Plus, FolderPlus, FilePlus, Trash2, MoreVertical, X } from 'lucide-react'
+import { FileText, FolderOpen, ChevronRight, Plus, FolderPlus, FilePlus, Trash2, MoreVertical, X, Circle, Check, RotateCcw } from 'lucide-react'
 
 interface FileNode {
   name: string
@@ -18,6 +18,11 @@ interface FileNode {
   size?: number
   modifiedAt: string
   children?: FileNode[]
+}
+
+interface LeaveEntry {
+  path: string
+  status: 'open' | 'done' | 'modified'
 }
 
 export default function WorkspacePage() {
@@ -36,6 +41,8 @@ export default function WorkspacePage() {
   const [itemToDelete, setItemToDelete] = useState<{ path: string; name: string; type: 'file' | 'directory' } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [leaveEntries, setLeaveEntries] = useState<LeaveEntry[]>([])
+  const [modifiedFile, setModifiedFile] = useState<LeaveEntry | null>(null)
 
   // Toggle selection for an item
   function toggleSelection(path: string) {
@@ -111,8 +118,59 @@ export default function WorkspacePage() {
     }
   }, [workspacePath])
 
+  // Fetch leave tracker entries
+  useEffect(() => {
+    async function fetchLeaveEntries() {
+      try {
+        const res = await fetch('/api/leave-tracker/scan', { method: 'POST' })
+        if (!res.ok) return
+        const data = await res.json()
+        setLeaveEntries(data.entries || [])
+        // Check for modified files and show dialog for the first one
+        const modified = (data.entries || []).find((e: LeaveEntry) => e.status === 'modified')
+        if (modified) setModifiedFile(modified)
+      } catch (err) {
+        console.error('Failed to fetch leave entries:', err)
+      }
+    }
+    fetchLeaveEntries()
+  }, [workspacePath])
+
   const directories = nodes.filter((n) => n.type === 'directory')
   const files = nodes.filter((n) => n.type === 'file')
+
+  // Get leave status for a file path
+  function getLeaveStatus(filePath: string): LeaveEntry['status'] | null {
+    return leaveEntries.find((e) => e.path === filePath)?.status ?? null
+  }
+
+  // Leave status icon
+  function LeaveStatusIcon({ status }: { status: LeaveEntry['status'] }) {
+    if (status === 'done') return <Check size={12} className="flex-shrink-0" style={{ color: 'var(--success)' }} />
+    if (status === 'modified') return <RotateCcw size={12} className="flex-shrink-0" style={{ color: 'var(--accent)' }} />
+    return <Circle size={10} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+  }
+
+  async function handleLeaveAction(action: 'open' | 'keep-done') {
+    if (!modifiedFile) return
+    try {
+      const res = await fetch('/api/leave-tracker/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, path: modifiedFile.path }),
+      })
+      if (!res.ok) throw new Error('Failed to update leave status')
+      setModifiedFile(null)
+      // Refresh entries
+      const scanRes = await fetch('/api/leave-tracker/scan', { method: 'POST' })
+      if (scanRes.ok) {
+        const data = await scanRes.json()
+        setLeaveEntries(data.entries || [])
+      }
+    } catch (err) {
+      console.error('Failed to update leave status:', err)
+    }
+  }
 
   async function handleCreateFolder() {
     if (!newFolderName.trim()) return
@@ -419,6 +477,7 @@ export default function WorkspacePage() {
                   const isMarkdown = file.name.endsWith('.md')
                   const isJson = file.name.endsWith('.json')
                   const href = isMarkdown ? `/drafts/${file.path}` : isJson ? `/workspace/${file.path}` : '#'
+                  const leaveStatus = getLeaveStatus(file.path)
 
                   return (
                     <div
@@ -436,6 +495,9 @@ export default function WorkspacePage() {
                         className="flex items-center gap-3 flex-1 min-w-0"
                       >
                         <FileText size={16} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                        {leaveStatus && (
+                          <LeaveStatusIcon status={leaveStatus} />
+                        )}
                         <div className="flex-1 min-w-0">
                           <h3 className="text-[14px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                             {file.name}
@@ -588,6 +650,40 @@ export default function WorkspacePage() {
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               Delete
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Modified File Dialog */}
+      <Dialog
+        isOpen={!!modifiedFile}
+        onClose={() => setModifiedFile(null)}
+        title="File Modified"
+        description={`"${modifiedFile?.path}" was marked done but has since been updated.`}
+      >
+        <div className="space-y-4">
+          <p style={{ color: 'var(--text-secondary)' }}>
+            This file was marked as done but appears to have been modified since then.
+            What would you like to do?
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setModifiedFile(null)}>
+              Later
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleLeaveAction('open')}
+            >
+              Reopen (mark as open)
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleLeaveAction('keep-done')}
+            >
+              Keep Done
             </Button>
           </div>
         </div>

@@ -9,6 +9,7 @@ import { useBentoStore } from '@/lib/store'
 
 import { Button } from '@/components/ui/Button'
 import { ChevronLeft, Check, RotateCcw } from 'lucide-react'
+import type { LeaveEntry } from '@/lib/leave-tracker'
 
 export default function DocEditorPage() {
   const params = useParams()
@@ -20,6 +21,7 @@ export default function DocEditorPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [title, setTitle] = useState('')
   const { upsertDoc } = useBentoStore()
+  const [leaveStatus, setLeaveStatus] = useState<LeaveEntry['status'] | null>(null)
 
   useEffect(() => {
     async function fetchDoc() {
@@ -41,6 +43,37 @@ export default function DocEditorPage() {
 
     fetchDoc()
   }, [path])
+
+  // Fetch leave tracker status
+  useEffect(() => {
+    async function fetchLeaveStatus() {
+      if (!path) return
+      try {
+        const res = await fetch(`/api/leave-tracker/entries?path=${encodeURIComponent(path)}`)
+        if (!res.ok) return
+        const data = await res.json()
+        setLeaveStatus(data.entry?.status ?? null)
+      } catch (err) {
+        console.error('Failed to fetch leave status:', err)
+      }
+    }
+    fetchLeaveStatus()
+  }, [path])
+
+  async function handleMarkDone() {
+    if (!path) return
+    try {
+      const res = await fetch('/api/leave-tracker/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'done', path }),
+      })
+      if (!res.ok) throw new Error('Failed to mark done')
+      setLeaveStatus('done')
+    } catch (err) {
+      console.error('Failed to mark done:', err)
+    }
+  }
 
   // Determine base path and category from the doc path
   const pathSegments = path ? path.split('/') : []
@@ -110,6 +143,15 @@ export default function DocEditorPage() {
         </Link>
 
         <div className="flex items-center gap-2">
+          {leaveStatus === 'done' ? (
+            <span className="text-[13px] px-3 py-1.5 rounded-lg flex items-center gap-1.5" style={{ background: 'var(--glass-bg-flat)', color: 'var(--success)' }}>
+              <Check size={13} /> Done
+            </span>
+          ) : (
+            <Button variant="ghost" size="sm" icon={<Check size={14} />} onClick={handleMarkDone}>
+              Mark Done
+            </Button>
+          )}
           {isEditing ? (
             <>
               <Button variant="ghost" size="sm" icon={<RotateCcw size={14} />} onClick={handleCancel}>
