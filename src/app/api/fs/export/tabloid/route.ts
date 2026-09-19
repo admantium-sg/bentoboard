@@ -118,7 +118,7 @@ function stripMarkdown(content: string): string {
 
 function generateHtml(entry: DirEntry, title: string, generatedAt: string): string {
   const tocEntries: Array<{ title: string; page: number }> = []
-  let pageNum = 2 // TOC is page 1
+  const pageNum = 2 // TOC is page 1
 
   // Collect TOC entries
   for (const sub of entry.subdirs) {
