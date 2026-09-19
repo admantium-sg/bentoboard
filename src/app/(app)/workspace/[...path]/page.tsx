@@ -43,6 +43,7 @@ export default function WorkspacePage() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [leaveEntries, setLeaveEntries] = useState<LeaveEntry[]>([])
   const [modifiedFile, setModifiedFile] = useState<LeaveEntry | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Toggle selection for an item
   function toggleSelection(path: string) {
@@ -283,6 +284,33 @@ export default function WorkspacePage() {
     }
   }
 
+  async function handleExportTabloid() {
+    if (!workspacePath) return
+    setIsExporting(true)
+    try {
+      const res = await fetch('/api/fs/export/tabloid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: workspacePath }),
+      })
+      if (!res.ok) throw new Error('Export failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const filename = `tabloid-${workspacePath.replace(/\//g, '-').toLowerCase()}.html`
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed:', err)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   // Get selected count for display
   const selectedCount = selectedItems.size
 
@@ -329,6 +357,16 @@ export default function WorkspacePage() {
         description={`${nodes.length} items`}
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<FileText size={14} />}
+              onClick={handleExportTabloid}
+              loading={isExporting}
+              disabled={nodes.length === 0}
+            >
+              Export Tabloid
+            </Button>
             {selectedCount > 0 && (
               <Button
                 variant="secondary"
