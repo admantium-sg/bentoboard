@@ -6,6 +6,8 @@
     "dev": "next dev -H 0.0.0.0 -p 3333",
     "build": "next build",
     "start": "next start",
+    "stop": "fuser -k 3333/tcp 3000/tcp 2>/dev/null || pkill -f 'next' || true",
+    "restart": "npm run stop && npm run start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
