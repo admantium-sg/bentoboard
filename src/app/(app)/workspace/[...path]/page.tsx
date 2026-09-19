@@ -296,14 +296,7 @@ export default function WorkspacePage() {
       if (!res.ok) throw new Error('Export failed')
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      const filename = `tabloid-${workspacePath.replace(/\//g, '-').toLowerCase()}.html`
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      window.open(url, '_blank')
     } catch (err) {
       console.error('Export failed:', err)
     } finally {

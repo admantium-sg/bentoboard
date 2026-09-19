@@ -209,7 +209,7 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
     .toc-page {
       page: toc;
     }
-    @page toc { size: 11in 17in; }
+
     .toc-title {
       font-size: 28px;
       font-weight: bold;
@@ -260,17 +260,21 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
     }
 
     /* ── Footer ── */
-    @page {
-      @bottom-center {
-        content: 'Generated: ${escapeHtml(generatedAt)}  |  Page ' counter(page) ' of ' counter(pages);
-        font-size: 9px;
-        color: #666;
-      }
+    body { padding-bottom: 0.5in; }
+    .tabloid-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 9px;
+      color: #666;
+      padding: 4px 0;
+      border-top: 1px solid #ccc;
+      background: #fff;
     }
-
-    /* ── Print helpers ── */
     @media print {
-      .content-page { page-break-before: always; }
+      .tabloid-footer { background: white; }
     }
   </style>
 </head>
@@ -292,6 +296,8 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
   <div class="content-page">
     ${sectionsHtml}
   </div>
+
+  <footer class="tabloid-footer">Generated: ${escapeHtml(generatedAt)} &nbsp;|&nbsp; BentoBoard Export</footer>
 
 </body>
 </html>`
@@ -352,14 +358,11 @@ export async function POST(request: NextRequest) {
 
     const html = generateHtml(scanned, folderName, generatedAt)
 
-    const safeName = folderName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase()
-    const filename = `tabloid-${safeName}.html`
-
     return new NextResponse(html, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': 'inline',
       },
     })
   } catch (error) {
