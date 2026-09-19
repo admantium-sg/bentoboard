@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useBentoStore } from '@/lib/store'
@@ -13,6 +12,7 @@ import type { LeaveEntry } from '@/lib/leave-tracker'
 
 export default function DocEditorPage() {
   const params = useParams()
+  const router = useRouter()
   const path = Array.isArray(params.path) ? params.path.join('/') : params.path
   const [content, setContent] = useState('')
   const [originalContent, setOriginalContent] = useState('')
@@ -78,8 +78,15 @@ export default function DocEditorPage() {
   // Determine base path and category from the doc path
   const pathSegments = path ? path.split('/') : []
   const baseCategory = pathSegments[0] || 'drafts'
-  const backHref = baseCategory === 'research' ? '/research' : baseCategory === 'inbox' ? '/inbox' : '/drafts'
   const backLabel = baseCategory.charAt(0).toUpperCase() + baseCategory.slice(1)
+
+  function handleBack() {
+    if (window.history.length > 1) {
+      router.back()
+    } else {
+      router.push('/workspace')
+    }
+  }
 
   async function handleSave() {
     if (!path) return
@@ -134,13 +141,13 @@ export default function DocEditorPage() {
     <div className="animate-fade-in max-w-5xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <Link
-          href={backHref}
-          className="glass-card-flat px-3 py-2 flex items-center gap-2 text-[14px] hover:opacity-80 transition-opacity"
+        <button
+          onClick={handleBack}
+          className="glass-card-flat px-3 py-2 flex items-center gap-2 text-[14px] hover:opacity-80 transition-opacity cursor-pointer"
         >
           <ChevronLeft size={16} />
-          <span>Back to {backLabel}</span>
-        </Link>
+          <span>Back{backLabel ? ` to ${backLabel}` : ''}</span>
+        </button>
 
         <div className="flex items-center gap-2">
           {leaveStatus === 'done' ? (
