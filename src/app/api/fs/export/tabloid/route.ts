@@ -387,6 +387,123 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
       letter-spacing: 4px;
     }
 
+    /* ── Sidebar System (BENTO-030) ── */
+    .sidebar-container {
+      display: grid;
+      grid-template-columns: 2fr 5fr;
+      gap: 20px;
+      margin: 12px 0;
+    }
+    .sidebar {
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fafaf8;
+      font-size: 9px;
+    }
+    .sidebar-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 14px;
+      font-style: italic;
+      font-weight: normal;
+      border-bottom: 1px solid #999;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+    /* What's News Digest */
+    .whats-news .sidebar-section {
+      margin-bottom: 8px;
+    }
+    .whats-news .section-label {
+      font-size: 8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #666;
+      margin: 6px 0 3px;
+    }
+    .sidebar-item {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      grid-template-rows: auto auto;
+      gap: 0 4px;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px dotted #ddd;
+    }
+    .sidebar-item:last-child {
+      border-bottom: none;
+    }
+    .item-code {
+      font-weight: bold;
+      color: #c41e3a;
+      grid-row: span 2;
+    }
+    .item-headline {
+      font-weight: bold;
+      line-height: 1.2;
+    }
+    .item-summary {
+      color: #555;
+      line-height: 1.3;
+      font-size: 8px;
+    }
+    /* World Watch Grid */
+    .world-watch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .world-watch .brief {
+      border-left: 2px solid #c41e3a;
+      padding-left: 6px;
+    }
+    .brief-header {
+      font-size: 8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #c41e3a;
+      margin-bottom: 2px;
+    }
+    .brief-headline {
+      font-weight: bold;
+      font-size: 9px;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+    .brief-text {
+      font-size: 8px;
+      color: #444;
+      line-height: 1.3;
+    }
+    .brief-source {
+      font-size: 7px;
+      color: #888;
+      font-style: italic;
+      margin-top: 2px;
+    }
+    /* From Page One variant */
+    .from-page-one {
+      border: 2px solid #1a1a1a;
+      padding: 8px;
+      margin: 8px 0;
+      background: #f5f5f0;
+    }
+    .from-page-one .sidebar-title {
+      font-style: normal;
+      font-weight: bold;
+      border-bottom: 2px solid #1a1a1a;
+    }
+    /* Responsive */
+    @media screen and (max-width: 600px) {
+      .sidebar-container {
+        grid-template-columns: 1fr;
+      }
+      .world-watch {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* ── Article Images (BENTO-029) ── */
     .article-image {
       margin: 10px 0;
@@ -560,6 +677,73 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
 
   <!-- Ornamental Separator -->
   <div class="ornamental-separator">❧</div>
+
+  <!-- Sidebar System (BENTO-030) -->
+  <div class="sidebar-container">
+    <aside class="sidebar whats-news">
+      <h3 class="sidebar-title">What's News</h3>
+      <div class="sidebar-section">
+        <div class="section-label">Business & Finance</div>
+        <div class="sidebar-item">
+          <span class="item-code">A1</span>
+          <span class="item-headline">Markets Rally on Fed Signal</span>
+          <span class="item-summary">S&P 500 gains 1.2% as officials hint at slower pace of rate increases.</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="item-code">A2</span>
+          <span class="item-headline">Tech Giants Report Earnings</span>
+          <span class="item-summary">Major platforms beat estimates but warn of slowing ad revenue growth.</span>
+        </div>
+        <div class="sidebar-item">
+          <span class="item-code">A3</span>
+          <span class="item-headline">Oil Prices Surge</span>
+          <span class="item-summary">Brent crude jumps 3% on renewed OPEC+ supply cuts speculation.</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-label">Technology</div>
+        <div class="sidebar-item">
+          <span class="item-code">A4</span>
+          <span class="item-headline">AI Startups Attract Record Funding</span>
+          <span class="item-summary">Venture capital pours $18 billion into artificial intelligence firms.</span>
+        </div>
+      </div>
+      <div class="from-page-one">
+        <h4 class="sidebar-title">From Page One</h4>
+        <div class="sidebar-item">
+          <span class="item-code">B1</span>
+          <span class="item-headline">Climate Summit Yields Agreement</span>
+          <span class="item-summary">Nations commit to accelerated emissions targets.</span>
+        </div>
+      </div>
+    </aside>
+    <div class="world-watch">
+      <div class="brief">
+        <div class="brief-header">Kosovo</div>
+        <div class="brief-headline">Serbia Talks Resume</div>
+        <div class="brief-text">EU-brokered negotiations restart amid ongoing tensions over northern municipality governance.</div>
+        <div class="brief-source">Reuters</div>
+      </div>
+      <div class="brief">
+        <div class="brief-header">Belarus</div>
+        <div class="brief-headline">Military Exercises Begin</div>
+        <div class="brief-text">Joint drills with Russia start near western border, drawing concern from neighboring NATO members.</div>
+        <div class="brief-source">Associated Press</div>
+      </div>
+      <div class="brief">
+        <div class="brief-header">Japan</div>
+        <div class="brief-headline">PM Visits Shrine</div>
+        <div class="brief-text">Controversial memorial visit strains diplomatic ties with China and South Korea.</div>
+        <div class="brief-source">AFP</div>
+      </div>
+      <div class="brief">
+        <div class="brief-header">Myanmar</div>
+        <div class="brief-headline">Aid Groups Warn of Crisis</div>
+        <div class="brief-text">UN officials call for expanded humanitarian access as displacement surpasses 2 million.</div>
+        <div class="brief-source">Reuters</div>
+      </div>
+    </div>
+  </div>
 
   <!-- Table of Contents -->
   <div class="toc-page">
