@@ -546,6 +546,86 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
       object-fit: cover;
     }
 
+    /* ── Pull Quotes & Callouts (BENTO-031) ── */
+    /* Standard Pull Quote */
+    .pull-quote {
+      border-left: 4px solid #c41e3a;
+      padding: 10px 15px;
+      margin: 15px 0;
+      background: rgba(196, 30, 58, 0.05);
+    }
+    .pull-quote blockquote {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 16px;
+      font-style: italic;
+      margin: 0 0 6px;
+      line-height: 1.4;
+    }
+    .pull-quote .quote-attribution {
+      font-size: 10px;
+      color: #666;
+      font-style: normal;
+    }
+    .pull-quote .quote-attribution::before {
+      content: '— ';
+    }
+    /* Callout Box */
+    .callout-box {
+      background: #f4e04d;
+      padding: 12px;
+      margin: 12px 0;
+      page-break-inside: avoid;
+    }
+    .callout-box .callout-title {
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .callout-box .callout-content {
+      font-size: 10px;
+      line-height: 1.4;
+    }
+    /* "By The Numbers" variant */
+    .callout-box.by-the-numbers {
+      background: #f4e04d;
+      border: 1px solid #d4c040;
+    }
+    .callout-box.by-the-numbers .callout-title {
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+      border-bottom: 1px solid rgba(0,0,0,0.2);
+      padding-bottom: 4px;
+    }
+    .callout-box.by-the-numbers .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+      font-size: 10px;
+    }
+    .callout-box.by-the-numbers .data-label {
+      font-weight: bold;
+    }
+    .callout-box.by-the-numbers .data-value {
+      font-weight: 900;
+    }
+    /* "Why It Matters" inline callout */
+    .why-it-matters {
+      background: #fff9e6;
+      border: 1px solid #e6d08a;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .why-it-matters::before {
+      content: 'Why It Matters: ';
+      font-weight: 900;
+      color: #c41e3a;
+    }
+
     /* ── Table of Contents ── */
     .toc-page {
       page: toc;
@@ -744,6 +824,25 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
       </div>
     </div>
   </div>
+
+  <!-- Pull Quotes & Callouts (BENTO-031) -->
+  <div class="pull-quote">
+    <blockquote>"The markets have spoken, and they're signaling a clear preference for stability over volatility."</blockquote>
+    <div class="quote-attribution">Chief Market Strategist, Global Financial Institute</div>
+  </div>
+
+  <div class="callout-box by-the-numbers">
+    <div class="callout-title">By The Numbers</div>
+    <div class="callout-content">
+      <div class="data-row"><span class="data-label">S&amp;P 500</span><span class="data-value">+1.2%</span></div>
+      <div class="data-row"><span class="data-label">NASDAQ</span><span class="data-value">+0.8%</span></div>
+      <div class="data-row"><span class="data-label">DOW</span><span class="data-value">+0.9%</span></div>
+      <div class="data-row"><span class="data-label">10-YR YIELD</span><span class="data-value">3.42%</span></div>
+      <div class="data-row"><span class="data-label">GOLD</span><span class="data-value">$1,921</span></div>
+    </div>
+  </div>
+
+  <div class="why-it-matters">Further rate increases could dampen corporate earnings and slow the economic recovery.</div>
 
   <!-- Table of Contents -->
   <div class="toc-page">
