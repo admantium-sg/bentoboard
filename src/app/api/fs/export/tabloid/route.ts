@@ -101,12 +101,43 @@ function scanDir(dirPath: string, relPrefix: string): DirEntry {
  * Strip markdown syntax for plain-text rendering in tabloid
  * Keeps some structure for readability
  */
-function stripMarkdown(content: string): string {
-  return content
+function stripMarkdown(content: string, filePath?: string, baseDir?: string): string {
+  // Process images: convert markdown syntax to <img> tags
+  function processImages(text: string): string {
+    return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
+      // Skip if it looks like a local file that doesn't exist
+      const isRemote = url.startsWith('http://') || url.startsWith('https://')
+      if (!isRemote && baseDir) {
+        // For local images, try to read and embed as base64
+        try {
+          const imgPath = path.join(baseDir, url)
+          if (fs.existsSync(imgPath)) {
+            const ext = path.extname(imgPath).toLowerCase()
+            const mimeTypes: Record<string, string> = {
+              '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+              '.png': 'image/png', '.gif': 'image/gif',
+              '.webp': 'image/webp', '.svg': 'image/svg+xml',
+            }
+            const mime = mimeTypes[ext] || 'image/jpeg'
+            const data = fs.readFileSync(imgPath)
+            const base64 = data.toString('base64')
+            return `<figure class="article-image"><img src="data:${mime};base64,${base64}" alt="${escapeHtml(alt)}"></figure>`
+          }
+        } catch { /* skip broken images */ }
+      }
+      // Remote image or local not found - use URL
+      if (isRemote) {
+        return `<figure class="article-image"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"></figure>`
+      }
+      return ''
+    })
+  }
+
+  return processImages(content)
     .replace(/^---[\s\S]*?---\s*/m, '')   // frontmatter
     .replace(/```[\s\S]*?```/g, '[code]')  // code blocks
     .replace(/`([^`]+)`/g, '"$1"')        // inline code
-    .replace(/!\[.*?\]\(.*?\)/g, '[image]') // images
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // images (already processed above)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links -> text
     .replace(/^#{1,6}\s+/gm, '► ')         // headings with marker
     .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1') // bold/italic
@@ -120,7 +151,7 @@ function stripMarkdown(content: string): string {
     .trim()
 }
 
-function generateHtml(entry: DirEntry, title: string, generatedAt: string): string {
+function generateHtml(entry: DirEntry, title: string, generatedAt: string, workspaceRoot: string): string {
   // Track sections for TOC
   const sections: Array<{ name: string; files: Array<{ title: string }> }> = []
 
@@ -189,7 +220,9 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
     if (dir.files.length > 0) {
       html += '<div class="tabloid-grid">'
       for (const file of dir.files) {
-        const plainContent = stripMarkdown(file.content)
+        // Compute base directory for local image resolution
+        const imgBaseDir = path.join(workspaceRoot, path.dirname(file.path))
+        const plainContent = stripMarkdown(file.content, file.path, imgBaseDir)
         // Take more content for preview - up to 2000 chars for large spans
         const preview = plainContent.slice(0, 2000).trim() + (plainContent.length > 2000 ? '…' : '')
         const spanClass = getSpanClass(plainContent.length)
@@ -352,6 +385,48 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
       color: #888;
       font-size: 12px;
       letter-spacing: 4px;
+    }
+
+    /* ── Article Images (BENTO-029) ── */
+    .article-image {
+      margin: 10px 0;
+      page-break-inside: avoid;
+    }
+    .article-image img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    /* Width classes */
+    .article-image.full-width { width: 100%; }
+    .article-image.half-width { width: 45%; margin: 0 2.5%; }
+    .article-image.third-width { width: 33%; margin: 0 1%; }
+    /* Float wrapping */
+    .article-image.float-left { float: left; margin-right: 12px; }
+    .article-image.float-right { float: right; margin-left: 12px; }
+    /* Caption styling */
+    .article-image figcaption {
+      font-size: 9px;
+      color: #4a4a4a;
+      font-style: italic;
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+    .article-image .image-credit {
+      font-style: normal;
+      font-variant: small-caps;
+      color: #777;
+      display: block;
+      margin-top: 2px;
+    }
+    /* Hero image (full-width, large) */
+    .article-image.hero {
+      width: 100%;
+      margin: 0 0 12px 0;
+    }
+    .article-image.hero img {
+      height: 300px;
+      object-fit: cover;
     }
 
     /* ── Table of Contents ── */
@@ -556,7 +631,7 @@ export async function POST(request: NextRequest) {
       hour: '2-digit', minute: '2-digit',
     })
 
-    const html = generateHtml(scanned, folderName, generatedAt)
+    const html = generateHtml(scanned, folderName, generatedAt, workspaceRoot)
 
     return new NextResponse(html, {
       status: 200,
