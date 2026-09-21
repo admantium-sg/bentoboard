@@ -151,7 +151,14 @@ function stripMarkdown(content: string, filePath?: string, baseDir?: string): st
     .trim()
 }
 
-function generateHtml(entry: DirEntry, title: string, generatedAt: string, workspaceRoot: string): string {
+/**
+ * Count all text files in a DirEntry tree (for volume/issue derivation)
+ */
+function countFiles(entry: DirEntry): number {
+  return entry.files.length + entry.subdirs.reduce((sum, sub) => sum + countFiles(sub), 0)
+}
+
+function generateHtml(entry: DirEntry, title: string, generatedAt: string, workspaceRoot: string, edition: string, price: string): string {
   // Track sections for TOC
   const sections: Array<{ name: string; files: Array<{ title: string }> }> = []
 
@@ -915,13 +922,13 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
     <div class="masthead-banner">
       <div class="masthead-title">${escapeHtml(title)}</div>
       <div class="masthead-meta">
-        <div class="volume">Vol. ${toRoman(188)} No. ${Math.floor(Math.random() * 100) + 1}</div>
+        <div class="volume">Vol. ${toRoman(countFiles(entry))} No. ${Math.floor(Math.random() * 100) + 1}</div>
         <div>${formatNewspaperDate(new Date())}</div>
       </div>
     </div>
     <div class="masthead-info">
-      <span class="masthead-edition">U.S. Edition</span>
-      <span class="masthead-price">$4.00</span>
+      <span class="masthead-edition">${escapeHtml(edition)}</span>
+      <span class="masthead-price">${escapeHtml(price)}</span>
     </div>
   </div>
 
@@ -1046,14 +1053,29 @@ function escapeHtml(s: string): string {
 }
 
 /**
+ * Read tabloid manifest from the directory if it exists
+ * Allows overriding edition, price, and other masthead values
+ */
+function readTabloidManifest(fullPath: string): { edition?: string; price?: string; title?: string } {
+  const manifestPath = path.join(fullPath, 'tabloid-manifest.json')
+  try {
+    if (fs.existsSync(manifestPath)) {
+      const content = fs.readFileSync(manifestPath, 'utf-8')
+      return JSON.parse(content)
+    }
+  } catch { /* skip invalid manifest */ }
+  return {}
+}
+
+/**
  * Export a workspace folder as a tabloid HTML document
  * POST /api/fs/export/tabloid
- * Body: { path: string }
+ * Body: { path: string, edition?: string, price?: string }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { path: relativePath } = body as { path: string }
+    const { path: relativePath, edition: bodyEdition, price: bodyPrice } = body as { path: string; edition?: string; price?: string }
 
     if (!relativePath) {
       return NextResponse.json({ error: 'path is required' }, { status: 400 })
@@ -1083,13 +1105,21 @@ export async function POST(request: NextRequest) {
 
     // Scan the directory tree
     const scanned = scanDir(fullPath, relativePath)
-    const folderName = path.basename(relativePath) || 'workspace'
+
+    // Read manifest for masthead overrides
+    const manifest = readTabloidManifest(fullPath)
+    const edition = bodyEdition ?? manifest.edition ?? 'RESEARCH EDITION'
+    const price = bodyPrice ?? manifest.price ?? '$4.00'
+
+    // Title from manifest or derived from folder name
+    const manifestTitle = manifest.title
+
     const generatedAt = new Date().toLocaleString('en-US', {
       year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
     })
 
-    const html = generateHtml(scanned, folderName, generatedAt, workspaceRoot)
+    const html = generateHtml(scanned, manifestTitle ?? path.basename(relativePath) ?? 'workspace', generatedAt, workspaceRoot, edition, price)
 
     return new NextResponse(html, {
       status: 200,
