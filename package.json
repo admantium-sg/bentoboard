@@ -8,6 +8,7 @@
     "start": "next start",
     "stop": "fuser -k 3333/tcp 3000/tcp 2>/dev/null || pkill -f 'next' || true",
     "restart": "npm run stop && npm run start",
+    "rebuild": "npm run stop && rm -rf .next && npm run build && npm run start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest",

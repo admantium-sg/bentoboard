@@ -99,56 +99,69 @@ function scanDir(dirPath: string, relPrefix: string): DirEntry {
 
 /**
  * Strip markdown syntax for plain-text rendering in tabloid
+ * Keeps some structure for readability
  */
 function stripMarkdown(content: string): string {
   return content
     .replace(/^---[\s\S]*?---\s*/m, '')   // frontmatter
-    .replace(/```[\s\S]*?```/g, '')         // code blocks
-    .replace(/`[^`]+`/g, (m) => m.slice(1, -1))
-    .replace(/!\[.*?\]\(.*?\)/g, '')       // images
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links
-    .replace(/^#{1,6}\s+/gm, '')           // headings
+    .replace(/```[\s\S]*?```/g, '[code]')  // code blocks
+    .replace(/`([^`]+)`/g, '"$1"')        // inline code
+    .replace(/!\[.*?\]\(.*?\)/g, '[image]') // images
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links -> text
+    .replace(/^#{1,6}\s+/gm, '► ')         // headings with marker
     .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1') // bold/italic
-    .replace(/^\s*[-*+]\s+/gm, '')         // list bullets
-    .replace(/^\s*\d+\.\s+/gm, '')         // ordered lists
-    .replace(/^\s*>\s+/gm, '')             // blockquotes
-    .replace(/\n{3,}/g, '\n\n')            // extra blank lines
+    .replace(/^\s*[-*+]\s+/gm, '• ')      // list bullets
+    .replace(/^\s*\d+\.\s+/gm, (m) => { // ordered lists
+      const n = m.match(/\d+/)?.[0] || '1'
+      return n + '. '
+    })
+    .replace(/^\s*>\s+/gm, '│ ')          // blockquotes with marker
+    .replace(/\n{3,}/g, '\n\n')           // extra blank lines
     .trim()
 }
 
 function generateHtml(entry: DirEntry, title: string, generatedAt: string): string {
-  const tocEntries: Array<{ title: string; page: number }> = []
-  const pageNum = 2 // TOC is page 1
+  // Track sections for TOC
+  const sections: Array<{ name: string; files: Array<{ title: string }> }> = []
 
-  // Collect TOC entries
-  for (const sub of entry.subdirs) {
-    tocEntries.push({ title: sub.name, page: pageNum })
-    for (const f of sub.files) {
-      tocEntries.push({ title: f.title, page: pageNum })
-    }
-  }
-  for (const f of entry.files) {
-    tocEntries.push({ title: f.title, page: pageNum })
+  // Determine column span based on content length (waterfall algorithm heuristic)
+  function getSpanClass(contentLength: number): string {
+    if (contentLength > 2000) return 'span-6'
+    if (contentLength > 1500) return 'span-5'
+    if (contentLength > 1000) return 'span-4'
+    if (contentLength > 600)  return 'span-3'
+    if (contentLength > 300)  return 'span-2'
+    return 'span-1'
   }
 
-  // Build sections HTML
+  // Build sections with page tracking
   function buildSections(dir: DirEntry, depth = 0): string {
     let html = ''
 
-    // Section header
-    if (depth > 0 || dir.name) {
+    // Skip section header for root, only add for subdirs
+    if (depth > 0 && dir.name) {
+      sections.push({ name: dir.name, files: dir.files.map(f => ({ title: f.title })) })
       html += `<div class="section-header">${escapeHtml(dir.name)}</div>`
+    } else if (depth === 0 && dir.files.length > 0) {
+      // Root-level files get a section too
+      sections.push({ name: '', files: dir.files.map(f => ({ title: f.title })) })
     }
 
-    // Files in this dir
-    for (const file of dir.files) {
-      const plainContent = stripMarkdown(file.content)
-      const preview = plainContent.slice(0, 800) + (plainContent.length > 800 ? '…' : '')
-      html += `
-        <div class="file-entry">
-          <div class="file-title">${escapeHtml(file.title)}</div>
-          <div class="file-content">${escapeHtml(preview)}</div>
-        </div>`
+    // Files in this dir - wrapped in 6-column grid for newspaper layout
+    if (dir.files.length > 0) {
+      html += '<div class="tabloid-grid">'
+      for (const file of dir.files) {
+        const plainContent = stripMarkdown(file.content)
+        // Take more content for preview - up to 2000 chars for large spans
+        const preview = plainContent.slice(0, 2000).trim() + (plainContent.length > 2000 ? '…' : '')
+        const spanClass = getSpanClass(plainContent.length)
+        html += `
+          <div class="file-entry article ${spanClass}">
+            <div class="file-title">${escapeHtml(file.title)}</div>
+            <div class="file-content">${escapeHtml(preview) || '<em style="color:#999;">No content</em>'}</div>
+          </div>`
+      }
+      html += '</div>'
     }
 
     // Recurse into subdirs
@@ -160,8 +173,16 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
   }
 
   const sectionsHtml = buildSections(entry)
-  const tocHtml = tocEntries
-    .map(e => `<div class="toc-entry"><span>${escapeHtml(e.title)}</span></div>`)
+  
+  // Build TOC HTML from sections
+  const tocHtml = sections
+    .map(s => {
+      if (s.name) {
+        return `<div class="toc-entry toc-section"><span>▸ ${escapeHtml(s.name)}</span></div>` +
+          s.files.map(f => `<div class="toc-entry toc-file"><span>${escapeHtml(f.title)}</span></div>`).join('\n')
+      }
+      return s.files.map(f => `<div class="toc-entry"><span>${escapeHtml(f.title)}</span></div>`).join('\n')
+    })
     .join('\n')
 
   return `<!DOCTYPE html>
@@ -226,6 +247,17 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
       font-size: 12px;
     }
     .toc-entry::after { content: '.'; visibility: hidden; }
+    .toc-section {
+      font-weight: bold;
+      font-size: 14px;
+      color: #111;
+      border-bottom: 2px solid #111;
+      margin-top: 8px;
+    }
+    .toc-file {
+      padding-left: 16px;
+      font-style: italic;
+    }
 
     /* ── Content ── */
     .content-page {
@@ -241,6 +273,39 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
       padding-bottom: 4px;
       page-break-after: avoid;
     }
+
+    /* ── Flexible Column Grid (BENTO-027) ──
+     * 6-column newspaper grid with variable article spans
+     * Column spans: span-1 (1/6) through span-6 (full width)
+     * Waterfall layout fills shortest columns first
+     */
+    .tabloid-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 0.15in;
+    }
+    /* Article span classes - controls column width */
+    .article { page-break-inside: avoid; }
+    .article.span-1 { grid-column: span 1; }
+    .article.span-2 { grid-column: span 2; }
+    .article.span-3 { grid-column: span 3; }
+    .article.span-4 { grid-column: span 4; }
+    .article.span-5 { grid-column: span 5; }
+    .article.span-6 { grid-column: span 6; }
+    /* Offset classes for fine-tuning placement */
+    .article.offset-1 { grid-column-start: 2; }
+    .article.offset-2 { grid-column-start: 3; }
+    /* Responsive breakpoints for screen viewing */
+    @media screen and (max-width: 800px) {
+      .tabloid-grid { grid-template-columns: repeat(4, 1fr); }
+      .article.span-5, .article.span-6 { grid-column: span 4; }
+    }
+    @media screen and (max-width: 500px) {
+      .tabloid-grid { grid-template-columns: repeat(2, 1fr); }
+      .article.span-3, .article.span-4, .article.span-5, .article.span-6 { grid-column: span 2; }
+    }
+    /* Legacy file-entry styling preserved for non-grid sections */
     .file-entry {
       margin-bottom: 14px;
       page-break-inside: avoid;
