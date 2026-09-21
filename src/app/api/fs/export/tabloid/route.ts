@@ -134,6 +134,44 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
     return 'span-1'
   }
 
+  // Generate newspaper-style date
+  function formatNewspaperDate(d: Date): string {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
+  }
+
+  // Generate Roman numeral for volume
+  function toRoman(num: number): string {
+    const roman = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+    const val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    let result = ''
+    for (let i = 0; i < roman.length; i++) {
+      while (num >= val[i]) { result += roman[i]; num -= val[i] }
+    }
+    return result
+  }
+
+  // Generate market ticker HTML
+  function generateMarketTicker(): string {
+    const indices = [
+      { symbol: 'DOW', value: '43,275.91', change: '+0.52', up: true },
+      { symbol: 'NASDAQ', value: '18,489.55', change: '+0.39', up: true },
+      { symbol: 'S&P 500', value: '5,956.06', change: '+0.21', up: true },
+      { symbol: '10-YR', value: '4.32%', change: '+0.03', up: false },
+      { symbol: 'OIL', value: '71.84', change: '-1.24', up: false },
+      { symbol: 'GOLD', value: '2,651.40', change: '+8.20', up: true },
+      { symbol: 'EURO', value: '1.0892', change: '-0.0012', up: false },
+      { symbol: 'YEN', value: '148.42', change: '+0.18', up: true },
+    ]
+    return indices.map(i => `
+      <span class="ticker-item">
+        <span class="ticker-symbol">${i.symbol}</span>
+        <span class="ticker-value">${i.value}</span>
+        <span class="ticker-change ${i.up ? 'up' : 'down'}">${i.change}</span>
+      </span>`).join('')
+  }
+
   // Build sections with page tracking
   function buildSections(dir: DirEntry, depth = 0): string {
     let html = ''
@@ -205,7 +243,7 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
       color: #111;
     }
 
-    /* ── Nameplate ── */
+    /* ── Nameplate / Masthead (BENTO-028) ── */
     .nameplate {
       text-align: center;
       padding: 0.5in 0 0.25in;
@@ -224,6 +262,96 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
       margin-top: 6px;
       color: #555;
       font-style: italic;
+    }
+
+    /* ── Masthead Components ── */
+    .masthead {
+      background: #1a1a1a;
+      color: #f9f7f3;
+      padding: 10px 20px;
+      border-bottom: 3px solid #c41e3a;
+      margin-bottom: 8px;
+    }
+    .masthead-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #444;
+      margin-bottom: 6px;
+    }
+    .masthead-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+    }
+    .masthead-meta {
+      font-size: 10px;
+      color: #ccc;
+      text-align: right;
+    }
+    .masthead-meta .volume {
+      font-style: italic;
+    }
+    .masthead-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #aaa;
+    }
+    .masthead-edition {
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .masthead-price {
+      font-weight: bold;
+    }
+    /* Market Ticker Bar */
+    .market-ticker {
+      background: #f5f5f0;
+      border-bottom: 1px solid #ddd;
+      padding: 4px 12px;
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      font-size: 9px;
+      white-space: nowrap;
+    }
+    .ticker-item {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .ticker-symbol {
+      font-weight: bold;
+      color: #333;
+    }
+    .ticker-value {
+      color: #111;
+    }
+    .ticker-change.up { color: #1a7f37; }
+    .ticker-change.down { color: #c41e3a; }
+    /* Section Headers */
+    .section-header {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 4px;
+      margin: 0.15in 0 0.1in;
+      page-break-after: avoid;
+    }
+    /* Ornamental Separator */
+    .ornamental-separator {
+      text-align: center;
+      margin: 8px 0;
+      color: #888;
+      font-size: 12px;
+      letter-spacing: 4px;
     }
 
     /* ── Table of Contents ── */
@@ -262,16 +390,6 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
     /* ── Content ── */
     .content-page {
       page-break-before: right;
-    }
-    .section-header {
-      font-size: 22px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid #111;
-      margin: 0.2in 0 0.1in;
-      padding-bottom: 4px;
-      page-break-after: avoid;
     }
 
     /* ── Flexible Column Grid (BENTO-027) ──
@@ -345,11 +463,28 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string): stri
 </head>
 <body>
 
-  <!-- Nameplate -->
-  <header class="nameplate">
-    <div class="nameplate-title">${escapeHtml(title)}</div>
-    <div class="nameplate-sub">Generated: ${escapeHtml(generatedAt)}</div>
-  </header>
+  <!-- Masthead (BENTO-028) -->
+  <div class="masthead">
+    <div class="masthead-banner">
+      <div class="masthead-title">${escapeHtml(title)}</div>
+      <div class="masthead-meta">
+        <div class="volume">Vol. ${toRoman(188)} No. ${Math.floor(Math.random() * 100) + 1}</div>
+        <div>${formatNewspaperDate(new Date())}</div>
+      </div>
+    </div>
+    <div class="masthead-info">
+      <span class="masthead-edition">U.S. Edition</span>
+      <span class="masthead-price">$4.00</span>
+    </div>
+  </div>
+
+  <!-- Market Ticker Bar -->
+  <div class="market-ticker">
+    ${generateMarketTicker()}
+  </div>
+
+  <!-- Ornamental Separator -->
+  <div class="ornamental-separator">❧</div>
 
   <!-- Table of Contents -->
   <div class="toc-page">
