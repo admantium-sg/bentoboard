@@ -121,18 +121,8 @@ function stripMarkdown(content: string): string {
 }
 
 function generateHtml(entry: DirEntry, title: string, generatedAt: string): string {
-  // Track sections and their page numbers for TOC
+  // Track sections for TOC
   const sections: Array<{ name: string; files: Array<{ title: string }> }> = []
-  let currentPage = 2 // TOC is page 1, content starts at page 2
-
-  // Count estimated pages needed
-  function countPages(dir: DirEntry): number {
-    let pages = 1 // at least one page per section
-    for (const sub of dir.subdirs) {
-      pages += countPages(sub)
-    }
-    return pages
-  }
 
   // Determine column span based on content length (waterfall algorithm heuristic)
   function getSpanClass(contentLength: number): string {
