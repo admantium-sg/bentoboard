@@ -246,9 +246,12 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
       html += '</div>'
     }
 
-    // Recurse into subdirs
-    for (const sub of dir.subdirs) {
-      html += buildSections(sub, depth + 1)
+    // Recurse into subdirs with ornamental dividers
+    for (let i = 0; i < dir.subdirs.length; i++) {
+      if (i > 0) {
+        html += '<div class="section-divider"><span class="ornament">❧</span></div>'
+      }
+      html += buildSections(dir.subdirs[i], depth + 1)
     }
 
     return html
@@ -739,6 +742,64 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
     .article {
       margin-bottom: 12px;
     }
+
+    /* ── Section Dividers & Ornaments (BENTO-033) ── */
+    /* Thin rule - separates individual articles */
+    .rule-thin {
+      border-top: 1px solid #c5c5c5;
+      margin: 12px 0;
+    }
+    /* Thick rule - major section breaks */
+    .rule-thick {
+      border-top: 3px solid #1a1a1a;
+      margin: 20px 0;
+    }
+    /* Double rule - extra emphasis */
+    .rule-double {
+      border-top: 3px double #1a1a1a;
+      margin: 20px 0;
+    }
+    /* Ornamental divider with dot pattern */
+    .dots-divider {
+      text-align: center;
+      margin: 15px 0;
+      color: #999;
+      font-size: 10px;
+      letter-spacing: 6px;
+    }
+    /* Section divider with ornament */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #c5c5c5;
+    }
+    .section-divider .ornament {
+      color: #c5c5c5;
+      font-size: 14px;
+    }
+    /* Section label (small caps header) */
+    .section-label {
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 6px;
+      margin: 16px 0 10px;
+    }
+    /* Spacing variants */
+    .space-small { margin: 8px 0; }
+    .space-medium { margin: 15px 0; }
+    .space-large { margin: 25px 0; }
 
     /* ── Table of Contents ── */
     .toc-page {
