@@ -219,6 +219,7 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
     // Files in this dir - wrapped in 6-column grid for newspaper layout
     if (dir.files.length > 0) {
       html += '<div class="tabloid-grid">'
+      let fileIdx = 0
       for (const file of dir.files) {
         // Compute base directory for local image resolution
         const imgBaseDir = path.join(workspaceRoot, path.dirname(file.path))
@@ -226,11 +227,21 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
         // Take more content for preview - up to 2000 chars for large spans
         const preview = plainContent.slice(0, 2000).trim() + (plainContent.length > 2000 ? '…' : '')
         const spanClass = getSpanClass(plainContent.length)
+        // Determine headline class based on span
+        const headlineClass = spanClass === 'span-6' ? 'headline-hero' :
+                              spanClass === 'span-5' ? 'headline-display' :
+                              spanClass === 'span-4' ? 'headline-standard' :
+                              spanClass === 'span-3' ? 'headline-subhead' : 'headline-brief'
+        // First article gets drop cap and byline
+        const isFirst = fileIdx === 0 && depth === 0
+        const contentClass = isFirst ? 'body-text drop-cap' : 'body-text'
         html += `
           <div class="file-entry article ${spanClass}">
-            <div class="file-title">${escapeHtml(file.title)}</div>
-            <div class="file-content">${escapeHtml(preview) || '<em style="color:#999;">No content</em>'}</div>
+            <div class="${headlineClass}">${escapeHtml(file.title)}</div>
+            ${isFirst ? '<div class="byline">By The News Desk</div>' : ''}
+            <div class="${contentClass}"><p>${escapeHtml(preview) || '<em style="color:#999;">No content</em>'}</p></div>
           </div>`
+        fileIdx++
       }
       html += '</div>'
     }
@@ -262,7 +273,17 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
   <meta charset="UTF-8">
   <title>${escapeHtml(title)}</title>
   <style>
+    /* Google Fonts (BENTO-032) */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:wght@400;600;700&display=swap');
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* CSS Custom Properties (BENTO-032) */
+    :root {
+      --font-headline: 'Playfair Display', Georgia, serif;
+      --font-bylines: 'Libre Baskerville', Georgia, serif;
+      --font-body: 'Source Serif 4', Georgia, serif;
+    }
 
     @page {
       size: 11in 17in;
@@ -624,6 +645,99 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
       content: 'Why It Matters: ';
       font-weight: 900;
       color: #c41e3a;
+    }
+
+    /* ── Typography Hierarchy (BENTO-032) ── */
+    /* Headline Hierarchy */
+    .headline-hero {
+      font-family: var(--font-headline);
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .headline-display {
+      font-family: var(--font-headline);
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+    .headline-standard {
+      font-family: var(--font-headline);
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .headline-subhead {
+      font-family: var(--font-headline);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 3px;
+    }
+    .headline-brief {
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    /* Deck (Subheadline) */
+    .deck {
+      font-family: var(--font-bylines);
+      font-size: 14px;
+      font-weight: 400;
+      color: #555;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    /* Bylines */
+    .byline {
+      font-family: var(--font-bylines);
+      font-size: 10px;
+      font-style: italic;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    /* Body Text */
+    .body-text {
+      font-family: var(--font-body);
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    .body-text p {
+      margin-bottom: 8px;
+    }
+    /* Multi-column for wide articles */
+    .span-6 .body-text,
+    .span-5 .body-text {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    .span-4 .body-text {
+      column-count: 2;
+      column-gap: 16px;
+    }
+    /* Drop Cap */
+    .drop-cap::first-letter {
+      font-family: var(--font-headline);
+      font-size: 48px;
+      font-weight: 900;
+      float: left;
+      line-height: 0.8;
+      padding-right: 8px;
+      padding-top: 4px;
+      color: #c41e3a;
+    }
+    /* Article spacing */
+    .article {
+      margin-bottom: 12px;
     }
 
     /* ── Table of Contents ── */
