@@ -2,9 +2,15 @@
 // FILE SYSTEM TYPES
 // ============================================
 
-import { PHASES } from './phases'
-
-export type KanbanPhase = (typeof PHASES)[number]
+export type KanbanPhase =
+  | 'backlog'
+  | 'to-do'
+  | 'in-progress'
+  | 'in-review'
+  | 'pull-request'
+  | 'blocked'
+  | 'cancelled'
+  | 'done'
 
 export type ContentType = 'kanban-ticket' | 'markdown-doc' | 'session-registry' | 'status-file'
 

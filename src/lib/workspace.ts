@@ -80,11 +80,16 @@ export function validateWorkspace(): string {
 }
 
 let validatedWorkspace: string | undefined
+let validatedFor: string | undefined
 
 /**
  * Get the validated workspace path, creating the default folder on first read.
  */
 export function getWorkspacePath(): string {
-  validatedWorkspace ??= validateWorkspace()
-  return validatedWorkspace
+  const configured = process.env[ENV_VAR]
+  if (configured !== validatedFor) {
+    validatedWorkspace = validateWorkspace()
+    validatedFor = configured
+  }
+  return validatedWorkspace!
 }

@@ -22,15 +22,6 @@ export function formatFullDate(dateString: string): string {
   return format(new Date(dateString), 'MMM d, yyyy · h:mm a')
 }
 
-export function calculateContentHash(content: string): string {
-  let hash = 0
-  for (let i = 0; i < content.length; i++) {
-    hash = ((hash << 5) - hash) + content.charCodeAt(i)
-    hash = hash & hash
-  }
-  return Math.abs(hash).toString(36)
-}
-
 export function getDocPreview(content?: string, maxLength = 120): string {
   if (!content) return ''
   const line = content.slice(0, 2048).split('\n').find((value) => {

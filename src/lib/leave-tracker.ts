@@ -59,7 +59,9 @@ export function readEntries(): LeaveEntry[] {
 }
 
 function appendEntry(entry: LeaveEntry): void {
-  fs.appendFileSync(getDbPath(), JSON.stringify(entry) + '\n', 'utf-8')
+  const dbPath = getDbPath()
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true })
+  fs.appendFileSync(dbPath, JSON.stringify(entry) + '\n', 'utf-8')
 }
 
 /** Get a single entry by path */

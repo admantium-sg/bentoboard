@@ -5,8 +5,7 @@ import { useParams } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { ErrorPopup, useErrorPopup } from '@/components/ui/ErrorPopup'
-import { serializeTicketToMarkdown, addPhaseHistoryEntry } from '@/lib/serializers/ticketSerializer'
-import { calculateContentHash } from '@/lib/utils'
+import { addPhaseHistoryEntry } from '@/lib/serializers/ticketSerializer'
 import type { KanbanTicket, KanbanPhase } from '@/lib/types'
 import { ChevronLeft, Check, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
@@ -23,16 +22,32 @@ export default function TicketDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [markdownContent, setMarkdownContent] = useState('')
+  const [savedContent, setSavedContent] = useState('')
   const [expectedHash, setExpectedHash] = useState<string | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (ticket) {
-      const content = serializeTicketToMarkdown(ticket)
-      setMarkdownContent(content)
-      setExpectedHash(calculateContentHash(content))
+    if (!ticket) return
+    const controller = new AbortController()
+
+    async function loadContent() {
+      try {
+        const res = await fetch(`/api/kanban/ticket/${ticketId}/content`, { signal: controller.signal })
+        if (!res.ok) return
+        const data = await res.json()
+        if (controller.signal.aborted) return
+        const content = data.content || ''
+        setMarkdownContent(content)
+        setSavedContent(content)
+        setExpectedHash(data.hash ?? null)
+      } catch (contentError) {
+        if (!controller.signal.aborted) console.error('Failed to load ticket content:', contentError)
+      }
     }
-  }, [ticket])
+
+    loadContent()
+    return () => controller.abort()
+  }, [ticket, ticketId])
 
   useEffect(() => {
     if (!ticketId || ticket) return
@@ -91,11 +106,7 @@ export default function TicketDetailPage() {
       const res = await fetch(`/api/kanban/ticket/${ticketId}/content`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: markdownContent,
-          expectedHash,
-          hash: expectedHash,
-        }),
+        body: JSON.stringify({ content: markdownContent, expectedHash }),
       })
 
       if (res.status === 409) {
@@ -106,7 +117,8 @@ export default function TicketDetailPage() {
       if (!res.ok) throw new Error('Failed to save')
 
       const data = await res.json().catch(() => ({}))
-      setExpectedHash(data.hash || calculateContentHash(markdownContent))
+      setExpectedHash(data.hash ?? null)
+      setSavedContent(markdownContent)
       upsertTicket({ ...ticket, modifiedAt: data.modifiedAt || new Date().toISOString() })
       setIsEditing(false)
     } catch (saveError) {
@@ -133,9 +145,7 @@ export default function TicketDetailPage() {
   }
 
   function handleCancel() {
-    const content = serializeTicketToMarkdown(ticket)
-    setMarkdownContent(content)
-    setExpectedHash(calculateContentHash(content))
+    setMarkdownContent(savedContent)
     setIsEditing(false)
   }
 

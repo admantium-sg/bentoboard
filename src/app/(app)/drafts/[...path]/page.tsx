@@ -8,7 +8,6 @@ import { useBentoStore } from '@/lib/store'
 
 import { Button } from '@/components/ui/Button'
 import { ErrorPopup, useErrorPopup } from '@/components/ui/ErrorPopup'
-import { calculateContentHash } from '@/lib/utils'
 import { ChevronLeft, Check, RotateCcw } from 'lucide-react'
 import type { LeaveEntry } from '@/lib/leave-tracker'
 
@@ -42,7 +41,7 @@ export default function DocEditorPage() {
         const loaded = data.content || ''
         setContent(loaded)
         setOriginalContent(loaded)
-        setExpectedHash(calculateContentHash(loaded))
+        setExpectedHash(data.hash ?? null)
         setTitle(data.title || docPath.split('/').pop() || 'Untitled')
       } catch (fetchError) {
         if (!controller.signal.aborted) {
@@ -116,7 +115,7 @@ export default function DocEditorPage() {
       const res = await fetch(`/api/docs/${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, expectedHash, hash: expectedHash }),
+        body: JSON.stringify({ content, expectedHash }),
       })
 
       if (res.status === 409) {
@@ -127,7 +126,7 @@ export default function DocEditorPage() {
       if (!res.ok) throw new Error('Failed to save')
 
       const data = await res.json().catch(() => ({}))
-      setExpectedHash(data.hash || calculateContentHash(content))
+      setExpectedHash(data.hash ?? null)
       setOriginalContent(content)
       upsertDoc({
         path,
