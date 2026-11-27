@@ -32,7 +32,7 @@ describe('ticketSerializer', () => {
   describe('serializeTicketToMarkdown', () => {
     it('should serialize ticket to markdown format', () => {
       const markdown = serializeTicketToMarkdown(sampleTicket)
-      expect(markdown).toContain('#DASH-019 Dark Mode')
+      expect(markdown).toContain('# DASH-019 Dark Mode')
       expect(markdown).toContain('## Description')
       expect(markdown).toContain('Add dark mode toggle')
     })
@@ -73,9 +73,12 @@ describe('ticketSerializer', () => {
       expect(markdown).not.toContain('## Metadata')
     })
 
-    it('should include assumptions when present', () => {
-      const markdown = serializeTicketToMarkdown(sampleTicket)
+    it('should keep questions distinct from assumptions', () => {
+      const withQuestion = { ...sampleTicket, questions: ['Open question?'] }
+      const markdown = serializeTicketToMarkdown(withQuestion)
       expect(markdown).toContain('## Questions & Assumption Check')
+      expect(markdown).toContain('- [ ] Open question?')
+      expect(markdown).toContain('- [x] Assume CSS custom properties')
     })
 
     it('should handle empty assumptions', () => {

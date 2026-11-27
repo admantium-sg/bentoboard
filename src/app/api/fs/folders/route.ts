@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in /api/fs/folders:', error)
     return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

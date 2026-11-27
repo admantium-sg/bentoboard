@@ -39,7 +39,7 @@ export function serializeTicketToMarkdown(ticket: KanbanTicket): string {
   const lines: string[] = []
 
   // Title (H1)
-  lines.push(`#${ticket.id} ${ticket.title}`)
+  lines.push(`# ${ticket.id} ${ticket.title}`)
   lines.push('')
 
   // Description
@@ -74,7 +74,7 @@ export function serializeTicketToMarkdown(ticket: KanbanTicket): string {
   if (hasQuestions || hasAssumptions) {
     lines.push('## Questions & Assumption Check')
     ticket.questions?.forEach((q) => {
-      lines.push(formatCheckbox(true, q))
+      lines.push(formatCheckbox(false, q))
     })
     ticket.assumptions?.forEach((a) => {
       lines.push(formatCheckbox(true, a))

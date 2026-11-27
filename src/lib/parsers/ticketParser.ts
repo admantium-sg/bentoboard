@@ -1,342 +1,188 @@
 import type { KanbanTicket, KanbanPhase } from '@/lib/types'
-
-/**
- * Parse kanban ticket markdown format
- * Matches the format from auto-kanban-flow skill
- */
+import { isPhase } from '@/lib/phases'
 
 export interface ParseResult {
   ticket?: KanbanTicket
   error?: string
 }
 
-/**
- * Extract ticket metadata from filename
- * Format: {ACRONYM}-{NUMBER}-{SYMBOL}-{kebab-title}.md
- * Example: DASH-019-dark-mode.md
- *          USC-005-⏳-conflict-detection.md
- */
-function extractTicketMetadata(filename: string): {
-  acronym: string
-  number: number
-  symbol?: string
-  title: string
-} {
-  // Remove .md extension
-  const nameWithoutExt = filename.replace(/\.md$/, '')
+export interface TicketContext {
+  phase?: KanbanPhase
+  project?: string
+  modifiedAt?: string
+}
 
-  // Check for symbol pattern (between dashes)
-  const symbolMatch = nameWithoutExt.match(/^-{0,4}-\d+-([⏳⏸❌])-(.+)$/)
-  if (symbolMatch) {
-    return {
-      acronym: symbolMatch[1],
-      number: parseInt(symbolMatch[1], 10),
-      symbol: symbolMatch[2],
-      title: symbolMatch[3].replace(/-/g, ' '),
-    }
+type Section = 'description' | 'tasks' | 'acceptance-criteria' | 'questions' | 'metadata' | 'phase-history' | 'attempts' | 'other'
+
+function filenameMetadata(filename: string) {
+  const name = filename.replace(/\.md$/, '')
+  const symbolMatch = name.match(/^([A-Z]+)-(\d+)-([⏳⏸❌])-(.+)$/)
+  const standardMatch = name.match(/^([A-Z]+)-(\d+)-(.+)$/)
+  const match = symbolMatch ?? standardMatch
+
+  if (!match) {
+    return { id: 'UNKNOWN-0', acronym: 'UNKNOWN', number: 0, symbol: undefined, slugTitle: name.replace(/-/g, ' ') }
   }
 
-  // Check for standard pattern without symbol
-  const standardMatch = nameWithoutExt.match(/^([A-Z]+)-(\d+)-(.+)$/)
-  if (standardMatch) {
-    return {
-      acronym: standardMatch[1],
-      number: parseInt(standardMatch[2], 10),
-      title: standardMatch[3].replace(/-/g, ' '),
-    }
-  }
-
-  // Fallback: use filename as title
   return {
-    acronym: 'UNKNOWN',
-    number: 0,
-    title: nameWithoutExt.replace(/-/g, ' '),
+    id: `${match[1]}-${match[2]}`,
+    acronym: match[1],
+    number: Number.parseInt(match[2], 10),
+    symbol: symbolMatch ? symbolMatch[3] : undefined,
+    slugTitle: (symbolMatch ? symbolMatch[4] : match[3]).replace(/-/g, ' '),
   }
 }
 
-/**
- * Parse checkbox list
- * Format: "- [x] Text" or "- [ ] Text"
- */
-function parseCheckboxes(lines: string[], startIndex: number): {
-  tasks: Array<{ checked: boolean; text: string }>
-  nextIndex: number
-} {
-  const tasks: Array<{ checked: boolean; text: string }> = []
-  let i = startIndex
+export function ticketIdFromFilename(filename: string): string {
+  return filenameMetadata(filename).id
+}
 
-  while (i < lines.length && !lines[i].trim().startsWith('## ')) {
-    const line = lines[i].trim()
-    const match = line.match(/^-\s*\[([ x])\]\s*(.+)$/)
-    if (match) {
-      tasks.push({
-        checked: match[1] === 'x',
-        text: match[2].trim(),
-      })
-    } else {
-      // Stop at next section header
-      break
-    }
-    i++
-  }
+function sectionFromHeading(heading: string): Section {
+  const key = heading.trim().toLowerCase().replace(/&/g, 'and').replace(/[_\s]+/g, '-')
+  if (key.startsWith('description')) return 'description'
+  if (key.startsWith('tasks')) return 'tasks'
+  if (key.startsWith('acceptance')) return 'acceptance-criteria'
+  if (key.includes('questions') || key.includes('assumptions')) return 'questions'
+  if (key.startsWith('metadata')) return 'metadata'
+  if (key.startsWith('phase')) return 'phase-history'
+  if (key.startsWith('attempts')) return 'attempts'
+  return 'other'
+}
 
-  return { tasks, nextIndex: i }
+function tableCells(line: string): string[] | null {
+  const trimmed = line.trim()
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return null
+  const cells = trimmed.slice(1, -1).split('|').map((cell) => cell.trim())
+  if (cells.every((cell) => /^:?-+:?$/.test(cell))) return null
+  return cells
+}
+
+function checkboxText(line: string): { checked: boolean; text: string } | null {
+  const match = line.match(/^-\s*\[([ xX])\]\s*(.+)$/)
+  return match ? { checked: match[1].toLowerCase() === 'x', text: match[2].trim() } : null
 }
 
 /**
- * Parse table format
- * | Col1 | Col2 | Col3 |
- */
-function parseTable(lines: string[], startIndex: number): {
-  rows: Array<{ phase: KanbanPhase; date: string; notes?: string }>
-    nextIndex: number
-} {
-  const rows: Array<{ phase: KanbanPhase; date: string; notes?: string }> = []
-  let i = startIndex
-  let inTable = false
-  let headers: string[] | null = null
-
-  while (i < lines.length) {
-    const line = lines[i].trim()
-
-    // Table start marker
-    if (line.startsWith('|')) {
-      inTable = true
-
-      // Parse header row
-      if (line.includes('Phase') && line.includes('Date')) {
-        headers = line.split('|').map(h => h.trim()).filter(Boolean)
-      } else if (headers && inTable) {
-        const cols = line.split('|').map(h => h.trim()).filter(Boolean)
-        if (cols.length >= 2) {
-          rows.push({
-            phase: cols[0] as KanbanPhase,
-            date: cols[1],
-            notes: cols[2] || undefined,
-          })
-        }
-      }
-    } else if (inTable) {
-      break
-    }
-
-    i++
-  }
-
-  return { rows, nextIndex: i }
-}
-
-/**
- * Parse phase history table
- * Format:
- * | Phase | Date | Notes |
- * |-------|------|-------|
- * | backlog | 2026-04-20 18:24:00 | Self-drafted |
- */
-function parsePhaseHistory(lines: string[], startIndex: number): {
-  history: Array<{ phase: KanbanPhase; date: string; notes?: string }>
-  nextIndex: number
-} {
-  const result = parseTable(lines, startIndex)
-  return { history: result.rows as Array<{ phase: KanbanPhase; date: string; notes?: string }>, nextIndex: result.nextIndex }
-}
-
-/**
- * Parse attempts table
- * Format:
- * | # | Phase | Question/Block | Attempts | Resolution |
- * |---|-------|------------------|-----------|------------|
- * | 1 | in-progress | Question text | 3 | Resolution |
- */
-function parseAttempts(lines: string[], startIndex: number): {
-  attempts: Array<{ number: number; phase: KanbanPhase; questionBlock: string; attempts: number; resolution?: string }>
-  nextIndex: number
-} {
-  const attempts: Array<{ number: number; phase: KanbanPhase; questionBlock: string; attempts: number; resolution?: string }> = []
-  let i = startIndex
-  let inTable = false
-  let headers: string[] | null = null
-
-  while (i < lines.length) {
-    const line = lines[i].trim()
-
-    // Table start marker
-    if (line.startsWith('|')) {
-      inTable = true
-
-      // Parse header row
-      if (line.includes('#') && line.includes('Phase')) {
-        headers = line.split('|').map(h => h.trim()).filter(Boolean)
-      } else if (headers && inTable) {
-        const cols = line.split('|').map(h => h.trim()).filter(Boolean)
-        if (cols.length >= 4) {
-          attempts.push({
-            number: parseInt(cols[0], 10),
-            phase: cols[1] as KanbanPhase,
-            questionBlock: cols[2],
-            attempts: parseInt(cols[3], 10),
-            resolution: cols[4] || undefined,
-          })
-        }
-      }
-    } else if (inTable) {
-      break
-    }
-
-    i++
-  }
-
-  return { attempts, nextIndex: i }
-}
-
-/**
- * Parse metadata section
- * Format: "## Metadata\n- Key: Value"
- */
-function parseMetadata(lines: string[], startIndex: number): {
-  metadata: Record<string, string>
-  nextIndex: number
-} {
-  const metadata: Record<string, string> = {}
-  let i = startIndex
-
-  while (i < lines.length) {
-    const line = lines[i].trim()
-
-    if (line.startsWith('## ') || line.startsWith('---')) {
-      break
-    }
-
-    const match = line.match(/^-\s*(.+):\s*(.+)$/)
-    if (match) {
-      metadata[match[1].trim()] = match[2].trim()
-    }
-
-    i++
-  }
-
-  return { metadata, nextIndex: i }
-}
-
-/**
- * Main parser function
+ * Parse a kanban ticket into its visible sections.
+ * Padded IDs stay padded: DASH-019.md has id DASH-019 and number 19.
  */
 export function parseTicketMarkdown(
   content: string,
-  filePath: string
+  filePath: string,
+  context: TicketContext = {}
 ): ParseResult {
   try {
     const lines = content.split('\n')
-    let i = 0
-
-    // Extract title (first H1)
-    const titleMatch = lines[i]?.match(/^#\s*(.+)$/)
-    const title = titleMatch ? titleMatch[1].trim() : 'Untitled'
-    i++
-
-    // Extract description
-    let description = ''
+    const meta = filenameMetadata(filePath.split('/').pop() ?? '')
+    let title = meta.slugTitle
+    let section: Section = 'other'
     const descriptionLines: string[] = []
-    while (i < lines.length && !lines[i].trim().startsWith('## ')) {
-      const line = lines[i].trim()
-      if (line && !line.startsWith('-') && !line.startsWith('|')) {
-        descriptionLines.push(line)
-      }
-      i++
-    }
-    description = descriptionLines.join('\n').trim()
-
-    // Extract tasks
-    const { tasks, nextIndex: tasksIndex } = parseCheckboxes(lines, i)
-
-    // Extract acceptance criteria
+    const tasks: KanbanTicket['tasks'] = []
     const acceptanceCriteria: string[] = []
-    let inACSection = false
-    while (i < lines.length && !lines[i].trim().startsWith('## ')) {
-      const line = lines[i].trim()
-      if (line.startsWith('## Acceptance Criteria') || line.startsWith('## Acceptance criteria')) {
-        inACSection = true
-        i++
-        continue
-      }
-      if (inACSection) {
-        const match = line.match(/^-\s*\[([ x])\]\s*(.+)$/)
-        if (match) {
-          acceptanceCriteria.push(match[2].trim())
-        } else if (!line.startsWith('-') && !line.startsWith('|')) {
-          break
-        }
-      }
-      i++
-    }
-
-    // Extract questions & assumptions
     const questions: string[] = []
     const assumptions: string[] = []
-    let inQACheckSection = false
-    while (i < lines.length && !lines[i].trim().startsWith('## ')) {
-      const line = lines[i].trim()
-      if (line.startsWith('## Questions & Assumption Check') || line.startsWith('## Questions & assumption check')) {
-        inQACheckSection = true
-        i++
-        continue
-      }
-      if (inQACheckSection) {
-        const match = line.match(/^-\s*\[([ x])\]\s*(.+)$/)
-        if (match) {
-          if (match[1] === 'x') {
-            assumptions.push(match[2].trim())
-          } else {
-            questions.push(match[2].trim())
-          }
-        } else if (!line.startsWith('-') && !line.startsWith('|')) {
-          break
+    const metadata: Record<string, string> = {}
+    const phaseHistory: KanbanTicket['phaseHistory'] = []
+    const attempts: KanbanTicket['attempts'] = []
+
+    for (const raw of lines) {
+      if (!raw.startsWith('##')) {
+        const heading = raw.match(/^#\s+(.+)$/)
+        if (heading) {
+          title = heading[1].trim()
+          continue
         }
       }
-      i++
+
+      const sectionHeading = raw.match(/^##\s+(.+)$/)
+      if (sectionHeading) {
+        section = sectionFromHeading(sectionHeading[1])
+        continue
+      }
+
+      const line = raw.trim()
+      if (!line) continue
+
+      switch (section) {
+        case 'description':
+          descriptionLines.push(line)
+          break
+        case 'tasks': {
+          const item = checkboxText(line)
+          if (item) tasks.push({ checked: item.checked, text: item.text })
+          break
+        }
+        case 'acceptance-criteria': {
+          const item = checkboxText(line)
+          if (item) acceptanceCriteria.push(item.text)
+          else if (line.startsWith('- ')) acceptanceCriteria.push(line.slice(2).trim())
+          break
+        }
+        case 'questions': {
+          const item = checkboxText(line)
+          if (item) {
+            if (item.checked) assumptions.push(item.text)
+            else questions.push(item.text)
+          } else if (line.startsWith('- ')) {
+            questions.push(line.slice(2).trim())
+          }
+          break
+        }
+        case 'metadata': {
+          const item = line.match(/^-\s*(.+?):\s*(.+)$/)
+          if (item) metadata[item[1].trim()] = item[2].trim()
+          break
+        }
+        case 'phase-history': {
+          const cells = tableCells(line)
+          if (cells && cells.length >= 2 && isPhase(cells[0])) {
+            phaseHistory.push({ phase: cells[0], date: cells[1], notes: cells[2] || undefined })
+          }
+          break
+        }
+        case 'attempts': {
+          const cells = tableCells(line)
+          if (cells && cells.length >= 4 && /^\d+$/.test(cells[0]) && isPhase(cells[1])) {
+            attempts.push({
+              number: Number.parseInt(cells[0], 10),
+              phase: cells[1],
+              questionBlock: cells[2],
+              attempts: Number.parseInt(cells[3], 10),
+              resolution: cells[4] || undefined,
+            })
+          }
+          break
+        }
+        default:
+          break
+      }
     }
 
-    // Extract phase history
-    const { history: phaseHistory, nextIndex: phaseHistoryNextIndex } = parsePhaseHistory(lines, tasksIndex)
-
-    // Extract attempts
-    const { attempts, nextIndex: attemptsIndex } = parseAttempts(lines, phaseHistoryNextIndex)
-
-    // Extract metadata
-    const { metadata } = parseMetadata(lines, Math.max(attemptsIndex, phaseHistoryNextIndex))
-
-    // Extract priority from metadata
-    const priority = metadata['Priority'] || 'normal'
-
-    // Extract filename metadata
-    const filename = filePath.split('/').pop() || ''
-    const { acronym, number, symbol } = extractTicketMetadata(filename)
+    const priorityEntry = Object.entries(metadata).find(([key]) => key.toLowerCase() === 'priority')
 
     return {
       ticket: {
-        id: `${acronym}-${number}`,
-        project: 'unknown', // Will be set from directory path
-        acronym,
-        number,
+        id: meta.id,
+        project: context.project ?? 'unknown',
+        acronym: meta.acronym,
+        number: meta.number,
         title,
-        description,
+        description: descriptionLines.join('\n'),
         tasks,
         acceptanceCriteria,
         questions,
         assumptions,
-        priority,
+        priority: priorityEntry?.[1] ?? 'normal',
         metadata,
-        phase: 'backlog', // Will be set from directory
+        phase: context.phase ?? 'backlog',
         phaseHistory,
         attempts,
-        symbol,
+        symbol: meta.symbol,
         filePath,
-        modifiedAt: new Date().toISOString(),
+        modifiedAt: context.modifiedAt ?? new Date().toISOString(),
       },
     }
   } catch (error) {
-    return {
-      error: `Failed to parse ticket: ${error}`,
-    }
+    return { error: `Failed to parse ticket: ${error}` }
   }
 }

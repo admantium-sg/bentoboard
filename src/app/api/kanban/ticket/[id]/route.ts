@@ -4,33 +4,36 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
+import { PHASES } from '@/lib/phases'
+import { sha256 } from '@/lib/security'
+import { isSafeSegment, safeChild, unsafePathStatus } from '@/lib/path-guard'
+import { parseTicketMarkdown, ticketIdFromFilename } from '@/lib/parsers/ticketParser'
+import type { KanbanPhase, KanbanTicket } from '@/lib/types'
+
 const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
-const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
-/**
- * Search for a ticket file by ID
- */
-function findTicketFile(ticketId: string): { filePath: string; phase: string } | null {
-  if (!fs.existsSync(getKanbanRoot())) return null
+interface TicketHit {
+  filePath: string
+  phase: KanbanPhase
+  project: string
+}
 
-  const entries = fs.readdirSync(getKanbanRoot(), { withFileTypes: true })
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue
-    const projectPath = path.join(getKanbanRoot(), entry.name)
+function findTicketFile(ticketId: string): TicketHit | null {
+  const root = getKanbanRoot()
+  if (!fs.existsSync(root)) return null
+
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.isSymbolicLink() || !isSafeSegment(entry.name)) continue
+    const projectPath = safeChild(root, entry.name)
 
     for (const phase of PHASES) {
-      const phasePath = path.join(projectPath, phase)
+      const phasePath = safeChild(projectPath, phase)
       if (!fs.existsSync(phasePath)) continue
 
-      const files = fs.readdirSync(phasePath).filter(f => f.endsWith('.md'))
-      for (const file of files) {
-        // Check if filename matches ticket ID pattern
-        const fileId = extractTicketId(file)
-        if (fileId === ticketId) {
-          return {
-            filePath: path.join(phasePath, file),
-            phase,
-          }
+      for (const file of fs.readdirSync(phasePath, { withFileTypes: true })) {
+        if (!file.isFile() || file.isSymbolicLink() || !file.name.endsWith('.md')) continue
+        if (ticketIdFromFilename(file.name) === ticketId) {
+          return { filePath: path.join(phasePath, file.name), phase, project: entry.name }
         }
       }
     }
@@ -39,76 +42,7 @@ function findTicketFile(ticketId: string): { filePath: string; phase: string } |
 }
 
 /**
- * Extract ticket ID from filename
- */
-function extractTicketId(filename: string): string {
-  const name = filename.replace(/\.md$/, '')
-  // Pattern: ACRONYM-NUMBER or ACRONYM-NUMBER-SYMBOL
-  const match = name.match(/^([A-Z]+-\d+)/)
-  return match ? match[1] : ''
-}
-
-/**
- * Parse a ticket markdown file
- */
-function parseTicketFile(filePath: string, phase: string): Record<string, unknown> {
-  const content = fs.readFileSync(filePath, 'utf-8')
-  const filename = path.basename(filePath)
-  const stats = fs.statSync(filePath)
-
-  const fileId = extractTicketId(filename)
-  const idParts = fileId.split('-')
-  const acronym = idParts[0] || 'UNKNOWN'
-  const number = parseInt(idParts[1], 10) || 0
-
-  // Check for symbol in filename
-  const symbolMatch = filename.match(/^.+-(\d+)-([⏳❌])-/)
-  const symbol = symbolMatch ? symbolMatch[2] : null
-
-  // Simple markdown parsing
-  const lines = content.split('\n')
-  let title = filename.replace(/\.md$/, '')
-  const description = ''
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (line.startsWith('# ') && i === 0) {
-      title = line.slice(2).trim()
-      break
-    }
-  }
-
-  // Get priority from metadata
-  let priority = 'normal'
-  const priorityMatch = content.match(/Priority:\s*(\w+)/i)
-  if (priorityMatch) {
-    priority = priorityMatch[1].toLowerCase()
-  }
-
-  return {
-    id: fileId,
-    project: path.basename(path.dirname(path.dirname(filePath))),
-    acronym,
-    number,
-    title,
-    description,
-    tasks: [],
-    acceptanceCriteria: [],
-    questions: [],
-    assumptions: [],
-    priority,
-    metadata: {},
-    phase,
-    phaseHistory: [],
-    attempts: [],
-    symbol,
-    filePath,
-    modifiedAt: stats.mtime.toISOString(),
-  }
-}
-
-/**
- * Get single ticket by ID
+ * Get one ticket and its content hash.
  * GET /api/kanban/ticket/[id]
  */
 export async function GET(
@@ -116,25 +50,28 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: ticketId } = await params
-    const id = ticketId.toUpperCase()
+    const { id: rawId } = await params
+    const id = rawId.toUpperCase()
+    if (!isSafeSegment(id)) return NextResponse.json({ error: 'Invalid ticket id' }, { status: 400 })
 
-    const ticketInfo = findTicketFile(id)
-    if (!ticketInfo) {
-      return NextResponse.json(
-        { error: 'Ticket not found', id },
-        { status: 404 }
-      )
-    }
+    const hit = findTicketFile(id)
+    if (!hit) return NextResponse.json({ error: 'Ticket not found', id }, { status: 404 })
 
-    const ticket = parseTicketFile(ticketInfo.filePath, ticketInfo.phase)
+    const content = fs.readFileSync(hit.filePath, 'utf-8')
+    const stats = fs.statSync(hit.filePath)
+    const parsed = parseTicketMarkdown(content, hit.filePath, {
+      phase: hit.phase,
+      project: hit.project,
+      modifiedAt: stats.mtime.toISOString(),
+    })
+    if (!parsed.ticket) return NextResponse.json({ error: 'Invalid ticket content' }, { status: 500 })
 
+    const ticket: KanbanTicket & { hash: string } = { ...parsed.ticket, hash: sha256(content) }
     return NextResponse.json({ id, ticket })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/kanban/ticket/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

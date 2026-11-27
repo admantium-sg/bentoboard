@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import 'server-only'
 import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
-const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
+import { PHASES } from '@/lib/phases'
+import { isSafeSegment, safeChild, unsafePathStatus } from '@/lib/path-guard'
 
-const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
+const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
 
 interface ProjectInfo {
   slug: string
@@ -22,7 +23,7 @@ interface ProjectInfo {
  * List all kanban projects
  * GET /api/kanban/projects
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check if workspace exists
     if (!fs.existsSync(getKanbanRoot())) {
@@ -36,22 +37,23 @@ export async function GET(request: NextRequest) {
     // Read kanban directory
     const entries = fs.readdirSync(getKanbanRoot(), { withFileTypes: true })
     const projectDirs = entries.filter(
-      (entry) => entry.isDirectory() && entry.name !== 'sessions'
+      (entry) => entry.isDirectory() && !entry.isSymbolicLink()
+        && isSafeSegment(entry.name) && entry.name !== 'sessions'
     )
 
     const projects: ProjectInfo[] = projectDirs.map((dir) => {
-      const projectPath = path.join(getKanbanRoot(), dir.name)
+      const projectPath = safeChild(getKanbanRoot(), dir.name)
       const ticketCounts: Record<string, number> = {}
       let totalTickets = 0
       let hasActiveSession = false
 
       // Count tickets per phase
       PHASES.forEach((phase) => {
-        const phasePath = path.join(projectPath, phase)
+        const phasePath = safeChild(projectPath, phase)
         if (fs.existsSync(phasePath)) {
           const phaseEntries = fs.readdirSync(phasePath, { withFileTypes: true })
           const mdFiles = phaseEntries.filter(
-            (e) => e.isFile() && e.name.endsWith('.md')
+            (e) => e.isFile() && !e.isSymbolicLink() && e.name.endsWith('.md')
           )
           ticketCounts[phase] = mdFiles.length
           totalTickets += mdFiles.length
@@ -113,11 +115,10 @@ export async function GET(request: NextRequest) {
       workspace: getKanbanRoot(),
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/kanban/projects:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 

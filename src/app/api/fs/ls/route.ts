@@ -4,8 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
-
-const getWorkspace = () => getWorkspacePath()
+import { realInside, unsafePathStatus } from '@/lib/path-guard'
 
 interface FileNode {
   name: string
@@ -13,39 +12,23 @@ interface FileNode {
   type: 'file' | 'directory'
   size?: number
   modifiedAt: string
-  children?: FileNode[]
 }
 
 /**
- * List directory contents recursively
+ * List directory contents.
  * GET /api/fs/ls?path=/relative/path
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const relativePath = searchParams.get('path') || ''
+    const fullPath = realInside(getWorkspacePath(), relativePath)
 
-    // Security: Prevent path traversal
-    if (relativePath.includes('..') || relativePath.startsWith('/')) {
-      return NextResponse.json(
-        { error: 'Invalid path: path traversal not allowed' },
-        { status: 400 }
-      )
-    }
-
-    const fullPath = path.join(getWorkspace(), relativePath)
-
-    // Validate path is within workspace
     if (!fs.existsSync(fullPath)) {
-      return NextResponse.json(
-        { error: 'Path not found', path: relativePath },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Path not found', path: relativePath }, { status: 404 })
     }
 
     const stats = fs.statSync(fullPath)
-
-    // If it's a file, return single file info
     if (stats.isFile()) {
       return NextResponse.json({
         path: relativePath,
@@ -56,18 +39,13 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // It's a directory - build tree
-    const entries = fs.readdirSync(fullPath, { withFileTypes: true })
     const nodes: FileNode[] = []
-
-    for (const entry of entries) {
-      // Skip certain directories
-      if (entry.name === 'node_modules' || entry.name === '.git') continue
+    for (const entry of fs.readdirSync(fullPath, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name.startsWith('.')) continue
+      if (entry.isSymbolicLink()) continue
 
       const entryPath = relativePath ? `${relativePath}/${entry.name}` : entry.name
-      const entryFullPath = path.join(fullPath, entry.name)
-      const entryStats = fs.statSync(entryFullPath)
-
+      const entryStats = fs.statSync(path.join(fullPath, entry.name))
       nodes.push({
         name: entry.name,
         path: entryPath,
@@ -77,22 +55,16 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Sort: directories first, then files, alphabetically
     nodes.sort((a, b) => {
       if (a.type !== b.type) return a.type === 'directory' ? -1 : 1
       return a.name.localeCompare(b.name)
     })
 
-    return NextResponse.json({
-      path: relativePath,
-      entries: nodes,
-      count: nodes.length,
-    })
+    return NextResponse.json({ path: relativePath, entries: nodes, count: nodes.length })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/fs/ls:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

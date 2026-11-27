@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import 'server-only'
 import fs from 'fs'
 import path from 'path'
@@ -10,7 +10,7 @@ const getStatusDir = () => `${getWorkspacePath()}/status`
  * Get agent status
  * GET /api/status
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (!fs.existsSync(getStatusDir())) {
       return NextResponse.json({
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in /api/status:', error)
     return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

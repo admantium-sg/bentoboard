@@ -4,29 +4,34 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
+import { PHASES } from '@/lib/phases'
+import { readJsonObject, sha256 } from '@/lib/security'
+import { isSafeSegment, safeChild, unsafePathStatus, uuidTempPath } from '@/lib/path-guard'
+import { ticketIdFromFilename } from '@/lib/parsers/ticketParser'
+
 const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
-const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
-/**
- * Search for a ticket file by ID
- */
-function findTicketFile(ticketId: string): { filePath: string; phase: string } | null {
-  if (!fs.existsSync(getKanbanRoot())) return null
+interface TicketHit {
+  filePath: string
+  id: string
+}
 
-  const entries = fs.readdirSync(getKanbanRoot(), { withFileTypes: true })
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue
-    const projectPath = path.join(getKanbanRoot(), entry.name)
+function findTicketFile(ticketId: string): TicketHit | null {
+  const root = getKanbanRoot()
+  if (!fs.existsSync(root)) return null
+
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.isSymbolicLink() || !isSafeSegment(entry.name)) continue
+    const projectPath = safeChild(root, entry.name)
 
     for (const phase of PHASES) {
-      const phasePath = path.join(projectPath, phase)
+      const phasePath = safeChild(projectPath, phase)
       if (!fs.existsSync(phasePath)) continue
 
-      const files = fs.readdirSync(phasePath).filter(f => f.endsWith('.md'))
-      for (const file of files) {
-        const fileId = extractTicketId(file)
-        if (fileId === ticketId) {
-          return { filePath: path.join(phasePath, file), phase }
+      for (const file of fs.readdirSync(phasePath, { withFileTypes: true })) {
+        if (!file.isFile() || file.isSymbolicLink() || !file.name.endsWith('.md')) continue
+        if (ticketIdFromFilename(file.name) === ticketId) {
+          return { filePath: path.join(phasePath, file.name), id: ticketId }
         }
       }
     }
@@ -34,94 +39,82 @@ function findTicketFile(ticketId: string): { filePath: string; phase: string } |
   return null
 }
 
-/**
- * Extract ticket ID from filename
- */
-function extractTicketId(filename: string): string {
-  const name = filename.replace(/\.md$/, '')
-  const match = name.match(/^([A-Z]+-\d+)/)
-  return match ? match[1] : ''
+function normalizeId(rawId: string): string | null {
+  const id = rawId.toUpperCase()
+  return isSafeSegment(id) ? id : null
 }
 
 /**
- * Calculate content hash for conflict detection
+ * Get ticket content and hash for conflict detection.
+ * GET /api/kanban/ticket/[id]/content
  */
-function calculateHash(content: string): string {
-  let hash = 0
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const id = normalizeId((await params).id)
+    if (!id) return NextResponse.json({ error: 'Invalid ticket id' }, { status: 400 })
+
+    const hit = findTicketFile(id)
+    if (!hit) return NextResponse.json({ error: 'Ticket not found', id }, { status: 404 })
+
+    const content = fs.readFileSync(hit.filePath, 'utf-8')
+    return NextResponse.json({ id, content, hash: sha256(content) })
+  } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
+    console.error('Error in /api/kanban/ticket/[id]/content GET:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-  return Math.abs(hash).toString(36)
 }
 
 /**
- * Update ticket content
+ * Update ticket content after an expected-hash conflict check.
  * POST /api/kanban/ticket/[id]/content
- * Body: { content, hash? }
+ * Body: { content, expectedHash }
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: ticketId } = await params
-    const id = ticketId.toUpperCase()
-    const body = await request.json()
-    const { content, hash } = body
+    const id = normalizeId((await params).id)
+    if (!id) return NextResponse.json({ error: 'Invalid ticket id' }, { status: 400 })
 
-    if (content === undefined) {
-      return NextResponse.json(
-        { error: 'Content parameter required' },
-        { status: 400 }
-      )
+    const body = await readJsonObject(request)
+    if (!body || typeof body.content !== 'string' || typeof body.expectedHash !== 'string') {
+      return NextResponse.json({ error: 'content and expectedHash are required' }, { status: 400 })
     }
 
-    // Find ticket
-    const ticketInfo = findTicketFile(id)
-    if (!ticketInfo) {
-      return NextResponse.json(
-        { error: 'Ticket not found', id },
-        { status: 404 }
-      )
+    const hit = findTicketFile(id)
+    if (!hit) return NextResponse.json({ error: 'Ticket not found', id }, { status: 404 })
+
+    const currentContent = fs.readFileSync(hit.filePath, 'utf-8')
+    const currentHash = sha256(currentContent)
+    if (currentHash !== body.expectedHash) {
+      return NextResponse.json({
+        error: 'Conflict detected',
+        message: 'File has been modified since you started editing',
+        currentHash,
+      }, { status: 409 })
     }
 
-    // Check for conflicts if hash provided
-    if (hash) {
-      const currentContent = fs.readFileSync(ticketInfo.filePath, 'utf-8')
-      const currentHash = calculateHash(currentContent)
-      if (currentHash !== hash) {
-        return NextResponse.json(
-          {
-            error: 'Conflict detected',
-            message: 'File has been modified since you started editing',
-            currentHash,
-          },
-          { status: 409 }
-        )
-      }
-    }
+    const tempPath = uuidTempPath(path.dirname(hit.filePath), path.basename(hit.filePath))
+    fs.writeFileSync(tempPath, body.content, 'utf-8')
+    fs.renameSync(tempPath, hit.filePath)
 
-    // Atomic write
-    const tempPath = ticketInfo.filePath + '.tmp.' + Date.now()
-    fs.writeFileSync(tempPath, content, 'utf-8')
-    fs.renameSync(tempPath, ticketInfo.filePath)
-
-    const stats = fs.statSync(ticketInfo.filePath)
-    const newHash = calculateHash(content)
-
+    const stats = fs.statSync(hit.filePath)
     return NextResponse.json({
       success: true,
       id,
-      hash: newHash,
+      hash: sha256(body.content),
       modifiedAt: stats.mtime.toISOString(),
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/kanban/ticket/[id]/content:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
