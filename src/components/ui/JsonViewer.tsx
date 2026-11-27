@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { ChevronLeft, Copy, Check } from 'lucide-react'
@@ -11,37 +11,47 @@ export function JsonViewer({ filePath }: { filePath: string }) {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function fetchContent() {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/fs/read?path=${encodeURIComponent(filePath)}`)
+        const res = await fetch(`/api/fs/read?path=${encodeURIComponent(filePath)}`, { signal: controller.signal })
         if (!res.ok) {
           const data = await res.json()
+          if (controller.signal.aborted) return
           setError(data.error || 'Failed to load file')
           return
         }
         const data = await res.json()
-        setContent(data.content)
+        if (!controller.signal.aborted) setContent(data.content)
       } catch (err) {
-        console.error('Failed to fetch content:', err)
-        setError('Failed to load file')
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch content:', err)
+          setError('Failed to load file')
+        }
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
 
-    if (filePath) {
-      fetchContent()
-    }
+    if (filePath) fetchContent()
+    return () => controller.abort()
   }, [filePath])
+
+  useEffect(() => () => {
+    if (copyTimer.current) clearTimeout(copyTimer.current)
+  }, [])
 
   const handleCopy = () => {
     if (content) {
       navigator.clipboard.writeText(content)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+      copyTimer.current = setTimeout(() => setCopied(false), 2000)
     }
   }
 

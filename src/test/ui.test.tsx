@@ -2,6 +2,23 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useErrorPopup } from '../components/ui/ErrorPopup'
 import { useAutoSave } from '../components/ui/AutoSaveIndicator'
+import { deletePaths } from '../lib/utils'
+
+describe('workspace bulk delete', () => {
+  it('sends one request per path without splitting filenames that contain commas', async () => {
+    const paths = ['folder/a,b.md', 'folder/notes.md']
+    const request = vi.fn().mockResolvedValue({ ok: true } as Response)
+
+    await deletePaths(paths, request as unknown as typeof fetch)
+
+    expect(request).toHaveBeenCalledTimes(2)
+    const sentPaths = request.mock.calls.map((call) => {
+      const init = call[1] as RequestInit
+      return JSON.parse(init.body as string).path
+    })
+    expect(sentPaths).toEqual(paths)
+  })
+})
 
 describe('useErrorPopup hook', () => {
   it('should initialize with null error', () => {

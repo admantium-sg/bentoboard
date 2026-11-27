@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { JsonViewer } from '@/components/ui/JsonViewer'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
-import { formatRelativeTime } from '@/lib/utils'
+import { deletePaths, formatRelativeTime } from '@/lib/utils'
 import { FileText, FolderOpen, ChevronRight, Plus, FolderPlus, FilePlus, Trash2, MoreVertical, X, Circle, Check, RotateCcw } from 'lucide-react'
 
 interface FileNode {
@@ -25,6 +25,12 @@ interface LeaveEntry {
   status: 'open' | 'done' | 'modified'
 }
 
+interface DeleteTarget {
+  paths: string[]
+  name: string
+  type: 'file' | 'directory' | 'multiple'
+}
+
 export default function WorkspacePage() {
   const pathname = usePathname()
   const router = useRouter()
@@ -38,55 +44,41 @@ export default function WorkspacePage() {
   const [newFileName, setNewFileName] = useState('')
   const [newFileContent, setNewFileContent] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [itemToDelete, setItemToDelete] = useState<{ path: string; name: string; type: 'file' | 'directory' } | null>(null)
+  const [itemToDelete, setItemToDelete] = useState<DeleteTarget | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [leaveEntries, setLeaveEntries] = useState<LeaveEntry[]>([])
   const [modifiedFile, setModifiedFile] = useState<LeaveEntry | null>(null)
   const [isExporting, setIsExporting] = useState(false)
 
   // Toggle selection for an item
   function toggleSelection(path: string) {
-    setSelectedItems((prev) => {
-      const next = new Set(prev)
-      if (next.has(path)) {
-        next.delete(path)
-      } else {
-        next.add(path)
-      }
-      return next
-    })
+    setSelectedItems((prev) => prev.includes(path) ? prev.filter((item) => item !== path) : [...prev, path])
   }
 
-  // Toggle select all for a section
   function toggleSelectAll(items: FileNode[]) {
-    const allSelected = items.every((item) => selectedItems.has(item.path))
-    setSelectedItems((prev) => {
-      const next = new Set(prev)
-      if (allSelected) {
-        items.forEach((item) => next.delete(item.path))
-      } else {
-        items.forEach((item) => next.add(item.path))
-      }
-      return next
-    })
+    const allSelected = items.every((item) => selectedItems.includes(item.path))
+    const itemPaths = items.map((item) => item.path)
+    setSelectedItems((prev) => allSelected
+      ? prev.filter((path) => !itemPaths.includes(path))
+      : Array.from(new Set([...prev, ...itemPaths]))
+    )
   }
 
-  // Clear selection
   function clearSelection() {
-    setSelectedItems(new Set())
+    setSelectedItems([])
   }
 
   // Handle Escape key to clear selection
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && selectedItems.size > 0) {
+      if (e.key === 'Escape' && selectedItems.length > 0) {
         clearSelection()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedItems.size])
+  }, [selectedItems.length])
 
   // Extract the workspace path from the URL
   // URL format: /workspace/{folder}/{subfolder}/{...}
@@ -241,7 +233,7 @@ export default function WorkspacePage() {
   }
 
   function openDeleteDialog(path: string, name: string, type: 'file' | 'directory') {
-    setItemToDelete({ path, name, type })
+    setItemToDelete({ paths: [path], name, type })
     setIsDeleteDialogOpen(true)
   }
 
@@ -251,22 +243,7 @@ export default function WorkspacePage() {
     setError(null)
 
     try {
-      // Handle multi-item delete (comma-separated paths)
-      const paths = itemToDelete.path.split(',')
-      
-      for (const filePath of paths) {
-        const trimmedPath = filePath.trim()
-        const res = await fetch('/api/fs/delete', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: trimmedPath }),
-        })
-
-        if (!res.ok) {
-          const data = await res.json()
-          throw new Error(data.error || 'Failed to delete item')
-        }
-      }
+      await deletePaths(itemToDelete.paths)
 
       setIsDeleteDialogOpen(false)
       setItemToDelete(null)
@@ -297,6 +274,7 @@ export default function WorkspacePage() {
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       window.open(url, '_blank')
+      URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export failed:', err)
     } finally {
@@ -305,7 +283,7 @@ export default function WorkspacePage() {
   }
 
   // Get selected count for display
-  const selectedCount = selectedItems.size
+  const selectedCount = selectedItems.length
 
   // Get breadcrumb parts
   const parts = workspacePath.split('/')
@@ -376,7 +354,7 @@ export default function WorkspacePage() {
               icon={<Trash2 size={14} />}
               onClick={() => {
                 if (selectedCount > 0) {
-                  setItemToDelete({ path: Array.from(selectedItems).join(','), name: `${selectedCount} items`, type: 'file' })
+                  setItemToDelete({ paths: selectedItems, name: `${selectedCount} items`, type: 'multiple' })
                   setIsDeleteDialogOpen(true)
                 }
               }}
@@ -441,7 +419,7 @@ export default function WorkspacePage() {
               <h3 className="text-[13px] font-medium uppercase tracking-wider mb-3 px-1 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                 <input
                   type="checkbox"
-                  checked={directories.length > 0 && directories.every((d) => selectedItems.has(d.path))}
+                  checked={directories.length > 0 && directories.every((d) => selectedItems.includes(d.path))}
                   onChange={() => toggleSelectAll(directories)}
                   className="w-4 h-4 rounded border-[var(--border)] bg-transparent accent-[var(--accent)]"
                 />
@@ -455,7 +433,7 @@ export default function WorkspacePage() {
                   >
                     <input
                       type="checkbox"
-                      checked={selectedItems.has(dir.path)}
+                      checked={selectedItems.includes(dir.path)}
                       onChange={() => toggleSelection(dir.path)}
                       className="w-4 h-4 rounded border-[var(--border)] bg-transparent accent-[var(--accent)] flex-shrink-0"
                     />
@@ -497,7 +475,7 @@ export default function WorkspacePage() {
               <h3 className="text-[13px] font-medium uppercase tracking-wider mb-3 px-1 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                 <input
                   type="checkbox"
-                  checked={files.length > 0 && files.every((f) => selectedItems.has(f.path))}
+                  checked={files.length > 0 && files.every((f) => selectedItems.includes(f.path))}
                   onChange={() => toggleSelectAll(files)}
                   className="w-4 h-4 rounded border-[var(--border)] bg-transparent accent-[var(--accent)]"
                 />
@@ -517,7 +495,7 @@ export default function WorkspacePage() {
                     >
                       <input
                         type="checkbox"
-                        checked={selectedItems.has(file.path)}
+                        checked={selectedItems.includes(file.path)}
                         onChange={() => toggleSelection(file.path)}
                         className="w-4 h-4 rounded border-[var(--border)] bg-transparent accent-[var(--accent)] flex-shrink-0"
                       />
@@ -655,9 +633,9 @@ export default function WorkspacePage() {
       <Dialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
-        title={itemToDelete?.name.includes(',') || itemToDelete?.name.endsWith('items') ? 'Delete Items' : itemToDelete?.type === 'directory' ? 'Delete Folder' : 'Delete File'}
+        title={itemToDelete?.type === 'multiple' ? 'Delete Items' : itemToDelete?.type === 'directory' ? 'Delete Folder' : 'Delete File'}
         description={
-          itemToDelete?.name.includes(',') || itemToDelete?.name.endsWith('items')
+          itemToDelete?.type === 'multiple'
             ? `This will permanently delete ${selectedCount} items and all their contents.`
             : itemToDelete?.type === 'directory'
             ? 'This will permanently delete this folder and all its contents.'
@@ -666,7 +644,7 @@ export default function WorkspacePage() {
       >
         <div className="space-y-4">
           <p style={{ color: 'var(--text-muted)' }}>
-            Are you sure you want to delete <strong>{itemToDelete?.name.includes(',') || itemToDelete?.name.endsWith('items') ? `${selectedCount} items` : itemToDelete?.name}</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong>{itemToDelete?.type === 'multiple' ? `${selectedCount} items` : itemToDelete?.name}</strong>? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" size="sm" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>

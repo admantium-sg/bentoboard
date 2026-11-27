@@ -1,22 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
+import { PHASES } from '@/lib/phases'
 import type { KanbanTicket, KanbanPhase } from '@/lib/types'
+import { ErrorPopup, useErrorPopup } from '@/components/ui/ErrorPopup'
 import { DndContext, DragEndEvent, DragStartEvent, DragOverlay, closestCenter } from '@dnd-kit/core'
 import { Column } from './Column'
-import { TicketCard } from './TicketCard'
-
-const PHASES: KanbanPhase[] = [
-  'backlog',
-  'to-do',
-  'in-progress',
-  'in-review',
-  'pull-request',
-  'blocked',
-  'cancelled',
-  'done',
-]
 
 const PHASE_CONFIG: Record<KanbanPhase, { label: string; color: string; className: string }> = {
   backlog: { label: 'Backlog', color: '#60A5FA', className: 'bg-blue-500' },
@@ -35,37 +25,56 @@ interface BoardProps {
 }
 
 export function Board({ project, refreshKey = 0 }: BoardProps) {
-  const { tickets, setTickets, upsertTicket, moveTicketPhase } = useBentoStore()
+  const tickets = useBentoStore((s) => s.tickets)
+  const setTickets = useBentoStore((s) => s.setTickets)
+  const upsertTicket = useBentoStore((s) => s.upsertTicket)
+  const moveTicketPhase = useBentoStore((s) => s.moveTicketPhase)
+  const { error, showError, dismissError } = useErrorPopup()
   const [activeTicket, setActiveTicket] = useState<KanbanTicket | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function fetchTickets() {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/kanban/tickets?project=${project}`)
+        const res = await fetch(`/api/kanban/tickets?project=${project}`, { signal: controller.signal })
         if (!res.ok) throw new Error('Failed to fetch tickets')
         const data = await res.json()
+        if (controller.signal.aborted) return
         const ticketMap: Record<string, KanbanTicket> = {}
         ;(data.tickets || []).forEach((t: KanbanTicket) => {
           ticketMap[t.id] = t
         })
         setTickets(ticketMap)
-      } catch (error) {
-        console.error('Failed to fetch tickets:', error)
+      } catch (fetchError) {
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch tickets:', fetchError)
+        }
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
 
     fetchTickets()
-  }, [project, setTickets, refreshKey])
+    return () => controller.abort()
+  }, [project, refreshKey, setTickets])
 
-  // Group tickets by phase
-  const ticketsByPhase = PHASES.reduce((acc, phase) => {
-    acc[phase] = Object.values(tickets).filter((t) => t.project === project && t.phase === phase)
-    return acc
-  }, {} as Record<KanbanPhase, KanbanTicket[]>)
+  const ticketsByPhase = useMemo(() => {
+    const grouped = PHASES.reduce((acc, phase) => {
+      acc[phase] = []
+      return acc
+    }, {} as Record<KanbanPhase, KanbanTicket[]>)
+
+    Object.values(tickets).forEach((ticket) => {
+      if (ticket.project === project) {
+        grouped[ticket.phase]?.push(ticket)
+      }
+    })
+
+    return grouped
+  }, [tickets, project])
 
   function handleDragStart(event: DragStartEvent) {
     const ticket = event.active.data.current as KanbanTicket
@@ -83,11 +92,9 @@ export function Board({ project, refreshKey = 0 }: BoardProps) {
 
     if (!ticket || !newPhase || ticket.phase === newPhase) return
 
-    // Update phase
-    try {
-      await moveTicketPhase(ticket.id, newPhase)
+    const original = useBentoStore.getState().tickets[ticket.id] ?? ticket
 
-      // Also update via API
+    try {
       const res = await fetch(`/api/kanban/ticket/${ticket.id}/phase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,10 +102,20 @@ export function Board({ project, refreshKey = 0 }: BoardProps) {
       })
 
       if (!res.ok) {
-        console.error('Failed to update ticket phase via API')
+        if (useBentoStore.getState().tickets[ticket.id]?.phase === newPhase) {
+          upsertTicket(original)
+        }
+        showError(`Could not move ${ticket.id} to ${newPhase}`)
+        return
       }
-    } catch (error) {
-      console.error('Failed to move ticket:', error)
+
+      await moveTicketPhase(ticket.id, newPhase)
+    } catch (moveError) {
+      if (useBentoStore.getState().tickets[ticket.id]?.phase === newPhase) {
+        upsertTicket(original)
+      }
+      console.error('Failed to move ticket:', moveError)
+      showError(`Could not move ${ticket.id} to ${newPhase}`)
     }
   }
 
@@ -111,41 +128,44 @@ export function Board({ project, refreshKey = 0 }: BoardProps) {
   }
 
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
-    >
-      <div className="overflow-x-auto -mx-4 px-4 pb-4" style={{ height: 'calc(100vh - 200px)' }}>
-        <div className="flex gap-5 min-w-max h-full">
-          {PHASES.map((phase) => (
-            <Column
-              key={phase}
-              phase={phase}
-              config={PHASE_CONFIG[phase]}
-              tickets={ticketsByPhase[phase] || []}
-            />
-          ))}
-        </div>
-      </div>
-
-      <DragOverlay>
-        {activeTicket ? (
-          <div
-            className="glass-card p-4 opacity-90 cursor-grabbing"
-            style={{ transform: 'rotate(3deg)', minWidth: 280 }}
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <h3 className="text-[14px] font-semibold leading-snug flex-1" style={{ color: 'var(--text-primary)' }}>
-                {activeTicket.title}
-              </h3>
-              <span className="text-[12px] font-mono" style={{ color: 'var(--text-muted)' }}>
-                {activeTicket.id}
-              </span>
-            </div>
+    <>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+      >
+        <div className="overflow-x-auto -mx-4 px-4 pb-4" style={{ height: 'calc(100vh - 200px)' }}>
+          <div className="flex gap-5 min-w-max h-full">
+            {PHASES.map((phase) => (
+              <Column
+                key={phase}
+                phase={phase}
+                config={PHASE_CONFIG[phase]}
+                tickets={ticketsByPhase[phase]}
+              />
+            ))}
           </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        </div>
+
+        <DragOverlay>
+          {activeTicket ? (
+            <div
+              className="glass-card p-4 opacity-90 cursor-grabbing"
+              style={{ transform: 'rotate(3deg)', minWidth: 280 }}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="text-[14px] font-semibold leading-snug flex-1" style={{ color: 'var(--text-primary)' }}>
+                  {activeTicket.title}
+                </h3>
+                <span className="text-[12px] font-mono" style={{ color: 'var(--text-muted)' }}>
+                  {activeTicket.id}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+      <ErrorPopup error={error} onDismiss={dismissError} />
+    </>
   )
 }

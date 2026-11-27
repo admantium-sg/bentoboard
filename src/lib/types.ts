@@ -2,15 +2,9 @@
 // FILE SYSTEM TYPES
 // ============================================
 
-export type KanbanPhase =
-  | 'backlog'
-  | 'to-do'
-  | 'in-progress'
-  | 'in-review'
-  | 'pull-request'
-  | 'blocked'
-  | 'cancelled'
-  | 'done'
+import { PHASES } from './phases'
+
+export type KanbanPhase = (typeof PHASES)[number]
 
 export type ContentType = 'kanban-ticket' | 'markdown-doc' | 'session-registry' | 'status-file'
 
@@ -86,7 +80,7 @@ export interface AgentStatus {
 export interface MarkdownDoc {
   path: string
   title: string
-  content: string
+  content?: string
   category: string       // e.g., "research-findings", "feature-ideas", "run-report"
   project: string
   modifiedAt: string

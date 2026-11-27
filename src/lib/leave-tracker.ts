@@ -42,24 +42,24 @@ export function readEntries(): LeaveEntry[] {
   if (!fs.existsSync(dbPath)) return []
 
   const lines = fs.readFileSync(dbPath, 'utf-8').split('\n').filter(Boolean)
-  const entries: LeaveEntry[] = []
+  const byPath = new Map<string, LeaveEntry>()
 
   for (const line of lines) {
     try {
-      entries.push(JSON.parse(line) as LeaveEntry)
+      const entry = JSON.parse(line) as LeaveEntry
+      if (typeof entry.path === 'string') {
+        byPath.set(entry.path, entry)
+      }
     } catch {
       // Skip malformed lines
     }
   }
 
-  return entries
+  return Array.from(byPath.values())
 }
 
-/** Write all entries to the JSON Lines DB (overwrite) */
-function writeEntries(entries: LeaveEntry[]): void {
-  const dbPath = getDbPath()
-  const lines = entries.map((e) => JSON.stringify(e)).join('\n') + '\n'
-  fs.writeFileSync(dbPath, lines, 'utf-8')
+function appendEntry(entry: LeaveEntry): void {
+  fs.appendFileSync(getDbPath(), JSON.stringify(entry) + '\n', 'utf-8')
 }
 
 /** Get a single entry by path */
@@ -68,16 +68,13 @@ export function getEntry(filePath: string): LeaveEntry | null {
   return entries.find((e) => e.path === filePath) ?? null
 }
 
-/** Upsert a single entry */
+/** Append one change; reads resolve to the latest entry for a path */
 export function upsertEntry(entry: LeaveEntry): void {
-  const entries = readEntries()
-  const idx = entries.findIndex((e) => e.path === entry.path)
-  if (idx >= 0) {
-    entries[idx] = entry
-  } else {
-    entries.push(entry)
-  }
-  writeEntries(entries)
+  const existing = getEntry(entry.path)
+  appendEntry({
+    ...entry,
+    created_at: existing?.created_at ?? entry.created_at,
+  })
 }
 
 /** Mark a file as done */
@@ -169,7 +166,6 @@ export function scanWorkspace(): LeaveEntry[] {
     }
   }
 
-  // Preserve entries for files that no longer exist (they'll be cleaned up on next scan)
   return result
 }
 

@@ -6,18 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { cn } from '@/lib/utils'
 import { useThemeStore } from '@/lib/theme'
+import { WORKSPACE_CHOICE_KEY } from '@/lib/workspace-client'
 import { useBentoStore } from '@/lib/store'
 import { Dialog } from '@/components/ui/Dialog'
 import { Check, Sun, Moon, TreePine, Sunset, MountainSnow, FolderOpen, FolderOpen as FolderOpenIcon, ChevronRight, Home, ArrowUp } from 'lucide-react'
-
-const ACCENT_COLORS = [
-  { label: 'Blue',   value: '#3B82F6' },
-  { label: 'Purple', value: '#8B5CF6' },
-  { label: 'Pink',   value: '#EC4899' },
-  { label: 'Teal',   value: '#14B8A6' },
-  { label: 'Green',  value: '#22C55E' },
-  { label: 'Orange', value: '#F97316' },
-]
 
 interface DirectoryItem {
   name: string
@@ -37,22 +29,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function SettingsPage() {
-  const [accentColor, setAccentColor] = useState('#3B82F6')
   const [saved, setSaved] = useState(false)
-  const { theme, cycle } = useThemeStore()
+  const { theme, setTheme } = useThemeStore()
   const { projects, setProjects } = useBentoStore()
   const isDark = theme === 'dark'
   const isForest = theme === 'forest'
 
   const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false)
-  // Get workspace path from guard (stored in localStorage) or default
-  const getInitialWorkspacePath = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('workspacePath') || ''
-    }
-    return ''
-  }
-
   const [currentWorkspacePath, setCurrentWorkspacePath] = useState<string>('')
   const [workspaceDirectories, setWorkspaceDirectories] = useState<DirectoryItem[]>([])
   const [browsePath, setBrowsePath] = useState<string>('')
@@ -78,19 +61,9 @@ export default function SettingsPage() {
         setWorkspaceDirectories(enriched)
         // Initialize browse path to empty string (relative to workspace root)
         setBrowsePath('')
-        // Set current workspace path from localStorage if available and valid
-        const savedPath = localStorage.getItem('workspacePath')
-        if (savedPath && savedPath !== '/home/devcon/.openclaw') {
-          setCurrentWorkspacePath(savedPath)
-        } else {
-          // Clear invalid saved path
-          localStorage.removeItem('workspacePath')
-          setCurrentWorkspacePath('')
-        }
+        setCurrentWorkspacePath(localStorage.getItem(WORKSPACE_CHOICE_KEY) || '')
       } catch (error) {
         console.error('Failed to fetch workspaces:', error)
-        // Clear invalid data on error
-        localStorage.removeItem('workspacePath')
       }
     }
     fetchWorkspaces()
@@ -133,11 +106,15 @@ export default function SettingsPage() {
     fetchProjects()
   }, [setProjects])
 
+  useEffect(() => {
+    if (!saved) return
+    const timer = setTimeout(() => setSaved(false), 2000)
+    return () => clearTimeout(timer)
+  }, [saved])
+
   function handleSave() {
+    localStorage.setItem(WORKSPACE_CHOICE_KEY, currentWorkspacePath)
     setSaved(true)
-    // Update workspace path in localStorage or API
-    localStorage.setItem('workspacePath', currentWorkspacePath)
-    setTimeout(() => setSaved(false), 2000)
   }
 
   function handleSelectWorkspace(path: string) {
@@ -145,8 +122,7 @@ export default function SettingsPage() {
     setBrowsePath(path)
     setIsBrowsing(false)
     setDirectoryContents([])
-    // Save the selected workspace to localStorage
-    localStorage.setItem('workspacePath', path)
+    localStorage.setItem(WORKSPACE_CHOICE_KEY, path)
   }
 
   function handleBrowseDirectory(path: string) {
@@ -274,7 +250,7 @@ export default function SettingsPage() {
               ] as const).map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => cycle()}
+                  onClick={() => setTheme(opt.value)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
                   style={{
                     background: theme === opt.value ? 'var(--tab-active-bg)' : 'transparent',
@@ -288,30 +264,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Accent colors */}
-          <div>
-            <p className="text-[11px] font-medium mb-2.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-              Accent Color
-            </p>
-            <div className="flex gap-2">
-              {ACCENT_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => setAccentColor(c.value)}
-                  className="w-7 h-7 rounded-full transition-all duration-150 flex items-center justify-center"
-                  style={{
-                    backgroundColor: c.value,
-                    outline: accentColor === c.value ? `2px solid ${c.value}` : 'none',
-                    outlineOffset: 2,
-                    transform: accentColor === c.value ? 'scale(1.15)' : 'scale(1)',
-                  }}
-                  title={c.label}
-                >
-                  {accentColor === c.value && <Check size={12} strokeWidth={3} className="text-white" />}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </Section>
 

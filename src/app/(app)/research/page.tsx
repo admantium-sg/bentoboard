@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
-import { formatRelativeTime } from '@/lib/utils'
+import { formatRelativeTime, getDocPreview } from '@/lib/utils'
 import { FileText, Search, FolderOpen, ChevronRight, ChevronDown, Plus, FolderPlus, FilePlus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -18,7 +18,7 @@ interface ResearchProject {
   docs: {
     path: string
     title: string
-    content: string
+    content?: string
     modifiedAt: string
   }[]
 }
@@ -53,14 +53,16 @@ export default function ResearchPage() {
     fetchDocs()
   }, [setDocs])
 
-  // Filter docs by search query
-  const filteredDocs = docs.filter((doc) =>
-    doc.category === 'research' &&
-    (searchQuery
-      ? doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.content?.toLowerCase().includes(searchQuery.toLowerCase())
-      : true)
-  )
+  const searchableDocs = useMemo(() => docs
+    .filter((doc) => doc.category === 'research')
+    .map((doc) => ({
+      doc,
+      text: `${doc.title} ${doc.path} ${doc.project} ${getDocPreview(doc.content)}`.toLowerCase(),
+    })), [docs])
+
+  const filteredDocs = searchableDocs
+    .filter(({ text }) => !searchQuery || text.includes(searchQuery.toLowerCase()))
+    .map(({ doc }) => doc)
 
   // Group by project (second path segment)
   const projectGroups = filteredDocs.reduce((acc, doc) => {
@@ -270,33 +272,36 @@ export default function ResearchPage() {
                 {isExpanded && (
                   <div className="border-t" style={{ borderColor: 'var(--divider)' }}>
                     <div className="p-4 space-y-3">
-                      {project.docs.map((doc) => (
-                        <Link
-                          key={doc.path}
-                          href={`/drafts/${doc.path}`}
-                          className="glass-card-flat p-4 flex items-start gap-3 hover:opacity-80 transition-opacity block"
-                        >
-                          <FileText size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-[14px] font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-                              {doc.title}
-                            </h3>
-                            <p className="text-[12px] font-mono truncate mb-2" style={{ color: 'var(--text-muted)' }}>
-                              {doc.path}
-                            </p>
-                            <div className="flex items-center gap-2">
-                              {doc.content && (
-                                <p className="text-[12px] line-clamp-1 flex-1" style={{ color: 'var(--text-secondary)' }}>
-                                  {doc.content.replace(/^#.*\n/, '').slice(0, 100)}...
-                                </p>
-                              )}
-                              <span className="text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
-                                {formatRelativeTime(doc.modifiedAt)}
-                              </span>
+                      {project.docs.map((doc) => {
+                        const preview = getDocPreview(doc.content)
+                        return (
+                          <Link
+                            key={doc.path}
+                            href={`/drafts/${doc.path}`}
+                            className="glass-card-flat p-4 flex items-start gap-3 hover:opacity-80 transition-opacity block"
+                          >
+                            <FileText size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-[14px] font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+                                {doc.title}
+                              </h3>
+                              <p className="text-[12px] font-mono truncate mb-2" style={{ color: 'var(--text-muted)' }}>
+                                {doc.path}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                {preview && (
+                                  <p className="text-[12px] line-clamp-1 flex-1" style={{ color: 'var(--text-secondary)' }}>
+                                    {preview}
+                                  </p>
+                                )}
+                                <span className="text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                                  {formatRelativeTime(doc.modifiedAt)}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        )
+                      })}
                     </div>
                   </div>
                 )}

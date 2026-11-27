@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
+import { WORKSPACE_CHOICE_KEY } from '@/lib/workspace-client'
 import { cn } from '@/lib/utils'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
@@ -64,8 +65,7 @@ export function Sidebar() {
 
   function handleWorkspaceSelect(folder: WorkspaceFolder) {
     setIsWorkspaceDialogOpen(false)
-    // Save the selected workspace to localStorage
-    localStorage.setItem('workspacePath', folder.path)
+    localStorage.setItem(WORKSPACE_CHOICE_KEY, folder.path)
     router.push(`/workspace/${folder.path}`)
   }
 
