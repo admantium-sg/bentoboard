@@ -1,33 +1,31 @@
 # BentoBoard
 
-A kanban board application with 3D visualization, drag-and-drop functionality, and workspace-based project management.
+BentoBoard is a kanban board with drag and drop, workspace-based project management, and Markdown editing.
 
 ## Features
 
-- **3D Kanban Board**: Interactive board visualization using React Three Fiber
-- **Drag-and-Drop**: Intuitive ticket management with @dnd-kit
-- **Workspace Management**: Organize projects and files within a configurable workspace
-- **Multiple Views**: Projects, ideas, drafts, tasks, inbox, research, outreach, and more
-- **Markdown Support**: Rich text editing with react-markdown and remark-gfm
-- **State Management**: Built with Zustand for reactive UI updates
+- Drag and drop ticket management with @dnd-kit.
+- Workspace and file management with a configurable workspace folder.
+- Views for projects, ideas, drafts, tasks, inbox, research, and files.
+- Markdown rendering with react-markdown and remark-gfm.
+- Client state with Zustand.
 
 ## Tech Stack
 
-- **Framework**: Next.js 16.2.3
-- **Language**: TypeScript
-- **3D Rendering**: Three.js, React Three Fiber, React Three Drei
-- **Drag-and-Drop**: @dnd-kit/core, @dnd-kit/sortable
-- **State**: Zustand
-- **Markdown**: react-markdown, remark-gfm
-- **Utilities**: date-fns, lucide-react
-- **Testing**: Vitest with @vitest/coverage-v8
+- Framework: Next.js 16
+- Language: TypeScript
+- Drag and drop: @dnd-kit/core and @dnd-kit/sortable
+- State: Zustand
+- Markdown: react-markdown and remark-gfm
+- Utilities: date-fns and lucide-react
+- Tests: Vitest and @vitest/coverage-v8
+- CI: Node.js 22
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm or yarn or pnpm or bun
+Install Node.js 22 and npm.
 
 ### Installation
 
@@ -37,17 +35,15 @@ npm install
 
 ### Configuration
 
-Create a `.env.local` file based on `.env.example`:
-
-```bash
-cp .env.example .env.local
-```
-
-Set your workspace folder path:
+Create `.env.local` in the project root. BentoBoard does not include an example environment file.
 
 ```env
 BENTOBOARD_WORKSPACE_FOLDER=/path/to/your/workspace
+BENTOBOARD_AUTH_USER=your-user
+BENTOBOARD_AUTH_PASSWORD=your-password
 ```
+
+`BENTOBOARD_WORKSPACE_FOLDER` sets the folder that the server reads and writes. Set it to an absolute path that the server can access. `BENTOBOARD_AUTH_USER` and `BENTOBOARD_AUTH_PASSWORD` set the app credentials.
 
 ### Development
 
@@ -57,9 +53,11 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://127.0.0.1:3333](http://127.0.0.1:3333) in your browser.
+Open http://127.0.0.1:3333 in your browser.
 
 ### Production Build
+
+Build and start the production server:
 
 ```bash
 npm run build
@@ -70,28 +68,24 @@ npm start
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server on port 3333 |
-| `npm run build` | Create production build |
-| `npm run start` | Start production server |
+| `npm run dev` | Start the development server on port 3333 |
+| `npm run build` | Build the production app |
+| `npm start` | Start the production server |
+| `npm run stop` | Stop processes listening on ports 3333 and 3000 |
+| `npm run restart` | Stop the server, then start the production server |
+| `npm run rebuild` | Stop the server, remove `.next`, build, and start |
 | `npm run lint` | Run ESLint |
-| `npm run typecheck` | Run TypeScript type checking |
+| `npm run typecheck` | Check TypeScript types |
 | `npm run test` | Run tests in watch mode |
 | `npm run test:run` | Run tests once |
-| `npm run test:coverage` | Run tests with coverage report |
+| `npm run test:coverage` | Run tests once and check coverage thresholds |
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/            # Next.js app router pages and API routes
-├── components/    # React components (kanban, layout, ui, editor)
-├── lib/           # Core utilities (store, security, parsers, types)
-└── test/          # Vitest test files
+├── components/     # React components for kanban, layout, and UI
+├── lib/            # State, security, parsers, and utilities
+└── test/           # Vitest tests
 ```
-
-## Architecture
-
-BentoBoard uses a layered architecture:
-- **App Layer**: Pages and API routes (Next.js App Router)
-- **Components Layer**: UI components organized by feature
-- **Library Layer**: Core business logic, state management, and utilities
