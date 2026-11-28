@@ -19,7 +19,6 @@ export function validateWorkspace(): string {
   if (!workspacePath) {
     const fallback = path.resolve('/tmp/workspace')
     const defaultPath = [
-      path.resolve(process.cwd(), '.next', 'bentoboard-content'),
       path.resolve(process.cwd(), 'content', 'research'),
       fallback,
     ].find((candidate) => fs.existsSync(candidate)) ?? fallback

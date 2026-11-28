@@ -32,14 +32,7 @@ describe('workspace path', () => {
     expect(getWorkspacePath()).toBe(override)
   })
 
-  it('uses the packaged copy when the env var is unset', () => {
-    const packaged = path.join(root, '.next', 'bentoboard-content')
-    fs.mkdirSync(packaged, { recursive: true })
-
-    expect(getWorkspacePath()).toBe(packaged)
-  })
-
-  it('uses repository content for local development', () => {
+  it('uses bundled research content when the env var is unset', () => {
     const source = path.join(root, 'content', 'research')
     fs.mkdirSync(source, { recursive: true })
 
