@@ -1,0 +1,76 @@
+Title: More Malicious OpenClaw Skills Threaten AI Supply Chain
+
+URL Source: https://www.darkreading.com/cyber-risk/malicious-openclaw-skills-clawhub-threaten-ai-supply-chain
+
+Published Time: 2026-06-24T16:56:49.000Z
+
+Markdown Content:
+![Image 1: Home page for OpenClaw with a red robot icon and the word "OpenClaw" under it on a mobile device screen](https://eu-images.contentstack.com/v3/assets/blt6d90778a997de1cd/bltae6f59d8c10d8c7c/6a3bc8af154dd32d453f2e72/openclaw_Koshiro_K_shutterstock.png?width=1280&auto=webp&quality=80&disable=upscale)
+
+Source: Koshiro K via Shutterstock
+
+Security researchers have identified multiple malicious skills on a marketplace for the OpenClaw ecosystem that can steal credentials, bypass security scans, and conduct other novel malicious activity for an attacker's financial gain.
+
+Researchers at Palo Alto Networks' Unit 42 recently identified five malicious skills that appeared legitimate on ClawHub, OpenClaw's dedicated marketplace, demonstrating that such platforms are emerging as a significant AI supply chain attack surface. ClawHub sells these skills — which can access local files, credentials, APIs, and other resources on the host system — to add functionality to the open source AI agent, which has seen [meteoric adoption](https://www.darkreading.com/application-security/openclaw-ai-runs-wild-business-environments) among developers and businesses since its launch last November.
+
+"The five skills represent three distinct threat categories leveraging the AI supply chain ecosystem," Unit 42 researchers wrote in a [blog post](https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/) published on June 23. The three categories consist of infostealers, detection evasion, and agentic threats. If these skills spread across users of OpenClaw, they can threaten the platform in use across scores of organizations, they said.
+
+Related:[Tech Giants Block eMudhra Certificates Tied to 8 Compromised Keys](https://www.darkreading.com/cyber-risk/tech-giants-emudhra-certificates-compromised-keys)
+
+Two of the malicious skills included [infostealers](https://www.techtarget.com/searchsecurity/tip/A-CISOs-guide-to-infostealers-Prevention-and-detection) that connect to command-and-control (C2) infrastructure; the malware was directed at the macOS platform, according to the post. Another skill provided evasion capability using an inflated file size that could exceed scanner thresholds, bypassing both ClawScan and VirusTotal detection.
+
+Finally, the last two skills represented agentic threats, including "agentic affiliate injection and agentic front-running," both novel techniques that the skills' developers can use for financial gain, according to the researchers.
+
+Collectively, the malicious skills threaten organizations using [OpenClaw](https://www.darkreading.com/cyber-risk/agentic-ai-moltbook-security-risks) by allowing threat actors to steal credentials and sensitive data; exfiltrate files and system information; manipulate agent behavior through hidden instructions; execute unauthorized actions on behalf of the user; and abuse access to connected services and workflows.
+
+## OpenClaw Security Woes Persist
+
+The existence of the malicious skills on ClawHub represents yet another [security challenge](https://www.techtarget.com/searchsecurity/tip/The-OpenClaw-security-risks-every-CISO-needs-to-know) for OpenClaw, an AI agent framework that executes third-party skills from ClawHub. Skills are markdown-driven packages with broad local system access, making ClawHub a critical link in the agentic software supply chain.
+
+However, following its release and subsequent rapid adoption, OpenClaw, as many security experts feared, [spawned numerous security concerns](https://www.darkreading.com/application-security/openclaw-insecurities-safe-usage-difficult), including [vulnerabilities](https://www.darkreading.com/application-security/claw-chain-vulnerabilities-threaten-openclaw) that threatened deployments and [other issues](https://www.darkreading.com/application-security/github-openclaw-deployer-repo-delivers-trojan) that included malicious skills being found on ClawHub, according to Unit 42. In fact, in early February 2026, Bitdefender Labs [reported](https://www.bitdefender.com/en-us/blog/labs/helpful-skills-or-hidden-payloads-bitdefender-labs-dives-deep-into-the-openclaw-malicious-skill-trap) that approximately 17% of OpenClaw skills it analyzed in the first few weeks of the platform's release carried malicious payloads.
+
+Related:[Enterprise AI Enters Risk Management Phase as Security Concerns Rise](https://www.darkreading.com/cyber-risk/enterprise-ai-risk-management-phase-security-concerns-rise)
+
+Meanwhile, Koi Security's [ClawHavoc](https://www.koi.ai/blog/clawhavoc-341-malicious-clawedbot-skills-found-by-the-bot-they-were-targeting) research earlier this year documented 341 malicious skills, and Trend Micro separately [confirmed](https://www.trendmicro.com/en_us/research/26/b/openclaw-skills-used-to-distribute-atomic-macos-stealer.html) skills distributing [Atomic macOS stealer (AMOS)](https://www.darkreading.com/application-security/attackers-phony-github-pages-mac-malware) malware across the marketplace, according to the Unit 42 researchers.
+
+To address these issues and make the platform more secure, ClawHub integrated VirusTotal and ClawScan into its platform to enable proactive screening of published skills and code-level analysis to block skills flagged as malicious. However, the five skills discovered by Unit 42 bypassed automated security scanning and code-analysis mechanisms intended to protect users.
+
+To be fair, ensuring that scans can detect all malicious "is generally a hard problem to solve," observes Johan Edholm, a security engineer and co-founder at application security provider Detectify. Skills are really just sets of plain-language instructions the agent reads and trusts, and defending against such abuse is difficult, he explains via email.
+
+Related:[When Your Ransomware Negotiator Works for the Other Side](https://www.darkreading.com/cyber-risk/when-your-ransomware-negotiator-works-other-side)
+
+"Because it's plain language that LLMs will interpret, we can't rely on (only) static checks to infer if the skill contains malicious intent or not," Edholm says. "Adding a human to review everything before publication would add a bottleneck, which might not be desirable. One can use LLMs to review skills, which helps, but it won't be perfect. Like with classic malware, it's a bit of a cat-and-mouse game."
+
+Unit 42 reported all five of the malicious skills to ClawHub for takedown, and administrators subsequently deleted all of the skills and banned the related accounts, according to the post.
+
+## Emerging Threats to the AI Ecosystem
+
+Unit 42's analysis of the malicious skills uncovered several emerging agent-specific threats that extend beyond traditional malware, demonstrating how AI agents give outsiders new and [creative ways to attack the supply chain](https://www.cybersecuritydive.com/news/ai-cyberattacks-five-eyes-frontier-models-warning/823526/).
+
+One malicious skill dubbed "omnicogg," for example, used a classic defense-evasion technique by hiding a malware downloader in a README file padded with junk data. Attackers designed the file to exceed processing limits of automated scanning systems, thus giving the payload cover while still passing marketplace security checks, the researchers noted.
+
+The researchers also identified a financial advisory skill, "money-radar," principally aimed at manipulating agent recommendations for profit. "The skill weaponized the agent's advisory authority, routing all financial recommendations through affiliate links from a known-malicious domain," according to the researchers. "The publisher retained dynamic control over which products it pushed after installation."
+
+Another skill identified by Unit 42, "letssendit," represented arguably the most inventive and dangerous of the bunch. It coordinates a meme token pump-and-dump scheme by instructing agents to pool funds into wallets controlled by the operator, who could then acquire tokens ahead of the resulting demand and profit from subsequent price increases.
+
+In particular, this skill represents a novel use case of [AI agents](https://www.darkreading.com/application-security/github-openclaw-deployer-repo-delivers-trojan) for an autonomous financial manipulation scheme, the researchers noted. It also goes beyond mere malware delivery or simple fraud and provides a potential glimpse of how agentic AI systems could be manipulated for malicious intent in the future.
+
+## Defensive Strategies for AI Supply Chain Threats
+
+Given the new threats that emerge with the use of agentic [AI systems](https://www.darkreading.com/vulnerabilities-threats/every-old-vulnerability-ai-vulnerability) across organizations, they should strengthen their defensive posture, the researchers recommended. One key way to do this is by using "a rigorous [supply chain](https://www.darkreading.com/application-security/ide-extensions-risks-software-supply-chain) verification framework," they said.
+
+"We identified that skill execution occurs within the agent process," the researchers wrote. "This necessitates active validation of publisher provenance and a line-by-line audit of package source files."
+
+Detectify's Edholm advises organizations to treat any skill used in an agentic AI system as another way into the network for an attacker, "and put your attention on what it does while it's running, not just on the moment you install it." And like Unit 42, he recommends monitoring outbound traffic with undocumented endpoints.
+
+"Keep an eye on which outside servers your agents are talking to, check that against what each skill said it would need, and look closely at anything reaching a destination it never mentioned," Edholm says. "Give the agent only the access it genuinely needs, check who actually published the skill, and keep watching over time rather than relying on a single inspection, because these systems change too fast for an occasional review to mean much."
+
+Indeed, Unit 42 researchers said, implementing more stringent verification steps for AI assets in an organization can help protect its environment by ensuring that the operational behavior of a skill aligns strictly with its stated technical specifications.
+
+## About the Author
+
+[![Image 2: Elizabeth Montalbano](https://eu-images.contentstack.com/v3/assets/blt6d90778a997de1cd/bltd6f16d37895d5bfd/6a06cc5deb9f4ad4d2785f3f/LizHeadshot2026.png?width=400&auto=webp&quality=80&disable=upscale)](https://www.darkreading.com/author/elizabeth-montalbano)
+
+Contributing Writer
+
+Elizabeth Montalbano is freelance writer, editor, and journalist with 30 years of professional experience and a master's degree from Arizona State University. Her areas of expertise include enterprise technology, cybersecurity, business, and culture. During her long career, Elizabeth has lived and worked as a full-time journalist in Phoenix, San Francisco, and New York City. She specializes in news coverage and analysis, using her years of experience to look at the current state of cybersecurity with a critical gaze. She currently resides in a village on the southwest coast of Portugal, where in her free time she enjoys surfing, hiking with her dogs, growing plants, and playing and performing as a singer and musician.

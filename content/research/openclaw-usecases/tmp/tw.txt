@@ -1,0 +1,19 @@
+Title: Peter Steinberger 🦞 (@steipete) on X
+
+URL Source: https://x.com/steipete/status/2112597162924351909
+
+Published Time: 2026-10-20T17:29:48.000Z
+
+Markdown Content:
+## Post
+
+## Post
+
+## Peter Steinberger 🦞 on X: "Two weeks ago I kicked off a loop to move OpenClaw's Lit-based Web frontend to Solid 2.0. Took ~6 days until we could remove Lit, and another week to move patterns to idiomatic Solid. I checked in with the session every other day, overall the process was mostly automatic. Took about ~600 PRs. Result: Smaller JS and CSS footprint and much more fine-grained update control. Everything feeling more snappy and responsive. https://t.co/rYAuaXH2xN"
+
+*   [![Image 1: Avatar](https://pbs.twimg.com/profile_images/1131851609774985216/OcsssQ9J_normal.png)](https://x.com/steipete) 
+Two weeks ago I kicked off a loop to move OpenClaw's Lit-based Web frontend to Solid 2.0. Took ~6 days until we could remove Lit, and another week to move patterns to idiomatic Solid. I checked in with the session every other day, overall the process was mostly automatic. Took about ~600 PRs. Result: Smaller JS and CSS footprint and much more fine-grained update control. Everything feeling more snappy and responsive. [team.openclaw.ai/chat/roboclaw/…](https://team.openclaw.ai/chat/roboclaw/timeline-of-solid-js-to-lit-pr-refactors-5ba10f632c29434c9f79a92c3c16a7a3)
+
+![Image 2](https://pbs.twimg.com/media/HVFxsUJbcAAlGap?format=webp&name=large)   
+*   [![Image 3: Avatar](https://pbs.twimg.com/profile_images/1131851609774985216/OcsssQ9J_normal.png)](https://x.com/steipete) We found a few tiny regressions the agent missed, mostly different shapes on buttons or slight ux regressions, overall I'm amazed how well this worked. Technical dept is can be counted in token now.   [![Image 4: Avatar](https://pbs.twimg.com/profile_images/1131851609774985216/OcsssQ9J_normal.png)](https://x.com/steipete) Astra did the planning, Sol 6.1 did the coding. I found that the workflow of prompting Astra to run codex cli in worktrees works FAR better than relying on subagents. A second agent oversaw the work to keep Astra on track. Kinda like /goal, but instead of the same agent    
+*   [![Image 5: @RyanCarniato](https://pbs.twimg.com/profile_images/1810837163447308292/8Piov0f6_normal.jpg)](https://x.com/RyanCarniato) I'd love to know more. We've been trying really hard to make Solid 2 agent friendly. Not sure if you ended up using any of our diagnostics in dev etc... But congratulations on the move, and pleased you've seen positive results.

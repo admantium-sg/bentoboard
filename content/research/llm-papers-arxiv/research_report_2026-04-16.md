@@ -1,0 +1,675 @@
+# LLM Research Report - April 16, 2026
+**Research Date:** April 16, 2026
+**Working Directory:** shared-workspace/research/llm-papers-arxiv
+**Research Type:** Daily Incremental Update
+**Total Papers Analyzed:** 72+ (from arXiv AI Research Digest + individual arXiv access)
+
+---
+
+## Executive Summary
+
+April 16, 2026 reveals a significant inflection point in LLM research: **the field is maturing from raw capability scaling to sophisticated optimization and automation**. While no revolutionary new architectures emerged, today's submissions demonstrate remarkable advances in post-training efficiency, agent automation, and fundamental understanding of LLM limitations.
+
+**Key Highlights:**
+- **Post-training revolution:** Multiple papers advance on-policy distillation (OPD), with Lightning OPD eliminating live teacher inference requirements
+- **Reasoning breakthroughs:** NCoTS reformulates CoT from sequential generation to optimal path search, achieving Pareto improvements (+3.5% accuracy, -22% length)
+- **Efficiency innovations:** Ultra low-bit quantization (DASH-Q) gains 7-14% accuracy; token selection (TIP) reduces memory by 47%
+- **Safety limits proven:** The Verification Tax establishes fundamental impossibility bounds on AI auditing
+- **Agent autonomy breakthroughs:** TREX automates complete LLM training lifecycle; π-Play enables data-free multi-agent evolution
+
+**Technical Constraints:**
+- Reddit research blocked by DuckDuckGo bot detection (no community insights available)
+- Web search limitations limited broader community discussion analysis
+- Focus shifted to direct arXiv access and paper retrieval
+
+---
+
+## 1. Today's Major Breakthroughs
+
+### 1.1 Lightning OPD: Offline On-Policy Distillation
+**arXiv ID:** 2604.13010
+**Authors:** Wu, Han, Cai
+
+**Revolutionary Innovation:** Eliminates the live teacher inference server requirement for on-policy distillation.
+
+**Why It Matters:**
+- **Infrastructure cost reduction:** No need to maintain expensive live teacher models
+- **Democratization:** Makes powerful post-training methods accessible to resource-constrained labs
+- **Scalability:** Enables parallel distillation without server bottlenecks
+
+**Context:** This addresses a critical bottleneck in OPD adoption. Previous methods required live teacher inference, making infrastructure costs prohibitive for widespread adoption.
+
+---
+
+### 1.2 Neural Chain-of-Thought Search (NCoTS)
+**arXiv ID:** 2601.11340v2
+**Authors:** Ling, et al.
+**Updated:** April 15, 2026
+
+**Paradigm Shift:** Reformulates CoT reasoning from sequential generation to **dynamic search for optimal reasoning paths**.
+
+**Performance Gains:**
+- **Accuracy boost:** >3.5% across diverse reasoning benchmarks
+- **Length reduction:** >22% reduction in generation length
+- **Pareto improvement:** Both metrics improve simultaneously (rare achievement)
+
+**Novel Concept:** Identifies "sparse superior reasoning paths" - optimal reasoning that is simultaneously more accurate AND more concise.
+
+**Significance:** This challenges the fundamental assumption that longer reasoning = better reasoning, and introduces search optimization to reasoning path selection.
+
+---
+
+### 1.3 The Verification Tax: Fundamental AI Auditing Limits
+**arXiv ID:** 2604.12951
+**Author:** Jason Z Wang
+
+**Theoretical Breakthrough:** Proves that estimating calibration error below the model's error rate is **statistically impossible**.
+
+**Implications:**
+- **Hard limits on safety evaluation:** Sets fundamental minimax lower bound on what auditing can achieve
+- **Design constraint:** Safety pipelines must operate above this theoretical floor
+- **Resource allocation:** Avoids wasted investment in impossibly precise calibration
+
+**Why It's Important:** This is a rare **negative result with immediate practical consequences**. It fundamentally constrains what's possible in AI safety evaluation, preventing research from pursuing unattainable precision.
+
+---
+
+### 1.4 TREX: Complete LLM Training Automation
+**arXiv ID:** 2604.14116
+**Authors:** Li, et al.
+**System:** TREX multi-agent system
+
+**Breakthrough:** First system to automate the **complete LLM training lifecycle**:
+- Requirement analysis
+- Literature and data research
+- Training strategy formulation
+- Data recipe preparation
+- Model training and evaluation
+
+**Innovation:** Uses tree-based exploration for efficient path planning with historical result reuse.
+
+**Significance:** Represents meaningful progress toward autonomous ML research engineering, moving beyond single-task optimization to sustained multi-day agent coherence.
+
+---
+
+## 2. Chain of Thought & Reasoning Advances
+
+### 2.1 NCoTS: Search-Based Reasoning
+**Key Innovation:** Solution space quantification reveals sparse superior reasoning paths.
+
+**Technical Insights:**
+- Dual-factor heuristic: Correctness + computational cost optimization
+- Models become trapped in suboptimal reasoning paths with redundant steps
+- Dynamic search framework navigates toward optimal paths
+
+**Performance:**
+- +3.5% accuracy improvement
+- -22% generation length reduction
+- Achieves rare Pareto improvement
+
+---
+
+### 2.2 Intention Chain-of-Thought (ICoT)
+**arXiv ID:** 2512.14048
+**Authors:** Li, et al.
+**Venue:** Accepted at AAAI-2026
+
+**Domain-Specific CoT:** Designed specifically for code generation.
+
+**Key Innovations:**
+- **Difficulty-Aware Routing:** Simple tasks use few-shot prompting, complex tasks use structured ICoT
+- **Intention Capturing:** Captures algorithmic logic, time complexity, global problem objectives
+- **Cognitive Economy Principle:** Avoids overthinking on simple problems
+
+**Performance:**
+- State-of-the-art on 3 models × 6 benchmarks
+- **46.37% average token reduction** through adaptive routing
+
+---
+
+### 2.3 LongCoT: Long-Horizon Reasoning Benchmark
+**arXiv ID:** 2604.14140
+**Authors:** Motwani, et al.
+
+**New Benchmark:** 2,500 expert-designed problems testing long-horizon reasoning.
+
+**Disturbing Findings:**
+- **GPT 5.2:** 9.8% accuracy
+- **Gemini 3 Pro:** 6.1% accuracy
+- **Best models:** <10% accuracy
+
+**Significance:** Exposes substantial gap in current long-horizon reasoning capabilities. Models fail on problems with interdependent steps spanning tens to hundreds of thousands of reasoning tokens.
+
+---
+
+## 3. Architecture & Efficiency Innovations
+
+### 3.1 Post-Training Quantization Breakthrough
+
+#### DASH-Q: Ultra Low-Bit Quantization
+**arXiv ID:** 2604.13806
+**Authors:** Kim, et al.
+
+**Key Innovation:** Diagonal Hessian approximation with noise filtering.
+
+**Performance:**
+- **Average accuracy gain:** 7.01% over strongest baselines
+- **Maximum gain:** 14.01% at ultra low bit-widths
+- **Training-free:** Only small calibration set required
+
+**Technical Insight:** Filters sampling noise while preserving salient feature power, addressing noisy curvature estimates at low bit-widths.
+
+---
+
+### 3.2 Token Selection for Distillation
+
+#### TIP: Token Importance in On-Policy Distillation
+**arXiv ID:** 2604.14084
+**Authors:** Xu, et al.
+
+**Two-Axis Framework:** Student entropy × teacher-student divergence.
+
+**Performance:**
+- **Memory reduction:** Up to 47% peak memory reduction
+- **Ultra-selective:** <10% token selection nearly matches full-token training
+- **Reasoning increase:** Transition thoughts +14.89x, reflection thoughts +6.54x
+
+**Novel Insight:** Overconfident, incorrect tokens (low entropy + high divergence) contain dense corrective signal.
+
+---
+
+### 3.3 Dynamic Parameter Management
+
+#### EPI: Evolving Parameter Isolation
+**arXiv ID:** 2604.14010
+**Authors:** Lin, et al.
+
+**Key Innovation:** Recognizes temporal drift in parameter importance.
+
+**Solution:** Periodic mask updates using gradient-based signals.
+
+**Benefits:**
+- Reduces task interference vs static isolation
+- Prevents catastrophic forgetting
+- Enables adaptive learning of diverse abilities
+
+**Significance:** Moves beyond static frozen subsets to dynamic importance assessment synchronized with learning dynamics.
+
+---
+
+### 3.4 Multimodal Knowledge Merging
+
+#### MAny: Merge Anything
+**arXiv ID:** 2604.14016
+**Authors:** Jia, et al.
+
+**Dual-Forgetting Phenomenon Identified:**
+- Perception drift in Cross-modal Projection Space
+- Reasoning collapse in Low-rank Parameter Space
+
+**Solutions:**
+- **CPM (Cross-modal Projection Merging):** Recovers perceptual alignment
+- **LPM (Low-rank Parameter Merging):** Eliminates mutual interference
+
+**Performance:**
+- +8.57% final accuracy vs SOTA (first MLLM)
+- Training-free (efficient CPU-based operations)
+
+---
+
+### 3.5 Pre-Train Space Optimization
+
+#### PreRL: Reinforcement Learning in Pre-Train Space
+**arXiv ID:** 2604.14142
+**Authors:** Tan, et al.
+
+**Paradigm Shift:** Optimizes marginal distribution P(y) instead of conditional P(y|x).
+
+**Key Innovation:** NSR (Negative Sample Reinforcement) mechanism.
+
+**Performance:**
+- Transition thoughts: +14.89x increase
+- Reflection thoughts: +6.54x increase
+- Strong gradient alignment validated theoretically and empirically
+
+---
+
+## 4. Training Automation & Agent Advances
+
+### 4.1 TREX: Agent-Driven Fine-Tuning
+**arXiv ID:** 2604.14116
+**Authors:** Li, et al.
+
+**Complete Automation:**
+- Researcher module: Literature research, strategy formulation
+- Executor module: Data preparation, training, evaluation
+- Tree-based exploration: Efficient path planning with result reuse
+
+**FT-Bench:** 10 real-world scenario tasks for evaluation.
+
+**Significance:** First system to automate complete LLM training lifecycle.
+
+---
+
+### 4.2 π-Play: Data-Free Multi-Agent Self-Play
+**arXiv ID:** 2604.14054
+**Authors:** Zhang, et al.
+
+**Innovation:** Self-play generates privileged information without external data.
+
+**Key Mechanism:** Question Construction Path (QCP) as privileged context.
+
+**Performance:**
+- **Evolutionary efficiency:** 2-3x improvement over conventional self-play
+- **Data-free:** No human feedback or curated privileged information
+- Surpasses fully supervised search agents
+
+**Significance:** Addresses sparse rewards, weak credit assignment, and limited labeled data simultaneously.
+
+---
+
+### 4.3 AiScientist: Long-Horizon ML Engineering
+**arXiv ID:** 2604.13018
+**Authors:** Chen, et al.
+
+**Advancement:** Sustains coherent progress across multi-day ML research engineering.
+
+**Scope:** Environment setup, implementation, debugging, and experimentation.
+
+**Significance:** Meaningful step beyond short-horizon agent demos toward autonomous research capability.
+
+---
+
+## 5. Benchmarks, Safety, and Evaluation
+
+### 5.1 New Benchmarks
+
+#### Growing Pains: Extensible LLM Benchmarking
+**arXiv ID:** 2604.12843
+**Authors:** Habba, et al.
+
+**Contribution:** Statistical framework for comparable evaluation when models test on different benchmark samples.
+
+**Impact:** Addresses reproducibility crisis as model release cycles accelerate.
+
+---
+
+#### GlotOCR Bench: Cross-Lingual OCR
+**arXiv ID:** 2604.12978
+**Authors:** Kargaran, et al.
+
+**Finding:** Current OCR models fail to generalize beyond small set of high-resource scripts.
+
+**Scope:** 100+ Unicode scripts benchmark reveals severe generalization gaps.
+
+---
+
+### 5.2 Safety Evaluation Limits
+
+#### The Verification Tax
+**arXiv ID:** 2604.12951
+**Author:** Jason Z Wang
+
+**Theorem:** Estimating calibration error below model's error rate is statistically impossible.
+
+**Implications:**
+- Fundamental minimax lower bound on AI auditing
+- Safety pipelines must operate above theoretical floor
+- Prevents wasted investment in unattainable precision
+
+---
+
+### 5.3 Model Fragility
+
+#### One Token Away from Collapse
+**arXiv ID:** 2604.13006
+**Authors:** Potraghloo, et al.
+
+**Finding:** Banning single punctuation mark or common word can cause instruction-tuned LLMs to collapse.
+
+**Significance:** Exposes surprising brittleness in current alignment techniques.
+
+---
+
+## 6. Memory & Knowledge Transfer
+
+### 6.1 Memory Transfer Learning for Coding Agents
+**arXiv ID:** 2604.14004
+**Authors:** Kim, et al.
+
+**Innovation:** Unified memory pool from heterogeneous domains.
+
+**Key Principle:** Abstraction dictates transferability.
+
+**Performance:**
+- 3.7% average improvement across 6 coding benchmarks
+- High-level insights generalize well
+- Low-level traces induce negative transfer
+
+**Significance:** Enables cross-domain memory utilization beyond single-domain silos.
+
+---
+
+### 6.2 MAny: Multimodal Knowledge Merging
+**arXiv ID:** 2604.14016
+**Authors:** Jia, et al.
+
+**Focus:** Addresses catastrophic forgetting in Multimodal Continual Instruction Tuning.
+
+**Dual-Forgetting:** Perception drift + reasoning collapse.
+
+**Performance:**
+- +8.57% final accuracy vs SOTA
+- Training-free CPU-based operations
+
+---
+
+## 7. Applications & Specialized Domains
+
+### 7.1 Medical Imaging
+**arXiv ID:** 2604.13021
+**Authors:** Minoccheri, et al.
+
+**First VLM study:** CT enterography for IBD assessment.
+
+**Finding:** Representation geometry directly impacts clinical task performance.
+
+**Significance:** First application-specific study showing architectural choices affect medical diagnostics.
+
+---
+
+### 7.2 Visual Tool Reasoning
+**arXiv ID:** 2604.12896
+**Authors:** Janjua, et al.
+
+**Innovation:** Structured perception programs replace raw tool outputs.
+
+**Problem Solved:** Multimodal models ignore visual tool outputs like depth and flow estimators.
+
+**Solution:** Perception programs enable effective tool utilization.
+
+---
+
+### 7.3 Medical Deep Search Agent
+**arXiv ID:** 2604.12867
+**Authors:** Lin, et al.
+
+**Application:** Vertical medical deep-search agent.
+
+**Significance:** Demonstrates specialized adaptation of agentic systems for high-stakes domain expertise.
+
+---
+
+## 8. Emerging Trends & Patterns
+
+### 8.1 From Scaling to Efficiency
+**Observation:** Intense focus on post-training optimization and cost-quality frontier.
+
+**Evidence:**
+- Lightning OPD: Removes teacher inference requirement
+- DASH-Q: Ultra low-bit quantization
+- TIP: 47% memory reduction
+- EPI: Dynamic parameter management
+
+**Implication:** Community preparing for deployment where efficiency, not just capability, is differentiator.
+
+---
+
+### 8.2 From Generic to Specialized
+**Observation:** Agentic systems becoming vertically specialized.
+
+**Examples:**
+- AiScientist: ML research engineering
+- QuarkMedSearch: Medical deep search
+- ICoT: Code generation
+- CT enterography VLM: Medical diagnostics
+
+**Implication:** One-size-fits-all approaches insufficient for domain-specific deployment.
+
+---
+
+### 8.3 From Capability to Trustworthiness
+**Observation:** Evaluation science catching up with rigorous work.
+
+**Evidence:**
+- The Verification Tax: Fundamental limits on auditing
+- Growing Pains: Statistical benchmarking framework
+- One Token Away: Model fragility assessment
+
+**Implication:** Trustworthy deployment becoming primary differentiator beyond raw capability.
+
+---
+
+### 8.4 From Static to Dynamic Optimization
+**Observation:** Shift from fixed strategies to adaptive approaches.
+
+**Examples:**
+- EPI: Dynamic parameter importance
+- ICoT: Difficulty-aware routing
+- TIP: Two-axis token selection
+- NCoTS: Path search over fixed generation
+
+**Implication:** Models adapt strategies based on task complexity, confidence, and uncertainty.
+
+---
+
+### 8.5 From External to Self-Supervised
+**Observation:** Systems becoming more self-reliant.
+
+**Examples:**
+- π-Play: Self-play generates privileged information
+- TREX: Complete training automation
+- PreRL: Pre-train space RL without external supervision
+- ICoT: Cognitive economy reduces unnecessary computation
+
+**Implication:** Reducing dependence on external datasets and human supervision.
+
+---
+
+## 9. Research Gaps & Limitations
+
+### 9.1 Reddit Community Insights: BLOCKED
+**Status:** DuckDuckGo bot detection prevented access to Reddit.
+
+**Missing Information:**
+- Trending papers and discussions
+- Community reactions to new techniques
+- Real-world benchmark results
+- Popular prompt optimization strategies
+- Open-source tool adoption patterns
+
+**Impact:** Critical gap in understanding community sentiment and practical adoption trends.
+
+---
+
+### 9.2 Limited Web Search Access
+**Status:** Multiple searches blocked by DuckDuckGo bot detection.
+
+**Impact:**
+- Unable to access technical blogs and research discussions
+- Limited to direct arXiv access
+- Missed community insights and real-world applications
+
+---
+
+### 9.3 Areas with No Major Developments
+
+**During April 15-16, 2026:**
+- Novel attention mechanisms: No breakthroughs
+- MoE architectures: No innovations
+- KV cache optimization: No new techniques
+- PEFT adapters: SOLAR remains SOTA
+
+**Interpretation:** These areas may be plateauing or require paradigm shift.
+
+---
+
+### 9.4 Long-Horizon Reasoning Gap
+**Finding:** Best models achieve <10% accuracy on LongCoT benchmark.
+
+**Implication:** Fundamental limitations in current reasoning architectures for complex, multi-step problems.
+
+---
+
+## 10. Comparison with Previous Research
+
+### 10.1 Consistency with April 12-15 Findings
+
+**Confirmed Trends:**
+- ✅ Selective optimization paradigm continues (TIP, EPI, NCoTS)
+- ✅ Self-improvement without external supervision (π-Play, PreRL)
+- ✅ Template/structure-based approaches (NCoTS path search, ICoT adaptive routing)
+- ✅ Multi-dimensional scaling laws (continuing complexity)
+
+**New Developments:**
+- 🆕 Training automation (TREX, π-Play)
+- 🆕 Ultra low-bit quantization (DASH-Q)
+- 🆕 Fundamental safety limits (The Verification Tax)
+- 🆕 Long-horizon reasoning benchmarks (LongCoT)
+
+---
+
+### 10.2 Evolution of Key Themes
+
+**From April 12 to April 16:**
+
+| Theme | April 12 | April 16 | Evolution |
+|-------|----------|----------|-----------|
+| CoT | ReasonFlux, AGoT templates | NCoTS path search, ICoT adaptive | Sequential → Search + Adaptive |
+| Efficiency | INT4 quantization, SeLaR | DASH-Q ultra-low-bit, TIP token selection | Post-training → Granular optimization |
+| Distillation | S²R self-verification | Lightning OPD offline teacher, TIP token importance | Single-method → Multi-axis optimization |
+| Agents | Short-horizon demos | TREX, AiScientist, π-Play | Task-specific → Lifecycle automation |
+
+---
+
+## 11. Recommended Papers for Deep Reading
+
+### 11.1 Immediate Practical Impact
+
+1. **Lightning OPD (2604.13010)** - Infrastructure democratization for distillation
+2. **DASH-Q (2604.13806)** - Ultra low-bit quantization for deployment
+3. **TIP (2604.14084)** - Token selection framework for efficiency
+4. **EPI (2604.14010)** - Dynamic parameter management for SFT
+
+---
+
+### 11.2 Theoretical Foundations
+
+1. **The Verification Tax (2604.12951)** - Fundamental safety limits
+2. **NCoTS (2601.11340)** - Solution space quantification
+3. **PreRL (2604.14142)** - Pre-train space RL theory
+
+---
+
+### 11.3 Agent Automation
+
+1. **TREX (2604.14116)** - Complete training lifecycle automation
+2. **π-Play (2604.14054)** - Data-free multi-agent evolution
+3. **AiScientist (2604.13018)** - Long-horizon ML engineering
+
+---
+
+### 11.4 Domain Specialization
+
+1. **ICoT (2512.14048)** - Code generation CoT
+2. **LongCoT (2604.14140)** - Long-horizon reasoning benchmark
+3. **MAny (2604.14016)** - Multimodal knowledge merging
+
+---
+
+## 12. Open Research Questions
+
+### 12.1 Immediate Priorities
+
+1. **Long-horizon reasoning:** How to close <10% accuracy gap on LongCoT?
+2. **Ultra low-bit quantization:** Can accuracy be maintained below INT4?
+3. **Dynamic parameter management:** Extend EPI to broader scenarios
+
+---
+
+### 12.2 Medium-Term Research
+
+1. **Training automation:** Expand TREX to quantization, pruning, architecture search
+2. **Token selection:** Apply TIP taxonomy to other distillation scenarios
+3. **Pre-train space RL:** Explore DSRL variations for different reasoning tasks
+
+---
+
+### 12.3 Long-Term Challenges
+
+1. **Attention mechanisms:** Paradigm shift needed beyond current approaches
+2. **MoE architectures:** Focus on application rather than innovation
+3. **Safety evaluation:** Operate within Verification Tax limits
+
+---
+
+## 13. Conclusion
+
+April 16, 2026 represents a maturation inflection point in LLM research. The field is moving beyond raw capability demonstrations to sophisticated optimization, automation, and fundamental understanding of limitations.
+
+**Key Takeaways:**
+
+1. **Efficiency is now first-class:** Post-training optimization, token selection, ultra low-bit quantization
+2. **Agents are becoming autonomous:** Complete training lifecycle automation, data-free evolution
+3. **Fundamental limits are being discovered:** The Verification Tax establishes hard bounds on safety evaluation
+4. **Reasoning is being optimized:** Path search replaces sequential generation, adaptive routing replaces uniform prompting
+5. **Specialization is accelerating:** Domain-specific CoT, medical agents, coding agents
+
+**Research Gaps:**
+- Reddit community insights unavailable due to bot detection
+- Web search limitations prevented broader community analysis
+- Attention mechanisms and MoE architectures plateauing
+
+**Future Direction:**
+The community appears to be preparing for a phase where **trustworthy, efficient deployment**, not just capability demonstration, becomes the primary differentiator. This shift from "bigger is better" to "smarter deployment" suggests a maturation of LLM research.
+
+---
+
+## Appendices
+
+### Appendix A: Complete Paper List (72+ papers)
+
+**Top 20 Most Significant:**
+1. 2604.13010 - Lightning OPD
+2. 2601.11340 - Neural Chain-of-Thought Search
+3. 2604.12951 - The Verification Tax
+4. 2604.14116 - TREX
+5. 2604.13806 - DASH-Q
+6. 2604.14084 - Token Importance in OPD
+7. 2604.14010 - Evolving Parameter Isolation
+8. 2604.14016 - Merge Anything
+9. 2604.14142 - Pre-train Space RL
+10. 2604.14054 - Multi-Agent Self-Play
+11. 2604.14140 - LongCoT Benchmark
+12. 2512.14048 - Intention Chain-of-Thought
+13. 2604.13018 - Toward Autonomous Long-Horizon Engineering
+14. 2604.14004 - Memory Transfer Learning
+15. 2604.12843 - Growing Pains Benchmark
+16. 2604.13006 - One Token Away from Collapse
+17. 2604.12896 - Visual Tool Reasoning
+18. 2604.12978 - GlotOCR Bench
+19. 2604.12867 - QuarkMedSearch
+20. 2604.13021 - CT Enterography VLM
+
+**Additional Papers (50+):**
+[Full list in daily research findings]
+
+---
+
+### Appendix B: Subagent Results Summary
+
+| Subagent | Status | Runtime | Tokens | Findings |
+|----------|--------|----------|---------|----------|
+| Daily Papers - April 16 | ✅ Complete | 1m15s | 23k | 50 papers analyzed |
+| CoT and Reasoning Advances | ✅ Complete | 4m15s | 41k | NCoTS, ICoT, LongCoT |
+| Reddit Trends - April 16 | ❌ Blocked | 41s | 11k | Bot detection |
+| Architecture and Efficiency | ✅ Complete | 3m2s | 45k | DASH-Q, TIP, EPI, TREX, π-Play |
+
+**Total:** 3/4 completed, 1 blocked by technical limitations
+
+---
+
+**Report Generated:** April 16, 2026
+**Researcher:** Researcher (Daily Insight Accumulator)
+**Workspace:** shared-workspace/research/llm-papers-arxiv
+**Next Scheduled Update:** April 17, 2026

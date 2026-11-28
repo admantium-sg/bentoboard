@@ -1,0 +1,195 @@
+# Fact Check Session Summary - April 22, 2026
+
+## Task Completion Status
+
+**Objective:** Verify all factual claims in cumulative_findings.md with 2 independent sources each
+
+**Result:** PARTIALLY COMPLETED - BLOCKED BY RATE LIMITING
+
+---
+
+## What Was Completed
+
+### ✓ Read cumulative_findings.md
+- Loaded 12,000+ lines of research findings
+- Identified 90+ factual claims requiring verification
+- 6 claims already verified (April 13-16, 2026 sessions)
+
+### ✓ Extracted Claims
+- Created claims_to_verify.md with 40+ unverified claims from April 19, 2026 update
+- Categorized claims by type (research papers, community benchmarks, infrastructure)
+
+### ✓ Attempted Verification
+- Tried 3 different web search queries
+- All returned SearXNG 429 "Too Many Requests" errors
+- No verifications completed in this session
+
+### ✓ Updated Documentation
+- Generated fact_check_reports/2026-04-22.md (9,096 bytes)
+- Updated verification_status.json with 21 new blocked claims
+- Updated correction_log.md with session notes and issues
+
+---
+
+## Critical Issue: SearXNG Rate Limiting
+
+### Problem
+SearXNG search service is now immediately rate-limiting all requests with 429 errors
+
+### Historical Deterioration
+- April 13, 2026: ~5 successful queries before blocking
+- April 16, 2026: ~6 successful queries before blocking
+- April 22, 2026: 0 successful queries - immediate blocking
+
+### Impact
+- Verification coverage stuck at 6.7% (6 of 90 claims)
+- 84 claims remain unverified
+- High-risk community benchmark numbers unverified
+
+---
+
+## Unverified Claims Summary
+
+### Research Papers (21 claims)
+1. KV Packet (2604.13226) - performance, authors, submission date
+2. GAM (2604.12285) - benchmarks, submission date
+3. 12 quantization advances (ReSpinQuant, MoBiE, MUXQ, etc.)
+4. 4 evaluation infrastructure papers
+5. 4 verification-aware reasoning papers
+6. Various efficiency improvements (Lightning OPD, DASH-Q, TIP, EPI, PreRL)
+
+### Reddit Community Benchmarks (18 claims)
+- 9 model benchmark sets (Qwen 3, Llama 4, Claude Opus 4, Claude Sonnet 4, GPT-5 Turbo, Gemini 2.5 Pro)
+- Model release dates
+- Context window claims
+
+### Infrastructure & Tooling (9 claims)
+- vLLM 0.8 performance
+- Ollama v0.20.6 features
+- Archon v2.1 GitHub stars
+- GLM-5.1 GGUF timing
+- EU AI Act regulatory date
+
+### Theoretical (1 claim)
+- Verification Tax theorem (calibration error bound)
+
+---
+
+## Files Created/Updated
+
+### Created
+- shared-workspace/research/llm-papers-arxiv/fact_check_temp/claims_to_verify.md
+- shared-workspace/research/llm-papers-arxiv/fact_check_reports/2026-04-22.md
+- shared-workspace/research/llm-papers-arxiv/fact_check_temp/session_summary.txt
+
+### Updated
+- shared-workspace/research/llm-papers-arxiv/verification_status.json
+- shared-workspace/research/llm-papers-arxiv/correction_log.md
+
+---
+
+## Verification Quality Metrics
+
+### Current Session
+- Verification Coverage: 0% (blocked)
+- Accuracy Rate: N/A (no verifications)
+- Source Diversity: N/A (blocked)
+
+### Cumulative (April 13-16, 2026)
+- Total Verification Coverage: 6.7%
+- Source Diversity: 71.4%
+- Accuracy Rate: 100.0% (6/6 verified claims accurate)
+- Cross-Source Consistency: 100.0%
+- Primary Source Rate: 35.7%
+
+---
+
+## Recommendations
+
+### Immediate (CRITICAL)
+1. Investigate SearXNG rate limit configuration
+   - Check if there's a configurable rate limit
+   - Verify API key or authentication issues
+   - Test if self-hosted instance possible
+
+2. Implement direct arXiv API access
+   - Use arXiv REST API for paper verification
+   - Bypasses SearXNG dependency for arXiv claims
+   - More reliable for technical verification
+
+### High Priority
+3. Develop request queuing with exponential backoff
+   - 1 hour, 4 hour, 24 hour retry schedule
+   - Spread requests over longer timeframes
+   - Implement jitter to avoid synchronized requests
+
+4. Build local source cache
+   - Cache verified facts and sources
+   - Reduce dependency on web search
+   - Prioritize high-reliability sources
+
+### Medium Priority
+5. Consider alternative search providers
+   - Google Custom Search API
+   - Bing Search API
+   - Self-hosted Meilisearch or similar
+
+6. Implement claim prioritization
+   - High-risk: Reddit community benchmarks
+   - Medium-risk: Paper performance numbers
+   - Low-risk: ArXiv IDs and submission dates
+
+---
+
+## Risk Assessment
+
+### High Risk (Unverified)
+- All Reddit community benchmark numbers
+  - Model performance metrics may be exaggerated
+  - Release dates may be incorrect
+  - Version numbers may be outdated
+- Infrastructure claims (GitHub stars, version features)
+
+### Medium Risk (Unverified)
+- Paper performance improvements
+  - Usually accurate but need verification
+  - May vary across different benchmarks
+
+### Low Risk (Verified)
+- 6 previously verified claims with 100% accuracy
+  - All confirmed by multiple independent sources
+  - High reliability confirmed
+
+---
+
+## Next Steps
+
+### When Web Search Restored
+1. Verify KV Packet and GAM papers (major innovations)
+2. Cross-verify Reddit community benchmarks (high risk)
+3. Verify evaluation infrastructure crisis papers (critical insight)
+4. Verify infrastructure and tooling claims
+
+### Regardless of Web Access
+1. Implement arXiv API integration
+2. Build request queuing system
+3. Develop local source cache
+4. Schedule periodic retry attempts
+
+---
+
+## Session Statistics
+
+- **Time Spent:** 15 minutes
+- **Claims Attempted:** 0
+- **Claims Verified:** 0
+- **Corrections Made:** 0
+- **Web Search Queries:** 3 (all failed with 429)
+- **Files Created:** 3
+- **Files Updated:** 2
+
+---
+
+**Session Status:** BLOCKED
+**Next Scheduled Verification:** April 23, 2026
+**Prerequisites:** Web search access restoration or arXiv API integration
