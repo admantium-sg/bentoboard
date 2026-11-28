@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 
 vi.mock('server-only', () => ({}))
@@ -11,7 +12,7 @@ describe('workspace path', () => {
   const originalEnv = process.env.BENTOBOARD_WORKSPACE_FOLDER
 
   beforeEach(() => {
-    root = fs.mkdtempSync('/workspace/.tmp/workspace-test-')
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'workspace-test-'))
     vi.spyOn(process, 'cwd').mockReturnValue(root)
     delete process.env.BENTOBOARD_WORKSPACE_FOLDER
   })
