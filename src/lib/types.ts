@@ -86,7 +86,7 @@ export interface AgentStatus {
 export interface MarkdownDoc {
   path: string
   title: string
-  content: string
+  content?: string
   category: string       // e.g., "research-findings", "feature-ideas", "run-report"
   project: string
   modifiedAt: string

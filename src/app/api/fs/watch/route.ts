@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
         const relPath = relativePath ? `${relativePath}/${entry.name}` : entry.name
 
         if (entry.isDirectory()) {
-          // Skip certain directories
-          if (entry.name === 'node_modules' || entry.name === '.git') continue
+          // Skip hidden and dependency directories
+          if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue
 
           scanDirectory(fullPath, relPath)
         } else if (entry.isFile()) {
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in /api/fs/watch:', error)
     return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

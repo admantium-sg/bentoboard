@@ -1,17 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { formatRelativeTime } from '@/lib/utils'
+import { formatRelativeTime, getDocPreview } from '@/lib/utils'
 import Link from 'next/link'
 import { FileText, Search } from 'lucide-react'
 
 interface Doc {
   path: string
   title: string
-  content: string
+  content?: string
   category: string
   project: string
   modifiedAt: string
@@ -40,14 +40,16 @@ export default function DraftsPage() {
     fetchDocs()
   }, [setDocs])
 
-  // Filter to only drafts category, then by search query
-  const filteredDocs = docs.filter((doc) =>
-    doc.category === 'drafts' &&
-    (searchQuery
-      ? doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.content?.toLowerCase().includes(searchQuery.toLowerCase())
-      : true)
-  )
+  const searchableDocs = useMemo(() => docs
+    .filter((doc) => doc.category === 'drafts')
+    .map((doc) => ({
+      doc,
+      text: `${doc.title} ${doc.path} ${doc.project} ${getDocPreview(doc.content)}`.toLowerCase(),
+    })), [docs])
+
+  const filteredDocs = searchableDocs
+    .filter(({ text }) => !searchQuery || text.includes(searchQuery.toLowerCase()))
+    .map(({ doc }) => doc)
 
   // Group docs by category
   const docGroups = filteredDocs.reduce((acc, doc) => {
@@ -118,6 +120,11 @@ export default function DraftsPage() {
                         <p className="text-[12px] font-mono truncate mb-2" style={{ color: 'var(--text-muted)' }}>
                           {doc.path}
                         </p>
+                        {getDocPreview(doc.content) && (
+                          <p className="text-[12px] line-clamp-1 mb-2" style={{ color: 'var(--text-secondary)' }}>
+                            {getDocPreview(doc.content)}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2">
                           <span
                             className="text-[11px] px-2 py-0.5 rounded-md"

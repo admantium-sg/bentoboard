@@ -4,42 +4,20 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
+import { readJsonObject } from '@/lib/security'
+import { realInside, unsafePathStatus } from '@/lib/path-guard'
 
 /** Extensions treated as text (non-binary) — same allowlist as docs/list */
-const TEXT_EXTENSIONS = new Set([
-  '.md', '.txt', '.json', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf',
-  '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs',
-  '.html', '.htm', '.css', '.scss', '.sass', '.less',
-  '.py', '.rb', '.php', '.sh', '.bash', '.zsh', '.fish',
-  '.sql', '.graphql', '.gql',
-  '.xml', '.svg',
-  '.csv', '.tsv', '.log', '.env', '.gitignore', '.dockerignore',
-  '.dockerfile', '.nginx',
-  '.rst', '.adoc', '.tex',
-])
+const TEXT_EXTENSIONS = new Set(['.md', '.txt'])
+const PREVIEW_LENGTH = 512
 
 function isTextFile(filePath: string): boolean {
   return TEXT_EXTENSIONS.has(path.extname(filePath).toLowerCase())
 }
 
 function extractTitle(filePath: string, content: string): string {
-  const ext = path.extname(filePath).toLowerCase()
-  if (ext === '.md' || ext === '.rst' || ext === '.adoc') {
-    const lines = content.split('\n')
-    for (const line of lines) {
-      if (line.startsWith('# ')) return line.slice(2).trim()
-    }
-  }
-  if (ext === '.json') {
-    try {
-      const parsed = JSON.parse(content)
-      if (typeof parsed === 'object' && parsed !== null) {
-        const firstKey = Object.keys(parsed)[0]
-        if (firstKey) return String(parsed[firstKey])
-      }
-    } catch { /* not JSON */ }
-  }
-  return path.basename(filePath, ext)
+  const heading = content.split('\n').find((line) => line.startsWith('# '))
+  return heading ? heading.slice(2).trim() : path.basename(filePath, path.extname(filePath))
 }
 
 interface FileEntry {
@@ -70,6 +48,7 @@ function scanDir(dirPath: string, relPrefix: string): DirEntry {
   }
 
   for (const e of entries) {
+    if (e.name.startsWith('.') || e.isSymbolicLink()) continue
     const full = path.join(dirPath, e.name)
     const rel = relPrefix ? `${relPrefix}/${e.name}` : e.name
 
@@ -79,10 +58,10 @@ function scanDir(dirPath: string, relPrefix: string): DirEntry {
       let content = ''
       try {
         const fd = fs.openSync(full, 'r')
-        const buf = Buffer.alloc(65536)
-        const n = fs.readSync(fd, buf, 0, 65536, 0)
+        const buf = Buffer.alloc(PREVIEW_LENGTH)
+        const n = fs.readSync(fd, buf, 0, PREVIEW_LENGTH, 0)
         fs.closeSync(fd)
-        content = buf.slice(0, n).toString('utf-8')
+        content = buf.toString('utf-8', 0, n)
       } catch { /* skip unreadable */ }
 
       entry.files.push({
@@ -101,35 +80,12 @@ function scanDir(dirPath: string, relPrefix: string): DirEntry {
  * Strip markdown syntax for plain-text rendering in tabloid
  * Keeps some structure for readability
  */
-function stripMarkdown(content: string, filePath?: string, baseDir?: string): string {
-  // Process images: convert markdown syntax to <img> tags
+function stripMarkdown(content: string): string {
+  // Only remote images are rendered; local files are never read during export.
   function processImages(text: string): string {
-    return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
-      // Skip if it looks like a local file that doesn't exist
-      const isRemote = url.startsWith('http://') || url.startsWith('https://')
-      if (!isRemote && baseDir) {
-        // For local images, try to read and embed as base64
-        try {
-          const imgPath = path.join(baseDir, url)
-          if (fs.existsSync(imgPath)) {
-            const ext = path.extname(imgPath).toLowerCase()
-            const mimeTypes: Record<string, string> = {
-              '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-              '.png': 'image/png', '.gif': 'image/gif',
-              '.webp': 'image/webp', '.svg': 'image/svg+xml',
-            }
-            const mime = mimeTypes[ext] || 'image/jpeg'
-            const data = fs.readFileSync(imgPath)
-            const base64 = data.toString('base64')
-            return `<figure class="article-image"><img src="data:${mime};base64,${base64}" alt="${escapeHtml(alt)}"></figure>`
-          }
-        } catch { /* skip broken images */ }
-      }
-      // Remote image or local not found - use URL
-      if (isRemote) {
-        return `<figure class="article-image"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"></figure>`
-      }
-      return ''
+    return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt: string, url: string) => {
+      if (!/^https?:\/\//i.test(url)) return ''
+      return `<figure class="article-image"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"></figure>`
     })
   }
 
@@ -158,7 +114,7 @@ function countFiles(entry: DirEntry): number {
   return entry.files.length + entry.subdirs.reduce((sum, sub) => sum + countFiles(sub), 0)
 }
 
-function generateHtml(entry: DirEntry, title: string, generatedAt: string, workspaceRoot: string, edition: string, price: string): string {
+function generateHtml(entry: DirEntry, title: string, generatedAt: string, edition: string, price: string): string {
   // Track sections for TOC
   const sections: Array<{ name: string; files: Array<{ title: string }> }> = []
 
@@ -228,11 +184,8 @@ function generateHtml(entry: DirEntry, title: string, generatedAt: string, works
       html += '<div class="tabloid-grid">'
       let fileIdx = 0
       for (const file of dir.files) {
-        // Compute base directory for local image resolution
-        const imgBaseDir = path.join(workspaceRoot, path.dirname(file.path))
-        const plainContent = stripMarkdown(file.content, file.path, imgBaseDir)
-        // Take more content for preview - up to 2000 chars for large spans
-        const preview = plainContent.slice(0, 2000).trim() + (plainContent.length > 2000 ? '…' : '')
+        const plainContent = stripMarkdown(file.content)
+        const preview = plainContent.slice(0, PREVIEW_LENGTH).trim() + (plainContent.length > PREVIEW_LENGTH ? '…' : '')
         const spanClass = getSpanClass(plainContent.length)
         // Determine headline class based on span
         const headlineClass = spanClass === 'span-6' ? 'headline-hero' :
@@ -1074,25 +1027,22 @@ function readTabloidManifest(fullPath: string): { edition?: string; price?: stri
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { path: relativePath, edition: bodyEdition, price: bodyPrice } = body as { path: string; edition?: string; price?: string }
+    const body = await readJsonObject(request)
+    if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
 
-    if (!relativePath) {
+    const { path: relativePath, edition: bodyEdition, price: bodyPrice } = body
+    if (typeof relativePath !== 'string' || !relativePath) {
       return NextResponse.json({ error: 'path is required' }, { status: 400 })
     }
-
-    // Security: prevent path traversal
-    if (relativePath.includes('..') || relativePath.startsWith('/')) {
-      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    if (typeof bodyEdition !== 'undefined' && typeof bodyEdition !== 'string') {
+      return NextResponse.json({ error: 'edition must be a string' }, { status: 400 })
+    }
+    if (typeof bodyPrice !== 'undefined' && typeof bodyPrice !== 'string') {
+      return NextResponse.json({ error: 'price must be a string' }, { status: 400 })
     }
 
     const workspaceRoot = getWorkspacePath()
-    const fullPath = path.join(workspaceRoot, relativePath)
-
-    // Verify it's within workspace
-    if (!fullPath.startsWith(workspaceRoot)) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
+    const fullPath = realInside(workspaceRoot, relativePath)
 
     if (!fs.existsSync(fullPath)) {
       return NextResponse.json({ error: 'Folder not found' }, { status: 404 })
@@ -1119,7 +1069,7 @@ export async function POST(request: NextRequest) {
       hour: '2-digit', minute: '2-digit',
     })
 
-    const html = generateHtml(scanned, manifestTitle ?? path.basename(relativePath) ?? 'workspace', generatedAt, workspaceRoot, edition, price)
+    const html = generateHtml(scanned, manifestTitle ?? path.basename(relativePath) ?? 'workspace', generatedAt, edition, price)
 
     return new NextResponse(html, {
       status: 200,
@@ -1129,6 +1079,8 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/fs/export/tabloid:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

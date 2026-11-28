@@ -17,14 +17,13 @@ export function AutoSaveIndicator({ state, lastSaved, error, className }: AutoSa
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (state !== 'idle') {
-      requestAnimationFrame(() => {
-        setVisible(true)
-      })
-    } else {
+    if (state === 'idle') {
       const timer = setTimeout(() => setVisible(false), 2000)
       return () => clearTimeout(timer)
     }
+
+    const frame = requestAnimationFrame(() => setVisible(true))
+    return () => cancelAnimationFrame(frame)
   }, [state])
 
   const formatTime = (date: Date) => {

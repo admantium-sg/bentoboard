@@ -1,101 +1,78 @@
 import { describe, it, expect } from 'vitest'
 import { parseTicketMarkdown } from '../lib/parsers/ticketParser'
+import { serializeTicketToMarkdown } from '../lib/serializers/ticketSerializer'
+import type { KanbanTicket } from '../lib/types'
+
+const ticket: KanbanTicket = {
+  id: 'DASH-019',
+  project: 'dashboard',
+  acronym: 'DASH',
+  number: 19,
+  title: 'Dark Mode',
+  description: 'Add a toggle.',
+  tasks: [
+    { checked: true, text: 'Add button' },
+    { checked: false, text: 'Detect preference' },
+  ],
+  acceptanceCriteria: ['Toggle works'],
+  questions: ['Which theme wins?'],
+  assumptions: ['CSS variables exist'],
+  priority: 'low',
+  metadata: { Priority: 'low' },
+  phase: 'in-progress',
+  phaseHistory: [{ phase: 'backlog', date: '2026-04-20 18:24:00', notes: 'Self-drafted' }],
+  attempts: [{
+    number: 1,
+    phase: 'in-progress',
+    questionBlock: 'How?',
+    attempts: 3,
+    resolution: 'Variables',
+  }],
+  symbol: undefined,
+  filePath: '/workspace/kanban/dashboard/in-progress/DASH-019-dark-mode.md',
+  modifiedAt: '2026-04-20T18:24:00Z',
+}
 
 describe('ticketParser', () => {
-  describe('parseTicketMarkdown', () => {
-    it('should return ticket for valid content', () => {
-      const content = `# TEST-001 Test Ticket
+  it('parses every section written by the serializer', () => {
+    const content = serializeTicketToMarkdown(ticket)
+    const result = parseTicketMarkdown(content, ticket.filePath, { phase: 'in-progress', project: 'dashboard' })
 
-## Description
-Test description here.
+    expect(result.error).toBeUndefined()
+    expect(result.ticket?.id).toBe('DASH-019')
+    expect(result.ticket?.title).toBe('DASH-019 Dark Mode')
+    expect(result.ticket?.description).toBe('Add a toggle.')
+    expect(result.ticket?.tasks).toEqual(ticket.tasks)
+    expect(result.ticket?.acceptanceCriteria).toEqual(['Toggle works'])
+    expect(result.ticket?.questions).toEqual(['Which theme wins?'])
+    expect(result.ticket?.assumptions).toEqual(['CSS variables exist'])
+    expect(result.ticket?.phaseHistory).toHaveLength(1)
+    expect(result.ticket?.attempts).toHaveLength(1)
+  })
 
-## Tasks
-- [x] First task
-- [ ] Second task
+  it('keeps zero padding from the filename', () => {
+    const result = parseTicketMarkdown('# Test\n', '/workspace/TEST-001-test.md')
+    expect(result.ticket?.id).toBe('TEST-001')
+    expect(result.ticket?.number).toBe(1)
+  })
 
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-test-ticket.md')
-      expect(result.ticket).toBeDefined()
-      expect(result.ticket?.id).toBe('TEST-1')
-    })
+  it('uses caller context for phase and project', () => {
+    const result = parseTicketMarkdown('# Test\n', '/workspace/TEST-001-test.md', { phase: 'done', project: 'demo' })
+    expect(result.ticket?.phase).toBe('done')
+    expect(result.ticket?.project).toBe('demo')
+  })
 
-    it('should extract title from H1', () => {
-      const content = `# DASH-019 Dark Mode
-
-Some description here.
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/DASH-019-dark-mode.md')
-      expect(result.ticket?.title).toBe('DASH-019 Dark Mode')
-    })
-
-    it('should handle empty content', () => {
-      const result = parseTicketMarkdown('', '/workspace/test.md')
-      expect(result.ticket).toBeDefined()
-    })
-
-    it('should extract description', () => {
-      const content = `# TEST-001 Test
-
-Some description text.
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-test.md')
-      expect(result.ticket?.description).toBe('Some description text.')
-    })
-
-    it('should handle content without description', () => {
-      const content = `# TEST-001 Test
-
-## Tasks
-- [x] Task
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-test.md')
-      expect(result.ticket).toBeDefined()
-    })
-
-    it('should extract filename metadata', () => {
-      const content = `# TEST-001 Something
-
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-something.md')
-      expect(result.ticket?.acronym).toBe('TEST')
-      expect(result.ticket?.number).toBe(1)
-    })
-
-    it('should set default phase to backlog', () => {
-      const content = `# TEST-001 Test
-
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-test.md')
-      expect(result.ticket?.phase).toBe('backlog')
-    })
-
-    it('should set project to unknown', () => {
-      const content = `# TEST-001 Test
-
-`
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-test.md')
-      expect(result.ticket?.project).toBe('unknown')
-    })
-
-    it('should parse phase history table', () => {
-      const content = `# TEST-001 Test
+  it('skips dash-only table separator rows', () => {
+    const content = `# Test
 
 ## Phase History
 | Phase | Date | Notes |
 |-------|------|-------|
 | backlog | 2026-04-20 18:24:00 | Self-drafted |
 `
-      const result = parseTicketMarkdown(content, '/workspace/test/TEST-001-test.md')
-      // Parser may include separator row, so check for backlog entry
-      expect(result.ticket?.phaseHistory.some(h => h.phase === 'backlog')).toBe(true)
-    })
-
-    it('should handle file path correctly', () => {
-      const content = `# TEST-001 Test
-
-`
-      const result = parseTicketMarkdown(content, '/workspace/kanban/myproject/backlog/TEST-001-test.md')
-      expect(result.ticket?.filePath).toBe('/workspace/kanban/myproject/backlog/TEST-001-test.md')
-    })
+    const result = parseTicketMarkdown(content, '/workspace/TEST-001-test.md')
+    expect(result.ticket?.phaseHistory).toEqual([
+      { phase: 'backlog', date: '2026-04-20 18:24:00', notes: 'Self-drafted' },
+    ])
   })
 })

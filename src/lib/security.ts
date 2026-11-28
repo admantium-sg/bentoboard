@@ -1,55 +1,11 @@
-/**
-import 'server-only'
- * Path validation and security utilities for file system operations
- */
+export { sha256 } from '@/lib/path-guard'
 
-import { resolve } from 'path'
-
-// Mock workspace path for testing
-const getWorkspacePath = () => process.env.BENTOBOARD_WORKSPACE_FOLDER || '/tmp/test-workspace'
-
-/**
- * Validate that a path is within the allowed workspace
- * Prevents directory traversal attacks
- */
-export function validatePath(path: string, workspace: string = getWorkspacePath()): boolean {
+export async function readJsonObject(request: Request): Promise<Record<string, unknown> | null> {
   try {
-    const resolvedPath = resolve(path)
-    const workspaceRoot = resolve(workspace)
-
-    // Check if the resolved path starts with the workspace root
-    // This prevents ../ attacks and absolute path escapes
-    return resolvedPath.startsWith(workspaceRoot)
-  } catch (error) {
-    console.error('Error validating path:', error)
-    return false
+    const body: unknown = await request.json()
+    if (typeof body !== 'object' || body === null || Array.isArray(body)) return null
+    return body as Record<string, unknown>
+  } catch {
+    return null
   }
-}
-
-/**
- * Sanitize a path by removing dangerous components
- * Removes '..', leading slashes, and other traversal attempts
- */
-export function sanitizePath(path: string): string {
-  return path
-    .split('/')
-    .filter((segment) => {
-      // Remove empty segments and traversal attempts
-      return segment !== '' && segment !== '..' && segment !== '.'
-    })
-    .join('/')
-}
-
-/**
- * Calculate a simple hash of a string for conflict detection
- * Uses a simple hash for demonstration - production should use crypto API
- */
-export function calculateHash(content: string): string {
-  let hash = 0
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(36)
 }

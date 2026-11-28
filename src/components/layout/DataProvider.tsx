@@ -1,46 +1,81 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
-import { useClientWorkspace } from '@/lib/workspace-client'
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { setProjects, setAgentStatus, setLastPollTime, addRecentChange } = useBentoStore()
-  const workspace = useClientWorkspace()
+  const setProjects = useBentoStore((s) => s.setProjects)
+  const setAgentStatus = useBentoStore((s) => s.setAgentStatus)
+  const setLastPollTime = useBentoStore((s) => s.setLastPollTime)
+  const [workspace, setWorkspace] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadWorkspace() {
+      try {
+        const res = await fetch('/api/fs/browse?path=', { signal: controller.signal })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!controller.signal.aborted) {
+          setWorkspace(data.basePath || '')
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error('[DataProvider] Failed to load workspace:', error)
+        }
+      }
+    }
+
+    loadWorkspace()
+    return () => controller.abort()
+  }, [])
 
   useEffect(() => {
     if (!workspace) return
 
+    let active = new AbortController()
+
     async function refreshData() {
+      active.abort()
+      const controller = new AbortController()
+      active = controller
+
       try {
-        // Refresh projects
-        const projectsRes = await fetch('/api/kanban/projects')
+        const [projectsRes, statusRes] = await Promise.all([
+          fetch('/api/kanban/projects', { signal: controller.signal }),
+          fetch('/api/status', { signal: controller.signal }),
+        ])
+        if (controller.signal.aborted) return
+
         if (projectsRes.ok) {
           const data = await projectsRes.json()
+          if (controller.signal.aborted) return
           setProjects(data.projects || [])
         }
 
-        // Refresh agent statuses
-        const statusRes = await fetch('/api/status')
         if (statusRes.ok) {
           const data = await statusRes.json()
+          if (controller.signal.aborted) return
           setAgentStatus(data.statuses || [])
         }
 
         setLastPollTime(new Date().toISOString())
       } catch (error) {
-        console.error('[DataProvider] Failed to refresh data:', error)
+        if (!controller.signal.aborted) {
+          console.error('[DataProvider] Failed to refresh data:', error)
+        }
       }
     }
 
-    // Initial data load
     refreshData()
+    const intervalId = setInterval(refreshData, 30000)
 
-    // Set up polling interval
-    const intervalId = setInterval(refreshData, 30000) // Poll every 30 seconds
-
-    return () => clearInterval(intervalId)
-  }, [workspace, setProjects, setAgentStatus, setLastPollTime, addRecentChange])
+    return () => {
+      clearInterval(intervalId)
+      active.abort()
+    }
+  }, [workspace, setProjects, setAgentStatus, setLastPollTime])
 
   return <>{children}</>
 }

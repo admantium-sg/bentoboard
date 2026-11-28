@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm'
 import { useBentoStore } from '@/lib/store'
 
 import { Button } from '@/components/ui/Button'
+import { ErrorPopup, useErrorPopup } from '@/components/ui/ErrorPopup'
 import { ChevronLeft, Check, RotateCcw } from 'lucide-react'
 import type { LeaveEntry } from '@/lib/leave-tracker'
 
@@ -20,44 +21,63 @@ export default function DocEditorPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [title, setTitle] = useState('')
-  const { upsertDoc } = useBentoStore()
+  const upsertDoc = useBentoStore((s) => s.upsertDoc)
+  const { error, showError, dismissError } = useErrorPopup()
+  const [expectedHash, setExpectedHash] = useState<string | null>(null)
   const [leaveStatus, setLeaveStatus] = useState<LeaveEntry['status'] | null>(null)
 
   useEffect(() => {
+    if (!path) return
+    const docPath = path
+    const controller = new AbortController()
+
     async function fetchDoc() {
-      if (!path) return
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/docs/${path}`)
+        const res = await fetch(`/api/docs/${docPath}`, { signal: controller.signal })
         if (!res.ok) throw new Error('Failed to fetch doc')
         const data = await res.json()
-        setContent(data.content || '')
-        setOriginalContent(data.content || '')
-        setTitle(data.title || path.split('/').pop() || 'Untitled')
-      } catch (error) {
-        console.error('Failed to fetch doc:', error)
+        if (controller.signal.aborted) return
+        const loaded = data.content || ''
+        setContent(loaded)
+        setOriginalContent(loaded)
+        setExpectedHash(data.hash ?? null)
+        setTitle(data.title || docPath.split('/').pop() || 'Untitled')
+      } catch (fetchError) {
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch doc:', fetchError)
+          showError('Failed to load document')
+        }
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
 
     fetchDoc()
-  }, [path])
+    return () => controller.abort()
+  }, [path, showError])
 
-  // Fetch leave tracker status
   useEffect(() => {
+    if (!path) return
+    const docPath = path
+    const controller = new AbortController()
+
     async function fetchLeaveStatus() {
-      if (!path) return
       try {
-        const res = await fetch(`/api/leave-tracker/entries?path=${encodeURIComponent(path)}`)
+        const res = await fetch(`/api/leave-tracker/entries?path=${encodeURIComponent(docPath)}`, { signal: controller.signal })
         if (!res.ok) return
         const data = await res.json()
-        setLeaveStatus(data.entry?.status ?? null)
+        if (!controller.signal.aborted) {
+          setLeaveStatus(data.entry?.status ?? null)
+        }
       } catch (err) {
-        console.error('Failed to fetch leave status:', err)
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch leave status:', err)
+        }
       }
     }
     fetchLeaveStatus()
+    return () => controller.abort()
   }, [path])
 
   async function handleMarkDone() {
@@ -95,13 +115,18 @@ export default function DocEditorPage() {
       const res = await fetch(`/api/docs/${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, expectedHash }),
       })
 
-      if (!res.ok) {
-        throw new Error('Failed to save')
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}))
+        showError(data.message || 'Document changed since you started editing')
+        return
       }
+      if (!res.ok) throw new Error('Failed to save')
 
+      const data = await res.json().catch(() => ({}))
+      setExpectedHash(data.hash ?? null)
       setOriginalContent(content)
       upsertDoc({
         path,
@@ -112,8 +137,8 @@ export default function DocEditorPage() {
         modifiedAt: new Date().toISOString(),
       })
       setIsEditing(false)
-    } catch (error) {
-      console.error('Failed to save:', error)
+    } catch (saveError) {
+      showError(saveError instanceof Error ? saveError.message : 'Failed to save')
     } finally {
       setIsSaving(false)
     }
@@ -218,6 +243,7 @@ export default function DocEditorPage() {
           </div>
         </div>
       )}
+      <ErrorPopup error={error} onDismiss={dismissError} />
     </div>
   )
 }

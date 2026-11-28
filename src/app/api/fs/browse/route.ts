@@ -3,6 +3,7 @@ import 'server-only'
 import fs from 'fs'
 import path from 'path'
 import { getWorkspacePath } from '@/lib/workspace'
+import { realInside, unsafePathStatus } from '@/lib/path-guard'
 
 interface BrowseEntry {
   name: string
@@ -11,45 +12,21 @@ interface BrowseEntry {
 }
 
 /**
- * Browse directories up to the base path
+ * Browse directories under the workspace.
  * GET /api/fs/browse?path=/relative/path
  */
 export async function GET(request: NextRequest) {
   try {
-    const BASE_PATH = getWorkspacePath()
-
+    const workspace = getWorkspacePath()
     const { searchParams } = new URL(request.url)
     const relativePath = searchParams.get('path') || ''
+    const fullPath = realInside(workspace, relativePath)
 
-    // Security: Prevent path traversal
-    if (relativePath.includes('..')) {
-      return NextResponse.json(
-        { error: 'Path traversal not allowed' },
-        { status: 400 }
-      )
-    }
-
-    const fullPath = path.join(BASE_PATH, relativePath)
-
-    // Ensure path doesn't escape BASE_PATH
-    if (!fullPath.startsWith(BASE_PATH)) {
-      return NextResponse.json(
-        { error: 'Access denied: path outside base directory' },
-        { status: 403 }
-      )
-    }
-
-    // Validate path exists
     if (!fs.existsSync(fullPath)) {
-      return NextResponse.json(
-        { error: 'Path not found', path: relativePath },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Path not found', path: relativePath }, { status: 404 })
     }
 
     const stats = fs.statSync(fullPath)
-
-    // If it's a file, return single file info
     if (stats.isFile()) {
       return NextResponse.json({
         path: relativePath,
@@ -58,40 +35,28 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // It's a directory - list contents
-    const entries = fs.readdirSync(fullPath, { withFileTypes: true })
     const nodes: BrowseEntry[] = []
-
-    for (const entry of entries) {
-      // Skip certain directories
-      if (entry.name === 'node_modules' || entry.name === '.git') continue
-
-      const entryPath = relativePath ? `${relativePath}/${entry.name}` : entry.name
+    for (const entry of fs.readdirSync(fullPath, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name.startsWith('.')) continue
+      if (entry.isSymbolicLink()) continue
 
       nodes.push({
         name: entry.name,
-        path: entryPath,
+        path: relativePath ? `${relativePath}/${entry.name}` : entry.name,
         type: entry.isDirectory() ? 'directory' : 'file',
       })
     }
 
-    // Sort: directories first, then files, alphabetically
     nodes.sort((a, b) => {
       if (a.type !== b.type) return a.type === 'directory' ? -1 : 1
       return a.name.localeCompare(b.name)
     })
 
-    return NextResponse.json({
-      path: relativePath,
-      basePath: BASE_PATH,
-      entries: nodes,
-      count: nodes.length,
-    })
+    return NextResponse.json({ path: relativePath, basePath: workspace, entries: nodes, count: nodes.length })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/fs/browse:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

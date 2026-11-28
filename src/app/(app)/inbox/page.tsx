@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useBentoStore } from '@/lib/store'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { formatRelativeTime } from '@/lib/utils'
+import { formatRelativeTime, getDocPreview } from '@/lib/utils'
 import { Dialog } from '@/components/ui/Dialog'
 import { Button } from '@/components/ui/Button'
 import { Plus, FileText } from 'lucide-react'
@@ -13,7 +13,7 @@ import Link from 'next/link'
 interface InboxDoc {
   path: string
   title: string
-  content: string
+  content?: string
   modifiedAt: string
 }
 
@@ -141,9 +141,9 @@ export default function InboxPage() {
                   <h3 className="text-[15px] font-medium mb-1 truncate" style={{ color: 'var(--text-primary)' }}>
                     {doc.title}
                   </h3>
-                  {doc.content && (
+                  {getDocPreview(doc.content, 150) && (
                     <p className="text-[13px] line-clamp-2 mb-2" style={{ color: 'var(--text-secondary)' }}>
-                      {doc.content.replace(/^#.*\n/, '').slice(0, 150)}...
+                      {getDocPreview(doc.content, 150)}
                     </p>
                   )}
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>

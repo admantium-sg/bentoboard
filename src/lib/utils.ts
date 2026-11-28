@@ -22,6 +22,30 @@ export function formatFullDate(dateString: string): string {
   return format(new Date(dateString), 'MMM d, yyyy · h:mm a')
 }
 
+export function getDocPreview(content?: string, maxLength = 120): string {
+  if (!content) return ''
+  const line = content.slice(0, 2048).split('\n').find((value) => {
+    const trimmed = value.trim()
+    return trimmed.length > 0 && !trimmed.startsWith('#')
+  })
+  return line?.trim().slice(0, maxLength) ?? ''
+}
+
+export async function deletePaths(paths: string[], request: typeof fetch = fetch): Promise<void> {
+  for (const path of paths) {
+    const res = await request('/api/fs/delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to delete item')
+    }
+  }
+}
+
 export const DEFAULT_PROJECTS = [
   { slug: 'newsletter',         name: 'Weekly Newsletter',   color: '#5B9CF6' },
   { slug: 'claudepocalypse',    name: 'Claudepocalypse',     color: '#F43F5E' },

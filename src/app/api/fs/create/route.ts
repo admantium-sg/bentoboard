@@ -4,65 +4,43 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
-
-const getWorkspace = () => getWorkspacePath()
+import { readJsonObject } from '@/lib/security'
+import { realInside, unsafePathStatus } from '@/lib/path-guard'
 
 /**
- * Create a new file
+ * Create a new file without overwriting an existing one.
  * POST /api/fs/create
  * Body: { path, content?, extension? }
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await readJsonObject(request)
+    if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+
     const { path: filePath, content = '', extension = '.md' } = body
-
-    if (!filePath) {
-      return NextResponse.json(
-        { error: 'path required' },
-        { status: 400 }
-      )
+    if (typeof filePath !== 'string' || typeof content !== 'string' || typeof extension !== 'string') {
+      return NextResponse.json({ error: 'path, content and extension must be strings' }, { status: 400 })
     }
 
-    // Security: Prevent path traversal
-    if (filePath.includes('..') || filePath.startsWith('/')) {
-      return NextResponse.json(
-        { error: 'Invalid path: path traversal not allowed' },
-        { status: 400 }
-      )
-    }
-
-    const fullPath = path.join(getWorkspace(), filePath)
-
-    // Ensure directory exists
-    const dir = path.dirname(fullPath)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-
-    // Check if already exists
+    const fullPath = realInside(getWorkspacePath(), filePath)
     if (fs.existsSync(fullPath)) {
-      return NextResponse.json(
-        { error: 'File already exists', path: filePath },
-        { status: 409 }
-      )
+      return NextResponse.json({ error: 'File already exists', path: filePath }, { status: 409 })
     }
 
-    // Write file
-    fs.writeFileSync(fullPath, content, 'utf-8')
+    const dir = path.dirname(fullPath)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(fullPath, content, { encoding: 'utf8', flag: 'wx' })
 
     const stats = fs.statSync(fullPath)
-
     return NextResponse.json({
       success: true,
       path: filePath,
       modifiedAt: stats.mtime.toISOString(),
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/fs/create:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

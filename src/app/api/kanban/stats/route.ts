@@ -4,8 +4,10 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
+import { PHASES } from '@/lib/phases'
+import { isSafeSegment, safeChild, unsafePathStatus } from '@/lib/path-guard'
+
 const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
-const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
 interface Stats {
   total: number
@@ -31,11 +33,13 @@ function calculateProjectStats(projectPath: string): Stats {
 
   for (const phase of PHASES) {
     stats.byPhase[phase] = 0
-    const phasePath = path.join(projectPath, phase)
+    const phasePath = safeChild(projectPath, phase)
 
     if (!fs.existsSync(phasePath)) continue
 
-    const files = fs.readdirSync(phasePath).filter(f => f.endsWith('.md'))
+    const files = fs.readdirSync(phasePath, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && !entry.isSymbolicLink() && entry.name.endsWith('.md'))
+      .map((entry) => entry.name)
 
     for (const file of files) {
       stats.total++
@@ -84,14 +88,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const project = searchParams.get('project')
 
-    if (!project) {
-      return NextResponse.json(
-        { error: 'Project parameter required' },
-        { status: 400 }
-      )
+    if (!isSafeSegment(project)) {
+      return NextResponse.json({ error: 'Valid project required' }, { status: 400 })
     }
 
-    const projectPath = path.join(getKanbanRoot(), project)
+    const projectPath = safeChild(getKanbanRoot(), project)
 
     if (!fs.existsSync(projectPath)) {
       return NextResponse.json(
@@ -107,10 +108,9 @@ export async function GET(request: NextRequest) {
       stats,
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/kanban/stats:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

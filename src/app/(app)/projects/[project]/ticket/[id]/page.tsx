@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useBentoStore } from '@/lib/store'
-import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
-import { serializeTicketToMarkdown, addPhaseHistoryEntry } from '@/lib/serializers/ticketSerializer'
+import { ErrorPopup, useErrorPopup } from '@/components/ui/ErrorPopup'
+import { addPhaseHistoryEntry } from '@/lib/serializers/ticketSerializer'
 import type { KanbanTicket, KanbanPhase } from '@/lib/types'
 import { ChevronLeft, Check, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
@@ -14,21 +14,70 @@ import remarkGfm from 'remark-gfm'
 
 export default function TicketDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const project = params.project as string
   const ticketId = params.id as string
-  const { tickets, upsertTicket, setEditingContent, editingContent } = useBentoStore()
+  const ticket = useBentoStore((s) => s.tickets[ticketId])
+  const upsertTicket = useBentoStore((s) => s.upsertTicket)
+  const { error, showError, dismissError } = useErrorPopup()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [markdownContent, setMarkdownContent] = useState('')
-
-  const ticket = tickets[ticketId]
+  const [savedContent, setSavedContent] = useState('')
+  const [expectedHash, setExpectedHash] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (ticket) {
-      setMarkdownContent(serializeTicketToMarkdown(ticket))
+    if (!ticket) return
+    const controller = new AbortController()
+
+    async function loadContent() {
+      try {
+        const res = await fetch(`/api/kanban/ticket/${ticketId}/content`, { signal: controller.signal })
+        if (!res.ok) return
+        const data = await res.json()
+        if (controller.signal.aborted) return
+        const content = data.content || ''
+        setMarkdownContent(content)
+        setSavedContent(content)
+        setExpectedHash(data.hash ?? null)
+      } catch (contentError) {
+        if (!controller.signal.aborted) console.error('Failed to load ticket content:', contentError)
+      }
     }
-  }, [ticket])
+
+    loadContent()
+    return () => controller.abort()
+  }, [ticket, ticketId])
+
+  useEffect(() => {
+    if (!ticketId || ticket) return
+
+    const controller = new AbortController()
+
+    async function loadTicket() {
+      setLoadError(null)
+      try {
+        const res = await fetch(`/api/kanban/ticket/${ticketId}`, { signal: controller.signal })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || `Ticket not found (${res.status})`)
+        }
+        const data = await res.json()
+        if (controller.signal.aborted) return
+        if (!data.ticket) {
+          setLoadError('Ticket not found')
+          return
+        }
+        upsertTicket(data.ticket as KanbanTicket)
+      } catch (loadFailure) {
+        if (controller.signal.aborted) return
+        setLoadError(loadFailure instanceof Error ? loadFailure.message : 'Failed to load ticket')
+      }
+    }
+
+    loadTicket()
+    return () => controller.abort()
+  }, [ticketId, ticket, upsertTicket])
 
   if (!ticket) {
     return (
@@ -43,7 +92,9 @@ export default function TicketDetailPage() {
           </Link>
         </div>
         <div className="glass-card p-12 text-center">
-          <p style={{ color: 'var(--text-muted)' }}>Loading ticket...</p>
+          <p style={{ color: loadError ? 'var(--error)' : 'var(--text-muted)' }}>
+            {loadError || 'Loading ticket...'}
+          </p>
         </div>
       </div>
     )
@@ -52,23 +103,26 @@ export default function TicketDetailPage() {
   async function handleSave() {
     setIsSaving(true)
     try {
-      // Send update to API
       const res = await fetch(`/api/kanban/ticket/${ticketId}/content`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: markdownContent }),
+        body: JSON.stringify({ content: markdownContent, expectedHash }),
       })
 
-      if (!res.ok) {
-        throw new Error('Failed to save')
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}))
+        showError(data.message || 'Ticket changed since you started editing')
+        return
       }
+      if (!res.ok) throw new Error('Failed to save')
 
-      // Update local store
-      // TODO: Parse the updated content back to ticket object
-      upsertTicket({ ...ticket, modifiedAt: new Date().toISOString() })
+      const data = await res.json().catch(() => ({}))
+      setExpectedHash(data.hash ?? null)
+      setSavedContent(markdownContent)
+      upsertTicket({ ...ticket, modifiedAt: data.modifiedAt || new Date().toISOString() })
       setIsEditing(false)
-    } catch (error) {
-      console.error('Failed to save:', error)
+    } catch (saveError) {
+      showError(saveError instanceof Error ? saveError.message : 'Failed to save')
     } finally {
       setIsSaving(false)
     }
@@ -82,19 +136,16 @@ export default function TicketDetailPage() {
         body: JSON.stringify({ phase: newPhase }),
       })
 
-      if (!res.ok) {
-        throw new Error('Failed to update phase')
-      }
+      if (!res.ok) throw new Error('Failed to update phase')
 
-      const updatedTicket = addPhaseHistoryEntry(ticket, newPhase)
-      upsertTicket(updatedTicket)
-    } catch (error) {
-      console.error('Failed to update phase:', error)
+      upsertTicket(addPhaseHistoryEntry(ticket, newPhase))
+    } catch (phaseError) {
+      showError(phaseError instanceof Error ? phaseError.message : 'Failed to update phase')
     }
   }
 
   function handleCancel() {
-    setMarkdownContent(serializeTicketToMarkdown(ticket))
+    setMarkdownContent(savedContent)
     setIsEditing(false)
   }
 
@@ -104,7 +155,6 @@ export default function TicketDetailPage() {
 
   return (
     <div className="animate-fade-in max-w-5xl">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Link
           href={`/projects/${project}`}
@@ -142,43 +192,30 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
-      {/* Phase Badges */}
       <div className="flex items-center gap-2 mb-4">
         <span
           className="px-3 py-1 rounded-full text-[12px] font-semibold"
-          style={{
-            background: 'var(--accent-muted)',
-            color: 'var(--accent-text)',
-          }}
+          style={{ background: 'var(--accent-muted)', color: 'var(--accent-text)' }}
         >
           {ticket.id}
         </span>
         <span
           className="px-3 py-1 rounded-full text-[12px] font-semibold"
-          style={{
-            background: 'var(--tag-bg)',
-            color: 'var(--text-secondary)',
-          }}
+          style={{ background: 'var(--tag-bg)', color: 'var(--text-secondary)' }}
         >
           {ticket.phase}
         </span>
-        {ticket.symbol && (
-          <span className="text-[18px]">{ticket.symbol}</span>
-        )}
+        {ticket.symbol && <span className="text-[18px]">{ticket.symbol}</span>}
         {taskCount > 0 && (
           <span
             className="px-3 py-1 rounded-full text-[12px] font-medium"
-            style={{
-              background: allTasksComplete ? 'var(--success)' : 'var(--warning)',
-              color: 'white',
-            }}
+            style={{ background: allTasksComplete ? 'var(--success)' : 'var(--warning)', color: 'white' }}
           >
             {completedCount}/{taskCount} tasks
           </span>
         )}
       </div>
 
-      {/* Content */}
       {isEditing ? (
         <div className="space-y-4">
           <textarea
@@ -187,10 +224,7 @@ export default function TicketDetailPage() {
             className="input-glass w-full min-h-[500px] font-mono text-[13px] leading-relaxed p-4"
             placeholder="Enter markdown content..."
           />
-          <div
-            className="glass-card p-4 text-[13px]"
-            style={{ color: 'var(--text-muted)' }}
-          >
+          <div className="glass-card p-4 text-[13px]" style={{ color: 'var(--text-muted)' }}>
             Tip: Use markdown syntax for formatting. Tasks use - [x] / - [ ] syntax.
           </div>
         </div>
@@ -204,7 +238,6 @@ export default function TicketDetailPage() {
         </div>
       )}
 
-      {/* Phase History */}
       {ticket.phaseHistory && ticket.phaseHistory.length > 0 && (
         <div className="mt-6">
           <h3 className="text-[16px] font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
@@ -232,6 +265,7 @@ export default function TicketDetailPage() {
           </div>
         </div>
       )}
+      <ErrorPopup error={error} onDismiss={dismissError} />
     </div>
   )
 }

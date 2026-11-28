@@ -4,6 +4,8 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
+import { isSafeSegment, realInside, safeChild, unsafePathStatus } from '@/lib/path-guard'
+
 const getSessionsDir = () => `${getWorkspacePath()}/kanban/sessions`
 
 interface SessionRegistry {
@@ -24,16 +26,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const project = searchParams.get('project')
 
-    if (!project) {
-      return NextResponse.json(
-        { error: 'Project parameter required' },
-        { status: 400 }
-      )
+    if (!isSafeSegment(project)) {
+      return NextResponse.json({ error: 'Valid project required' }, { status: 400 })
     }
+
+    safeChild(getWorkspacePath() + '/kanban', project)
 
     // Derive acronym from project name (first 4 chars uppercase or pattern)
     const acronym = project.slice(0, 4).toUpperCase()
-    const sessionPath = path.join(getSessionsDir(), `${acronym}-session.json`)
+    const sessionDir = getSessionsDir()
+    const sessionFile = `${acronym}-session.json`
+    const sessionPath = fs.existsSync(path.join(sessionDir, sessionFile))
+      ? realInside(sessionDir, sessionFile)
+      : path.join(sessionDir, sessionFile)
 
     // Check if session file exists
     if (!fs.existsSync(sessionPath)) {
@@ -49,12 +54,11 @@ export async function GET(request: NextRequest) {
     try {
       const content = fs.readFileSync(sessionPath, 'utf-8')
       session = JSON.parse(content)
-    } catch (parseError) {
+    } catch {
       return NextResponse.json({
         project,
         session: null,
         message: 'Invalid session JSON',
-        error: String(parseError),
       })
     }
 
@@ -81,10 +85,9 @@ export async function GET(request: NextRequest) {
       session,
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/kanban/sessions:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -4,33 +4,36 @@ import fs from 'fs'
 import path from 'path'
 
 import { getWorkspacePath } from '@/lib/workspace'
+import { PHASES, isPhase } from '@/lib/phases'
+import { readJsonObject } from '@/lib/security'
+import { isSafeSegment, safeChild, unsafePathStatus, uuidTempPath } from '@/lib/path-guard'
+import { ticketIdFromFilename } from '@/lib/parsers/ticketParser'
+import type { KanbanPhase } from '@/lib/types'
+
 const getKanbanRoot = () => `${getWorkspacePath()}/kanban`
-const PHASES = ['backlog', 'to-do', 'in-progress', 'in-review', 'pull-request', 'blocked', 'cancelled']
 
-/**
- * Search for a ticket file by ID
- */
-function findTicketFile(ticketId: string): { filePath: string; phase: string; project: string } | null {
-  if (!fs.existsSync(getKanbanRoot())) return null
+interface TicketHit {
+  filePath: string
+  phase: KanbanPhase
+  project: string
+}
 
-  const entries = fs.readdirSync(getKanbanRoot(), { withFileTypes: true })
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue
-    const projectPath = path.join(getKanbanRoot(), entry.name)
+function findTicketFile(ticketId: string): TicketHit | null {
+  const root = getKanbanRoot()
+  if (!fs.existsSync(root)) return null
+
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.isSymbolicLink() || !isSafeSegment(entry.name)) continue
+    const projectPath = safeChild(root, entry.name)
 
     for (const phase of PHASES) {
-      const phasePath = path.join(projectPath, phase)
+      const phasePath = safeChild(projectPath, phase)
       if (!fs.existsSync(phasePath)) continue
 
-      const files = fs.readdirSync(phasePath).filter(f => f.endsWith('.md'))
-      for (const file of files) {
-        const fileId = extractTicketId(file)
-        if (fileId === ticketId) {
-          return {
-            filePath: path.join(phasePath, file),
-            phase,
-            project: entry.name,
-          }
+      for (const file of fs.readdirSync(phasePath, { withFileTypes: true })) {
+        if (!file.isFile() || file.isSymbolicLink() || !file.name.endsWith('.md')) continue
+        if (ticketIdFromFilename(file.name) === ticketId) {
+          return { filePath: path.join(phasePath, file.name), phase, project: entry.name }
         }
       }
     }
@@ -38,32 +41,14 @@ function findTicketFile(ticketId: string): { filePath: string; phase: string; pr
   return null
 }
 
-/**
- * Extract ticket ID from filename
- */
-function extractTicketId(filename: string): string {
-  const name = filename.replace(/\.md$/, '')
-  const match = name.match(/^([A-Z]+-\d+)/)
-  return match ? match[1] : ''
-}
-
-/**
- * Update phase history in ticket markdown
- */
-function updatePhaseHistory(content: string, newPhase: string, notes?: string): string {
-  const timestamp = new Date()
-    .toISOString()
-    .replace('T', ' ')
-    .replace(/\.\d{3}Z$/, '')
-
+function updatePhaseHistory(content: string, newPhase: KanbanPhase, notes?: string): string {
+  const timestamp = new Date().toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '')
   const lines = content.split('\n')
   let phaseHistoryIndex = -1
   let insertIndex = -1
 
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i] === '## Phase History') {
-      phaseHistoryIndex = i
-    }
+    if (lines[i] === '## Phase History') phaseHistoryIndex = i
     if (phaseHistoryIndex >= 0 && lines[i].includes('|-------|')) {
       insertIndex = i + 1
       break
@@ -71,120 +56,77 @@ function updatePhaseHistory(content: string, newPhase: string, notes?: string): 
   }
 
   if (insertIndex >= 0) {
-    const entry = `| ${newPhase} | ${timestamp} | ${notes || ''} |`
-    lines.splice(insertIndex, 0, entry)
+    lines.splice(insertIndex, 0, `| ${newPhase} | ${timestamp} | ${notes || ''} |`)
     return lines.join('\n')
   }
 
-  // Add section if it doesn't exist
-  let attemptsIndex = lines.findIndex(l => l === '## Attempts')
+  let attemptsIndex = lines.findIndex((line) => line === '## Attempts')
   if (attemptsIndex < 0) attemptsIndex = lines.length
-
-  const section = [
-    '',
-    '## Phase History',
-    '| Phase | Date | Notes |',
-    '|-------|------|-------|',
-    `| ${newPhase} | ${timestamp} | ${notes || ''} |`,
-  ].join('\n')
-
-  lines.splice(attemptsIndex, 0, section)
+  lines.splice(attemptsIndex, 0, '', '## Phase History', '| Phase | Date | Notes |', '|-------|------|-------|', `| ${newPhase} | ${timestamp} | ${notes || ''} |`)
   return lines.join('\n')
 }
 
 /**
- * Update ticket phase
+ * Move a ticket between phase directories.
  * POST /api/kanban/ticket/[id]/phase
- * Body: { phase, notes }
+ * Body: { phase, notes? }
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: ticketId } = await params
-    const id = ticketId.toUpperCase()
-    const body = await request.json()
+    const id = (await params).id.toUpperCase()
+    if (!isSafeSegment(id)) return NextResponse.json({ error: 'Invalid ticket id' }, { status: 400 })
+
+    const body = await readJsonObject(request)
+    if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+
     const { phase, notes } = body
-
-    if (!phase) {
-      return NextResponse.json(
-        { error: 'Phase parameter required' },
-        { status: 400 }
-      )
+    if (!isPhase(phase) || (typeof notes !== 'undefined' && typeof notes !== 'string')) {
+      return NextResponse.json({ error: 'Valid phase and optional notes are required' }, { status: 400 })
     }
 
-    // Validate phase
-    if (!PHASES.includes(phase)) {
-      return NextResponse.json(
-        { error: 'Invalid phase', validPhases: PHASES },
-        { status: 400 }
-      )
-    }
-
-    // Find ticket
     const ticketInfo = findTicketFile(id)
-    if (!ticketInfo) {
-      return NextResponse.json(
-        { error: 'Ticket not found', id },
-        { status: 404 }
-      )
-    }
-
-    // If same phase, no-op
+    if (!ticketInfo) return NextResponse.json({ error: 'Ticket not found', id }, { status: 404 })
     if (ticketInfo.phase === phase) {
-      return NextResponse.json({
-        success: true,
-        id,
-        phase,
-        message: 'Ticket already in this phase',
-      })
+      return NextResponse.json({ success: true, id, phase, message: 'Ticket already in this phase' })
     }
 
-    // Read current content
+    const root = getKanbanRoot()
+    const projectPath = safeChild(root, ticketInfo.project)
+    const targetDir = safeChild(projectPath, phase)
+    const targetPath = path.join(targetDir, path.basename(ticketInfo.filePath))
+    if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true })
+
+    try {
+      fs.lstatSync(targetPath)
+      return NextResponse.json({ error: 'Target ticket already exists', id }, { status: 409 })
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code !== 'ENOENT') throw error
+    }
+
     const content = fs.readFileSync(ticketInfo.filePath, 'utf-8')
-
-    // Update phase history
     const updatedContent = updatePhaseHistory(content, phase, notes)
-
-    // Calculate new file path
-    const newFilePath = path.join(
-      getKanbanRoot(),
-      ticketInfo.project,
-      phase,
-      path.basename(ticketInfo.filePath)
-    )
-
-    // Ensure target directory exists
-    const targetDir = path.join(getKanbanRoot(), ticketInfo.project, phase)
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true })
-    }
-
-    // Atomic write to new location
-    const tempPath = newFilePath + '.tmp.' + Date.now()
+    const tempPath = uuidTempPath(targetDir, path.basename(targetPath))
     fs.writeFileSync(tempPath, updatedContent, 'utf-8')
-    fs.renameSync(tempPath, newFilePath)
-
-    // Delete old file
+    fs.renameSync(tempPath, targetPath)
     fs.unlinkSync(ticketInfo.filePath)
 
-    const stats = fs.statSync(newFilePath)
-
+    const stats = fs.statSync(targetPath)
     return NextResponse.json({
       success: true,
       id,
       fromPhase: ticketInfo.phase,
       toPhase: phase,
       notes,
-      filePath: newFilePath,
+      filePath: targetPath,
       modifiedAt: stats.mtime.toISOString(),
     })
   } catch (error) {
+    const unsafeStatus = unsafePathStatus(error)
+    if (unsafeStatus) return NextResponse.json({ error: 'Invalid path' }, { status: unsafeStatus })
     console.error('Error in /api/kanban/ticket/[id]/phase:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

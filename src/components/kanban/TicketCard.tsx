@@ -239,7 +239,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
                 Phase History
               </span>
               <div className="text-[11px] font-mono" style={{ color: 'var(--text-muted)' }}>
-                {ticket.phaseHistory.map((h, idx) => (
+                {ticket.phaseHistory.slice(-3).map((h, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <span className="font-medium">{h.phase}</span>
                     <span>→</span>
@@ -247,6 +247,9 @@ export function TicketCard({ ticket }: TicketCardProps) {
                     {h.notes && <span className="text-[10px] opacity-70">({h.notes})</span>}
                   </div>
                 ))}
+                {ticket.phaseHistory.length > 3 && (
+                  <div className="text-[10px] opacity-70">+{ticket.phaseHistory.length - 3} earlier phases</div>
+                )}
               </div>
             </div>
           )}

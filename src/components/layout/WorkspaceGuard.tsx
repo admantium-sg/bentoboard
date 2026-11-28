@@ -5,27 +5,26 @@ import { useEffect, useState } from 'react'
 export function WorkspaceGuard({ children }: { children: React.ReactNode }) {
   const [isValid, setIsValid] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [workspacePath, setWorkspacePath] = useState<string>('')
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function validateWorkspace() {
       try {
-        const res = await fetch('/api/fs/browse?path=')
+        const res = await fetch('/api/fs/browse?path=', { signal: controller.signal })
         if (!res.ok) {
           const data = await res.json()
           throw new Error(data.error || 'Failed to validate workspace')
         }
-        const data = await res.json()
         setIsValid(true)
-        setWorkspacePath(data.basePath || '')
-        // Store workspace path for later use
-        localStorage.setItem('workspacePath', data.basePath || '')
       } catch (err) {
+        if (controller.signal.aborted) return
         setIsValid(false)
         setError(err instanceof Error ? err.message : 'Failed to connect to workspace')
       }
     }
     validateWorkspace()
+    return () => controller.abort()
   }, [])
 
   if (isValid === null) {

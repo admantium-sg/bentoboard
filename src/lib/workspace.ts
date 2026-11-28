@@ -79,17 +79,17 @@ export function validateWorkspace(): string {
   return absolutePath
 }
 
+let validatedWorkspace: string | undefined
+let validatedFor: string | undefined
+
 /**
- * Get the validated workspace path.
- * This should only be called after validateWorkspace() has been called.
+ * Get the validated workspace path, creating the default folder on first read.
  */
 export function getWorkspacePath(): string {
-  const workspacePath = process.env[ENV_VAR]
-  if (!workspacePath) {
-    // Return a default path for development/testing
-    // In production, this should be set via environment variable
-    console.warn(`${ENV_VAR} not set, using default path`)
-    return path.resolve('/tmp/workspace')
+  const configured = process.env[ENV_VAR]
+  if (configured !== validatedFor) {
+    validatedWorkspace = validateWorkspace()
+    validatedFor = configured
   }
-  return path.resolve(workspacePath)
+  return validatedWorkspace!
 }
