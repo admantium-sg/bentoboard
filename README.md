@@ -43,7 +43,7 @@ BENTOBOARD_AUTH_USER=your-user
 BENTOBOARD_AUTH_PASSWORD=your-password
 ```
 
-`BENTOBOARD_WORKSPACE_FOLDER` sets the folder that the server reads and writes. Set it to an absolute path that the server can access. `BENTOBOARD_AUTH_USER` and `BENTOBOARD_AUTH_PASSWORD` set the app credentials.
+`BENTOBOARD_WORKSPACE_FOLDER` sets the folder that the server reads and writes. Set it to an absolute path that the server can access. When it is unset, BentoBoard uses the Markdown and text files from `content/research`. Next includes those files in the standalone server output. `BENTOBOARD_AUTH_USER` and `BENTOBOARD_AUTH_PASSWORD` set the app credentials.
 
 ### Development
 
