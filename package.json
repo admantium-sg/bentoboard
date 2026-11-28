@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3333",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node scripts/copy-content.mjs",
     "start": "next start",
     "stop": "fuser -k 3333/tcp 3000/tcp 2>/dev/null || true",
     "restart": "npm run stop && npm run start",

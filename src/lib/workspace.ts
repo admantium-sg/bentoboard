@@ -17,14 +17,15 @@ export function validateWorkspace(): string {
   const workspacePath = process.env[ENV_VAR]
 
   if (!workspacePath) {
-    // For development, create a default workspace if env var is not set
-    console.warn(`${ENV_VAR} not set, creating default workspace`)
-    const defaultPath = path.resolve('/tmp/workspace')
-    
-    // Create default workspace if it doesn't exist
-    if (!fs.existsSync(defaultPath)) {
-      fs.mkdirSync(defaultPath, { recursive: true })
-    }
+    const fallback = path.resolve('/tmp/workspace')
+    const defaultPath = [
+      path.resolve(process.cwd(), '.next', 'bentoboard-content'),
+      path.resolve(process.cwd(), 'content', 'research'),
+      fallback,
+    ].find((candidate) => fs.existsSync(candidate)) ?? fallback
+
+    console.warn(`${ENV_VAR} not set, using bundled content at ${defaultPath}`)
+    if (!fs.existsSync(defaultPath)) fs.mkdirSync(defaultPath, { recursive: true })
     return defaultPath
   }
 
@@ -80,16 +81,17 @@ export function validateWorkspace(): string {
 }
 
 let validatedWorkspace: string | undefined
-let validatedFor: string | undefined
+let validatedKey: string | undefined
 
 /**
  * Get the validated workspace path, creating the default folder on first read.
  */
 export function getWorkspacePath(): string {
   const configured = process.env[ENV_VAR]
-  if (configured !== validatedFor) {
+  const key = `${configured ?? ''}\0${process.cwd()}`
+  if (key !== validatedKey) {
     validatedWorkspace = validateWorkspace()
-    validatedFor = configured
+    validatedKey = key
   }
   return validatedWorkspace!
 }
