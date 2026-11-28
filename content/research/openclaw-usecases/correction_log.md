@@ -2876,3 +2876,153 @@ Quality score dropped because the Oct 16–22 material is security/regulatory he
 - `verification_status.json` — 51 new claim records, metrics recomputed
 - `fact_check_reports/2026-10-22.md` — full report
 - `correction_log.md` — this entry
+
+## 2026-10-29
+
+**Scope:** 15 claims sampled from the `## 2026-10-29` section of `cumulative_findings.md` (verified frontier before this run: 2026-10-22). Delegated to 3 subagents (5 claims each, 2 in parallel then 1). Result: 8 verified, 7 partially verified, 0 unverifiable.
+
+### Corrections Made
+
+1. **release/2026.10.9 commit distance** — "42 commits ahead of release/2026.10.8 (1 behind)" → GitHub compare reports `status: "diverged"`, `ahead_by: 43`, `behind_by: 1`. Sources: https://api.github.com/repos/openclaw/openclaw/compare/release/2026.10.8...release/2026.10.9
+2. **PR-range total not reproducible** — "17 in-range PRs + 0 retained seed-only PRs = 17 unique PRs" for v2026.10.8..32c00782 → the compare range holds 16 commits and 10 unique PR numbers in commit subjects (185538, 170853, 185201, 176902, 176852, 178112, 179144, 180321, 183193, 181257). Sources: https://api.github.com/repos/openclaw/openclaw/compare/v2026.10.8...32c00782ebee59dab4b73fe7dc3f285fe5f34b86
+3. **OpenClaw advisory count** — "30 advisories" → **722 published advisories**; 30 was the GitHub API default page size. Date top-out 2026-09-11T00:58Z confirmed and no 2026-10 advisory exists, so the "no advisory for the 2026.10.9 cohort" claim stands. Sources: https://api.github.com/repos/openclaw/openclaw/security-advisories?per_page=100
+4. **#186895 issue title** — paraphrase → real title "[Bug]: Windows cold-start gateway slow/degraded: model-catalog stall, 'prepared model runtime publication was superseded', feishu drops (2026.10.8)". Model-catalog preparation can stall >180s; the ~30s figure is the `prepared-runtime` step. Sources: https://api.github.com/repos/openclaw/openclaw/issues/186895
+5. **GitHub repo metric deltas** — "+75 stars, +17 forks, +152 open issues in 24 h" → unconfirmable from the primary source and implausible against the +19 observed since the stated snapshot. Live counters 2026-10-29T13:51Z: 393,346 stars / 82,690 forks / 7,834 open issues. Restate as a timestamped snapshot. Sources: https://api.github.com/repos/openclaw/openclaw
+6. **ClawStat tracked-issue misreading** — "tracked issues rose to 80 (from 60)" → the version-specific list is **60** and saturated at `issues_cap: 60` (unchanged since 2026-10-27); 80 is `calibration.tracked_total`, of which 19 are fixed. Recommendation ⚠️ / medium / 2026.10.8 / recommended_version 2026.10.6 / sole blocker #185819 all confirmed. Sources: https://clawstat.us/latest.json
+7. **DAYJOB: Tax publication date** — "published Oct 29" → Surge AI published the benchmark **2026-10-27**; Oct 29 is the OpenClawRadar write-up. All figures (50 environments, 1,789 files / 1,487 PDFs / 117 Excel / 38 Word, Pass@1 at 95% rubric, Sonnet 5.5 10.8% / Fable 5.1 9.6% / Opus 5.5 9.2%) confirmed by two sources. Sources: https://surgehq.ai/blog/dayjob-tax, https://openclawradar.com/article/dayjob-tax-benchmark-ai-agents
+
+### Minor (no status change)
+- PR #187284 `merged_at` = 05:12:29Z (05:12:28Z is the commit time); PR #187303 `merged_at` = 07:19:22Z (claim said ~07:19:21Z).
+- npm 2,722,524 baseline is the Oct 22–26 partial-week sum, not a prior full week — the +14.4% is a partial-week comparison.
+- Issue titles for #187237, #187513, #186684, #187309, #186813 were paraphrased in the findings file; all timestamps, priorities and labels confirmed.
+
+### Sources Reliability
+- **Primary APIs were decisive.** `api.github.com` and `api.npmjs.org` returned every field needed (created_at, labels, merged_at, diff bodies, download series). 10/10 issue- and PR-level claims verified with no substantive error.
+- **Third-party JSON aggregators are the weak spot.** Both corrections in this batch that came from non-GitHub sources (ClawStat, the advisory list) were field-segregation or pagination artefacts, not factual errors.
+- **Two independent sources confirmed the one benchmark claim** (Surge AI primary + OpenClawRadar aggregation) — the first time this run an aggregator was the weaker of a pair rather than the only one.
+
+### Patterns Identified
+- **Derived numbers fail; quoted numbers hold.** Every correction landed on a value the author computed (commit distance, PR totals, day-over-day deltas) rather than one they read directly. Raw readings — titles, labels, timestamps, scores — were uniformly accurate.
+- **JSON field conflation is the recurring trap.** Two distinct ClawStat fields (`issues` vs `tracked_total`) were merged into one number; a default page size was read as a list total.
+- **Sampling note.** This batch was deliberately weighted toward numeric claims to test the release-train and metrics sections. The qualitative remainder of the 2026-10-29 section (community threads, HN commentary, enterprise-repo commit detail, showcase entries, vendor catalogues) was not sampled; it is a sampling decision, not a backlog.
+
+## 2026-11-05
+
+Scope: `cumulative_findings.md` section `## 2026-11-05 (incremental run — 09:28 UTC)` (frontier advanced from 2026-10-29).
+15 claims checked via 3 delegated subagents (5 each). 8 clean (7 VERIFIED + 1 VERIFIED-with-source-method-note), 7 PARTIALLY_VERIFIED, 0 NEEDS_CORRECTION, 0 UNVERIFIED, 0 pending.
+
+### Corrections Made
+- **npm `latest` tag promoted mid-snapshot** — `latest` was 2026.10.10 at the ~09:30Z snapshot but was promoted to **2026.11.1** at 2026-11-05T09:41:26Z. `beta` (2026.11.5-beta.1) and `extended-stable` (2026.9.36) confirmed exact. (Source: registry.npmjs.org dist-tags, GitHub releases API)
+- **2026-11-04 npm downloads now published** — the "MISSING" caveat applied only at snapshot time; **11-04 = 400,586**, `point/last-day` now resolves to 11-04. Recomputed pre-release 7-day mean = **346,450/day** (not 346,735), making 11-03 **+13.5%** (not +13.4%) above baseline. (Source: api.npmjs.org downloads range + last-day)
+- **Reddit thread entry count** — "36 comments" was the total entry count *including the post* at ~09:30Z; at 13:53Z the feed held **46 entries (1 post + 45 comments)**. The `.rss` method breakthrough itself is confirmed (`.json` and `r.jina.ai` still 403; non-browser UA required). (Source: reddit.com per-post .rss)
+- **600s watchdog "previously-unreported" is an overstatement** — already documented upstream in **openclaw/openclaw issue #41588** (default `agents.defaults.timeoutSeconds` 600s kills active runs) and **#60151**, both closed and predating the Reddit post. New as a user-facing failure mode, not new to the project. (Source: github.com/openclaw/openclaw/issues/41588, Reddit .rss)
+- **Discourse high-water mark moved past 372** — topics 374 (13:11Z) and 375 (13:28Z) were created after the snapshot; current max is **375**. Topic 370 and 372 titles/timestamps confirmed exactly. (Source: community.openclaw.ai .json)
+- **Second ClawHub cohort skill now has installs** — **two** skills with installs > 0 at 13:49Z (`wang-shuanglin/xhs-gongji-cards` 1; `sunset-wave/sunset-repo-lifecycle-check-20261105` 1, a dated test artifact). The **33-skill count was confirmed exactly** via full cursor-paginated catalogue (7,799 unique skills). (Source: clawhub.ai API)
+- **GitHub ecosystem repo count drift** — 48 → **57** repos at 13:54Z, max stars 1 → **3** (`onlyreadai/onlyread`, 11:32Z). The **genpark half is fully confirmed and still holds**: 330 ever, **0 created in window**. (Source: GitHub repository search API)
+- **Advisory-recency source method** — the global advisory DB (`/advisories?affects=openclaw`) and the repo-scoped endpoint report **different `published_at`** for GHSA-3x84-qq85-fj65 (2026-10-21 vs 2026-06-30). Conclusion unchanged (newest advisory 2026-10-21, 15 days); use the global feed going forward.
+
+### Sources Reliability
+- **Direct primary APIs: 100% reachable this run.** No DuckDuckGo bot challenges at all (contrast: 12 in the 2026-08-20 window, 2 in the 2026-11-05 accumulator window). npm registry, npm downloads, GitHub API + search API, ClawHub API, clawstat.us/latest.json, openclaw.ai RSS, Reddit per-post `.rss`, Discourse `.json` — all served without a fallback.
+- Reddit `.rss` requires a non-browser User-Agent; plain curl intermittently returned 403/429 without it. `.json` and `r.jina.ai` remain hard-403 for Reddit.
+- GitHub's repo-scoped security-advisories endpoint is **not reliable for newest-advisory ordering**; prefer the global advisory DB.
+- clawstat.us and the ClawHub API both expose rich structured JSON that is internally consistent — highest-confidence sources in this run.
+- GitHub issue-tracker mining (issues #41588, #60151) was the decisive refutation source for the watchdog claim.
+
+### Patterns Identified
+- **Live-counter staleness is now the dominant error mode** — 6 of 8 corrections are values that moved between the ~09:30Z research snapshot and the ~13:50Z verification window on the same day. None indicate the research was wrong at capture time. Future runs should either verify within a tight window of capture or annotate all counters with their fetch timestamp.
+- **The research does not consult upstream issue trackers** before declaring a failure mode "new" — 2 of 15 claims needed upstream-issue input to qualify.
+- **Community/Discourse platforms publish fast enough to invalidate ID high-water marks within hours** — the 372 → 375 shift happened inside a single afternoon.
+- **No claim in this window was found substantively false.** Strict verification rate 46.7%, non-contradiction rate 100%.
+
+## 2026-11-12
+
+Scope: `cumulative_findings.md` sections `## 2026-11-10` and `## 2026-11-11` (frontier advanced from 2026-11-05; both sections were unverified).
+15 claims checked (C1-C15). **5 VERIFIED, 10 PARTIALLY_VERIFIED, 0 NEEDS_CORRECTION, 0 UNVERIFIED, 60 pending** (per-run cap of 15 reached; remainder itemised in `fact_check_work/2026-11-12_pending.md`).
+
+### Corrections Made
+- **#196250 is MERGED, not an open PR** — the 2026-11-10 finding said the #196249 Gateway-freeze fix "exists only as open PR #196250 (`merged_at: null`)". PR #196250 merged at **2026-11-10T17:54:31Z**, one second before issue #196249 closed at 17:54:32Z. The fix shipped inside the same window the research described. (Source: api.github.com pulls/196250, issues/196249)
+- **"Every one of the 12 new enterprise issues is security- or policy-shaped" → overstated** — the 12 issues reproduce with identical numbers and creation dates (#5209, #5180, #5179, #5177, #5172, #5168, #5165, #5164, #5160, #5126, #5115, #5111), but their impact labels are mixed: `impact:other` (#5160, #5165, #5164, #5168), `impact:ux-friction` (#5111), `impact:message-loss` (#5126). Only #5177, #5180/#5179 and #5172 are clearly security/policy-shaped. Correct reading: "12 new issues, most security- or policy-adjacent, not all". (Source: api.github.com search/issues, repo:openclaw/openclaw-enterprise, window 2026-11-09T09:28Z..2026-11-10T09:28Z)
+- **#196514 was closed as NOT_PLANNED, not as a duplicate** — the fallback paragraph attributes the duplicate closure to #196514; the GitHub payload shows `state: CLOSED`, `stateReason: NOT_PLANNED` ("Closed as not planned" marker on the rendered page). The *duplicate* closure in that cluster is **#192463** (closed as duplicate of #192009) — a fact stated inside #196514's own body, which the finding appears to have mis-attributed. Separately, #196514's title makes it about same-provider multi-account fallback, not only cross-vendor. (Source: github.com/openclaw/openclaw/issues/196514, issues/192009, pull/172590)
+- **npm dist-tags moved after the snapshot** — historical claim holds for 2026-11-10 (beta.2 GitHub tag cut 2026-11-10T02:31:36Z, npm artifact only 2026-11-11T23:33:44Z, so "tag exists, npm 404" was real); current state is latest=2026.11.3, extended-stable=2026.9.37, beta=2026.11.5-beta.2 and the 404 no longer reproduces. (Source: registry.npmjs.org dist-tags + packument `time`)
+- **2026-11-09 npm download point now resolves** — the finding reported 0 (reporting lag); it now reads **349,424**. All other figures reproduce exactly (2,564,150 vs 2,103,872, +21.88%, peak 504,091 on 11-06). Convention note: the range endpoint returned 14 daily buckets for an inclusive 10-27..11-09 request, i.e. end-INCLUSIVE in this call — filter by date, not bucket position. (Source: api.npmjs.org downloads range/point)
+- **ClawStat keeps only the newest assessment per version** — both the 2026-11-10 08:34:35Z snapshot of 2026.11.2 and the 2026-11-11 06:42:24Z snapshot of 2026.11.3 have been superseded (2026.11.2 re-assessed 2026-11-10T16:36:08Z with a different headline; 2026.11.3 re-assessed 2026-11-12T06:46:48Z → status `care`, early_read null, recommended_version 2026.11.1, gate ✅ with a documented ⚠️ departure citing #196925). The verdicts, versions, timestamps, the 60-issue cap and the #196925 driver all reproduce; the quoted headlines and claim-time field values are historical only. (Source: clawstat.us/latest.json)
+- **GHSA-2m5v-pch6-74hx severity is source-dependent** — GitHub Advisory DB says `high`, but NVD CVE-2026-109383 scores **CVSS 3.1 9.1 CRITICAL** (NVD primary) / 7.4 HIGH (CNA secondary), and the CVE was published 2026-10-15, before the GHSA (2026-10-27). Publication date, title and the fixed versions (6.29.1 / 7.30.1 / 8.12.2) reproduce. (Source: api.github.com/advisories, services.nvd.nist.gov)
+- **Absolute repo counters are point-in-time** — the 394,270 / 8,116 (11-10) and 394,315 / 8,175 (11-11) star and open-issue figures cannot be re-derived for a past date; the repo is at 394,404 stars today. All in-window *velocity* metrics reproduce exactly: 198 / 497 / 287 (11-10) and 148 / 454 / 367 (11-11); open P0 repo-wide is still 313. (Source: api.github.com search/issues, rendered repo payload)
+- **mutonby/agentring drift only** — stars 342→387, forks 41→55, last push 2026-11-09T22:35Z→2026-11-11T16:27:43Z; Apache-2.0, creation 2026-10-23, agentring.io hosting all confirmed. (Source: api.github.com/repos/mutonby/agentring)
+
+### Sources Reliability
+- **GitHub core API quota exhausted mid-run** (unauthenticated 60/h, reset 2026-11-12T14:50Z). Repo-level reads fell back to `api.github.com/search/issues` counts (30 requests/hour for search) and the `stargazerCount` embedded in rendered repo pages; issue/PR state came from the embedded JSON in the rendered issue pages.
+- **clawstat.us/latest.json, community.openclaw.ai/*.json, registry.npmjs.org and api.osv.dev all served cleanly** and carried the decisive fields.
+- **Two delegated subagents failed** (batch-2 timeout after ~1000 s; batch-3 replacement compacted before writing its file). Batch 3 partially landed (C10-C13); batches 2 and 4 were completed by the main agent with compact extraction scripts that print only the relevant fields, which is the pattern to keep for future runs.
+
+### Patterns Identified
+- **Live-counter drift remains the dominant error mode** — 9 of the 10 partial verdicts are counters that moved after capture, not research errors. The two genuine corrections (C7, C9) are both **attribution/overstatement** errors: a universal quantifier ("every one of the 12") and a swapped issue reference (#196514 vs #192463).
+- **GitHub issue `stateReason` is the field that distinguishes "closed as duplicate" from "closed as not planned"** — the rendered page's state badge alone is not enough; the duplicate/not-planned distinction was invisible in the findings because only the badge was read.
+- **Services that keep only their latest snapshot (ClawStat) make their older claim-time fields unverifiable** — those details should be quoted with the assessment timestamp so later runs can tell "superseded" from "wrong".
+- **60 further checkable claims remain** in the two now-verified sections (37 from 2026-11-10, 23 from 2026-11-11), itemised oldest-first in `fact_check_work/2026-11-12_pending.md`. Next run resumes at item 1.
+
+---
+
+## 2026-11-19 — Fact-check run (sections 2026-11-18 / 2026-11-19)
+
+**Scope:** 15 claims (cap) from the `## 2026-11-18` and `## 2026-11-19` sections of `cumulative_findings.md`, verified frontier moved 2026-11-12 → 2026-11-19. Method: three delegated subagent batches (5 + 5 + 5) writing compact result files; the first batch-2 subagent was killed by a compaction cutoff before writing its file and was re-split into 2a (2 claims) and 2b (3 claims), both of which completed. Primary endpoints were re-read live and cross-checked against the research run's own raw captures in `tmp/2026-11-18/` and `tmp/2026-11-19/`.
+
+**Result:** ✅ 7 verified · ⚠️ 5 partially verified · ❌ 3 needs correction · ❓ 0 unverified · **60 legacy claims pending** (itemised in `fact_check_work/2026-11-12_pending.md`).
+
+### Corrections
+- **"v2026.10.33 is the first explicit LTS-style channel the project has published" → newest, not first.** The same gateway-only / "current equivalent to LTS" wording already appears in v2026.9.36 (2026-10-29), v2026.9.35/.34/.33, v2026.8.35/.34/.33 and v2026.7.35, and v2026.6.35 calls itself an "Extended Stable (LTS) release". Timestamps, tag `5196fbbf`, body quotes and all nine highlighted issue numbers are confirmed. (Source: api.github.com releases/tags/v2026.10.33, releases?per_page=100)
+- **catalog publish outage: "~9h in-window / ~33h total" → ~23.6h of the 24h window / ~32.3h total.** The workflow was already failing at window start (04:26:39Z) and stayed broken until the successful rerun at 2026-11-19T09:01:30Z; the last successful publish was 2026-11-18T00:43:52Z. All six failure runs, PR #201737's title and merge time (09:01:17Z) and the successful run id 44492623798 reproduce. (Source: api.github.com/repos/openclaw/catalog/actions/runs, pulls/201737)
+- **ClawHub "25 of 39 (64%) publish exactly one skill" → 22 of 39 (56%)**, recomputed from the capture and confirmed by a live re-fetch (distribution 1→22, 2→7, 3→5, 5→2, 6→1, 7→1, 12→1). All other ClawHub 2026-11-19 figures (86 skills, 39 publishers, 3,289 downloads, 122 version bumps, 5/86 summaries, 658×) reproduce. (Source: clawhub.ai/api/v1/skills, tmp/2026-11-19/clawhub.json)
+- **#200824 did not "vanish rather than being fixed" — it was closed as completed at 2026-11-18T22:16:06Z.** Its absence from ClawStat's `known_issues` coincides with a real closure; whether a merged fix PR accompanied it was not established. (Source: api.github.com/repos/openclaw/openclaw/issues/200824, clawstat.us/latest.json)
+- **"Five new P0s" undercounts — live `label:P0` for the 2026-11-18T09:28Z..2026-11-19T09:28Z window returns 7**, adding closed #201158 and #201120, which fell outside the research run's 100-item page. All label-mix tallies are **first-100-page counts**, not window totals (live: P2 92, ux-friction 57, source-repro 67, no-new-fix-pr 67, needs-maintainer-review 46, queueable-fix 31, needs-product-decision 29); "P1 18" is that same partial tally — the true total is **26**. (Source: api.github.com search/issues window queries, tmp/2026-11-19/iss.json)
+
+### Precision notes (no factual error)
+- **npm downloads (2026-11-19 item)** — all daily values and aggregates reproduce exactly; only "11-18 = 0" was publication lag: the live point query now reads **346,941**. Only the current day (11-19) is still unpublished. (Source: api.npmjs.org downloads range/point)
+- **official surfaces (both items)** — `rss.xml` md5 `d840797cc7691f44c63357dab085a79a` is genuinely byte-identical (26 items, newest "OpenClaw is coming to Shenzhen" 2026-11-13) and the press newest card is still TechCrunch Jun 30 2026, but the quoted showcase/press md5s are the 2026-11-17/18 baseline: the 11-19 raw md5s change solely via the Astro asset fingerprint, so "byte-identical" holds only after `/assets/<hash>` normalisation. (Source: openclaw.ai/showcase, /press, /rss.xml)
+- **tracker snapshot 2026-11-18** — counters reproduce against the local capture but have drifted live (now 394,803 stars / 8,478 open issues / 1,692 subscribers); "37 new P1s" is snapshot-accurate, live is 39. The sibling platform findings file uses a 394,617 baseline vs 394,618 here.
+- **ClawStat 2026-11-19** — payload confirmed field by field, but only #201561 carries `is_new=true` (the other five drivers are `first_seen` 2026-11-18), and there is **no raw ClawStat capture for 2026-11-18**, so the `wait` → `care` transition rests on two second-hand documents.
+
+### Sources Reliability
+- **npm registry, GitHub API (releases/advisories/issues), Discourse JSON and the ClawHub API all served cleanly** and carried the decisive fields; the GHSA matched across live endpoint, repo advisory list and local capture.
+- **clawstat.us/latest.json served cleanly** but keeps only the newest assessment per version and has **no 2026-11-18 capture on disk** — that gap, not an inaccuracy, forced the second-hand citation.
+- **GitHub search pagination was the one systemic trap**: the unfiltered window query caps at 100 items, which hid two P0s and understates every label tally.
+- **Four delegated subagent runs (batches 1, 2a, 2b, 3)** produced the results; the first batch-2 attempt was compacted before writing its file and had to be re-split into two smaller batches (2a = 2 claims, 2b = 3 claims) — smaller batches with incremental file writes remain the right pattern.
+
+### Patterns Identified
+- **Every hard correction was a derived value, not a raw API value** — a novelty superlative ("first"), a duration ("~9h") and a ratio ("64%"). Raw quoted values (timestamps, hashes, PR numbers, CVSS vectors, issue titles) were essentially error-free this run.
+- **Partial-page queries systematically undercount label and P0 tallies** — the accumulator should paginate or phrase tallies as "first 100 of N".
+- **Live counters drift ≈+100 stars and +160 open issues per day** in this repo; every counter claim must carry its snapshot moment.
+- **A missing raw capture (ClawStat 2026-11-18) is a verification gap, not a false claim** — distinguish the two in future verdicts.
+
+## 2026-11-26 — Fact-check run (legacy 2026-11-10 backlog, items 1–15)
+
+**Scope:** the 15 oldest legacy pending claims (items 1–15 of the 2026-11-10 section in `fact_check_work/2026-11-12_pending.md`), oldest-first. Their source text survives only in `archive/cumulative_findings_2026-11.md` (2026-11-10 section, lines 923–1020), so annotations were applied there — backup `archive/cumulative_findings_2026-11.md.bak-2026-11-26-fc` — with a condensed correction block appended to the active `cumulative_findings.md`. Method: three delegated subagent batches (5 + 5 + 5, 2 in parallel) writing compact result files (`fact_check_work/2026-11-26_batch_{1,2,3}.md`); the main agent read only those files. **0 web searches used** — every claim was decidable from primary endpoints (api.github.com, registry.npmjs.org incl. tarball inspection, raw.githubusercontent.com, api.osv.dev, clawstat.us).
+
+**Result:** ✅ 10 verified · ⚠️ 4 partially verified · ❌ 1 needs correction · ❓ 0 unverified · **114 claims pending** (45 legacy items 16+ · ~69 from the never-verified 2026-11-20…2026-11-26 windows).
+
+### Corrections
+- **"Zero npm publishes in-window; last publish remains 2026.11.2 (2026-11-08T09:48:24Z)" → true only as of the ~2026-11-10T08:34Z snapshot.** Two versions were published later that same day: `2026.11.3` (2026-11-10T17:59:44.785Z) and `2026.9.37` (2026-11-10T20:16:24.913Z). The 2026.11.2 timestamp itself is an exact match (2026-11-08T09:48:24.847Z). (Source: registry.npmjs.org/openclaw)
+- **"undici 6.28.0 affected by GHSA-2m5v-pch6-74hx plus three other undici advisories" → five advisories, not four.** Fixed in 6.29.1: GHSA-2m5v-pch6-74hx plus GHSA-qrxm-fqhp-jwvm, GHSA-9fm3-97px-rjf6, GHSA-xjj6-f33q-929c, GHSA-4qv8-2p9j-2685. The "pins npm 12.2.0" statement is also stale — 2026.11.10 (current latest) and `main` ship npm 12.2.1. The `security_update_not_possible` failure mode could not be reproduced (Dependabot alerts API 401 unauthenticated). (Source: api.github.com/issues/196396, advisories/GHSA-2m5v-pch6-74hx, api.osv.dev)
+- **"npm 12.2.2 (2026-11-04) is the first cut bundling a fixed undici" → npm 11.21.2 was first.** 11.21.2 (2026-11-04T22:39:06.269Z) already bundled undici 6.29.1, ~24 min before 12.2.2 (2026-11-04T23:02:59.486Z); 12.2.2 is only the first within the 12.x line. npm `latest` is now 12.2.3 (2026-11-18, undici 6.29.1) while OpenClaw still ships the affected 12.2.1 → "no fixed stable OpenClaw release picks this up yet" still holds. (Source: registry.npmjs.org/npm/12.2.1, /npm/12.2.2, raw.githubusercontent.com/openclaw/openclaw/main/package.json)
+- **ClawStat `freshness` flip (2026-11-10) → not re-verifiable live.** clawstat.us exposes no history endpoint (`/history.json`, `/api/history` → 404); the live payload is now assessed 2026-11-26T06:03:20Z on 2026.11.10 with `fresh: false`, `days_since_release: 1`. The claim survives only via the same-day capture `findings_usecases_platform_2026-11-10.md` §6 (fresh=false, days_since_release=2, baseline fresh=true/1). (Source: clawstat.us/latest.json, clawstat.us/)
+- **ClawStat "zero 👍 reactions across 60 tracked issues" → historical; now 3.** Current payload: 3 total 👍 across 60 tracked issues, ~2.95M weekly downloads (calibration tracked_total 71, closed_completed 10). The substance still holds for the window itself: 0 👍 across all 198 issues created 2026-11-09T09:28Z..2026-11-10T09:28Z. (Source: clawstat.us/latest.json, api.github.com search/issues)
+- **"`label:security` in-window = 1 (#195960, a fix closed in 8 minutes)" → 0 issues / 1 pull request, closed UNMERGED.** #195960 is a PR ("fix(memory): gateway restart stalls when dreaming cron is enabled"), created 2026-11-09T12:26:16Z, closed 12:34:04Z (7m48s — "~8 minutes" holds), `merged: false`/`merged_at: null` → the dreaming-cron Gateway-startup fix never landed. The only `label:security` issue on the calendar days 11-09/11-10 is #196726, created 2026-11-10T15:16:56Z, outside the window. (Source: api.github.com search/issues, pulls/195960)
+
+### Precision notes (no factual error)
+- **beta.2 tag chain** — annotated tag (tagger date 2026-11-10T02:31:36Z) → commit `c0f42f64` (2026-11-07T14:08:50Z, "test: diagnose cold file draft admission"); release object created_at 2026-11-10T02:31:36Z, published_at 2026-11-12T00:43:25Z. Both dates reproduce exactly; `releases.atom` now carries only the 10 newest entries.
+- **#196142** — content reproduces (cold SQLite capability cache → `reasoning:false` → thinking clamp → "400 Reasoning is mandatory for this endpoint and cannot be disabled"), but it is **P1** (not P0), closed 2026-11-11T03:56:32Z, reported on Linux/OpenRouter on 2026.10.10 & 2026.11.2.
+- **#196199** — title/body reproduce; created 2026-11-09T18:42:52Z, P1, still open, "roughly once for every helper launched".
+- **#196251 / #195971 / #195981** — all reproduce exactly (P0 + `impact:ux-release-blocker`, darwin/arm64, failed phase package-update, target 2026.11.2, still open).
+- **No new OpenClaw GHSA in-window** — confirmed: zero advisories published 2026-11-09…2026-11-10; newest `?affects=openclaw` entry is still GHSA-3x84-qq85-fj65 (2026-10-21T19:37:42Z) as of 2026-11-26; repo-scoped newest is GHSA-pw3x-g8v8-fvj2 (2026-11-19), after the window.
+- **`platform_impact` all-high** — reproduces in the 2026-11-10 capture and today; only the key name drifted (`web-ui` → `web`). The field is near-constant across all archived snapshots except 2026-11-23 (mixed).
+- **Enterprise PRs #3255 #4859 #5108 #5104 #5106 #5105 #5000** — all exist, `merged: true`, merged_at inside the window; titles match the claimed descriptions (#5104 = RFC-0007). **Issues closed 0 → 2** reproduces (#5111, #5018; preceding window 0).
+
+### Sources Reliability
+- **Every claim was decidable from primary endpoints alone — 0 web searches consumed.** npm registry (incl. tarball inspection of bundled `node_modules/undici`), GitHub API, GitHub Advisories, OSV and clawstat.us all served cleanly and carried the decisive fields; the "cannot be re-fetched" cases (ClawStat history, Dependabot alerts) were labelled as such rather than waved through.
+- **Same-day captures are the fallback of last resort — and they worked.** ClawStat's three historical claims (C10–C12) were only resolvable via `findings_usecases_platform_2026-11-10.md` §6; a raw same-day capture must be kept for every ClawStat assertion or the claim becomes permanently unverifiable.
+- **GitHub entity-type drift is the new trap.** Two of fifteen claims mis-state the entity kind or label tier (an issue that is a PR; an implicit P0 that is P1). Counting queries must separate `is:issue` from PRs and re-read labels.
+
+### Patterns Identified
+- **Hard corrections remain derived/scope values, not raw values** — a window boundary (C02), an undercount (C07), a novelty superlative (C08), a classification (C15). Timestamps, commit messages, issue titles, PR numbers and labels were essentially error-free.
+- **The legacy backlog is annotatable** — the earlier "sections were compacted out, no longer annotatable" note is obsolete: the full text lives in `archive/cumulative_findings_2026-11.md`, which is the correct annotation target.
+- **Priority shift:** the remaining 45 legacy items are 16-day-old snapshots; the ~69 claims from 2026-11-20…2026-11-26 carry **no** FACT_CHECK annotations at all and describe current state. Future runs should promote those ahead of the legacy tail.

@@ -1755,3 +1755,251 @@ Antigravity CLI v1.4.1 (Oct 17) and v1.4.2 (Oct 18) · Antigravity CLI v1.4.4 fe
 3. **Add a per-entry release date cross-check** against the vendor feed before publishing a daily insight.
 4. **Retry Copilot VS Code v1.143** with the GitHub Copilot VS Code changelog or marketplace metadata to obtain a second source.
 5. **Re-verify "latest version" pointers at publication time**, not at writing time.
+
+---
+
+## 2026-10-26 Fact-Check Run
+
+**Scope:** 18 claims from the `## 2026-10-24` section of `cumulative_findings.md` (new fact IDs `fact_301`–`fact_318`)
+**Report:** `fact_check_reports/2026-10-26.md`
+**Search availability:** `web_search` unusable — "DuckDuckGo returned a bot-detection challenge"; direct DuckDuckGo HTML returned HTTP 202 challenge page; Bing returned generic/irrelevant results for Claude Duet, doubleAI, the Replit Monitoring Agent and Claude Code issue #104735. Verification used direct retrieval of GitHub release/issue APIs, the npm registry, vendor docs and blogs, independent reporting (TechCrunch, AI Tools Review), the aifunding.me data API and the Havoptic tracker.
+
+### Corrections
+
+| # | Fact | Finding | Correction |
+|---|---|---|---|
+| 1 | `fact_315` — Claude Duet | "Meta's Muse (**10M+ users**, shopping a top activity)" | **Unsupported by both cited sources.** TechCrunch states only that Meta released a small-business version of Muse with app connections — no user count, no shopping claim. AI Tools Review names Muse as the competitor but carries neither detail. Remove the parenthetical or source it separately. |
+| 2 | `fact_315` — Claude Duet | "Availability is **iOS, Android and web** for **US** Pro and Max customers on a waitlist" | **Over-stated and self-contradictory.** TechCrunch lists iOS, Android and web for Pro/Max research-preview waitlist customers with **no US restriction**; AI Tools Review calls the preview **US-only** and explicitly treats **Android as unconfirmed** ("Treat anything beyond web and iOS as unconfirmed"). Safe wording: web and iOS confirmed; TechCrunch lists Android, a second source treats Android as unconfirmed; preview reported as US-only for Pro and Max subscribers on a waitlist. |
+| 3 | `fact_316` — Funding: October 2026 Rounds | "updated 2026-10-22, records **72 rounds totalling $41.9B**" | **Stale and not reproducible.** The live roundup is updated **2026-10-26** and reports **77 rounds / $42.5B**, while its own share blurb says "**76 deals**" — an internal source inconsistency. Rebuilding a snapshot for rounds dated on or before 2026-10-22 from the source's own data yields **71 rounds / $42.23B**, so 72 / $41.9B cannot be reconstructed either; Wayback was rate-limited. Use 77 rounds / $42.5B (updated 2026-10-26) and flag the 76-vs-77 discrepancy. |
+
+### Partial verifications (no correction written to the source claim)
+
+| Fact | Finding | Status |
+|---|---|---|
+| `fact_309` — Replit Agent 2026.10.23 | Monitoring Agent confirmed by Replit's own blog (Oct 22, 2026): "detect production issues, investigate the cause, validate a fix, and publish it automatically" | **"43rd release of 2026"** is tracker-only. Announcement is dated **Oct 22**, one day before the `2026.10.23` version date. Reusable skills, chat/asset sharing and the zero-credit overage allowance remain single-source. |
+| `fact_310` — Amp 2026.10.22 | All details confirmed by Amp's own *"Self-Hosted Orbs"* announcement (Oct 22, 2026): `amp orb provider ./dispatch.sh`, spawn/pause/delete dispatch, targets Docker/E2B/K8s/Apple containers/Modal/Vercel/Daytona/exe.dev, and the stated compute requirement | Only the **"88th Amp release of 2026"** ordinal is tracker-only. |
+| `fact_312` — Zed v1.25.3 | Confirmed twice — GitHub API (`2026-10-23T13:45:48Z`, PRs #66023/#65963) and zed.dev ("1.25.3 · Oct 23, 2026"); v1.25.2 was `2026-10-21T20:54:49Z`, so "two days after" holds | Only the **"103rd Zed release of 2026"** ordinal is tracker-only. |
+| `fact_313` — Factory Droid v0.247.0 | npm `droid` **0.247.0 published `2026-10-22T04:24:59Z`**, one day after 0.245.1 (`2026-10-21T08:50:53Z`) | PDF preview, Files panel, Environment grouping, Desktop v0.204.0 pairing and the **"53rd release"** ordinal are tracker-only; `factory.ai/changelog` and `docs.factory.ai/changelog` return **HTTP 404**. |
+| `fact_314` — Devin Desktop v3.11.212 | Oct 23 date and "11 days after v3.10.67" spacing consistent; "agent command center" traces to a Cognition announcement quoted in the summary | Eight-sessions/workspace-grouping/child-session/Spaces details and the **"58th release"** ordinal are single-source. `docs.devin.ai/release-notes` has an Oct 23, 2026 entry but documents web/Cloud features and never mentions v3.11.212 — most plausibly a Desktop-vs-Cloud scope split, not a contradiction. |
+| `fact_318` — Codex issue cluster | All nine issues exist and match the entry in detail | **Date over-statement:** all nine were filed on **2026-10-23** (21:26Z–23:44Z); "October 23–24" describes the Claude Code cluster. |
+
+### Verified without correction (10)
+
+Claude Code v2.1.308 / v2.1.309 / v2.1.310 · OpenAI Codex CLI rust-v0.164.0 · Antigravity CLI v1.4.5 / v1.4.6 · GitHub Copilot CLI v1.0.103 · GitHub Copilot CLI v1.0.104-0 and v1.0.104-1 (both confirmed prereleases) · OpenCode v1.19.4 · Claude Code safeguard issue cluster (#104722, #104731, #104735, #104736, #104738, #104740).
+
+### Source-hygiene notes (recorded, not errors)
+
+- **OpenCode repo transfer** — the cited `sst/opencode` API path now redirects to `anomalyco/opencode`.
+- **Havoptic typo** — the Havoptic summary for Claude Code v2.1.308 misprints the version as "2.1.303"; the finding is correct and the typo was not propagated.
+- **Devin Desktop URL slug** — the cited tracker URL slug is `windsurf-3.11.212` for a page titled *Devin Desktop v3.11.212*.
+- **Community reports are single-publisher** — both issue clusters are hosted solely by GitHub; the REST API and the issue HTML are different retrieval paths but not independent publishers.
+- **Claude Duet omissions** — the entry omits **Grok Bot**, which TechCrunch lists among the rival products.
+
+### Currency gaps (research ends 2026-10-24; checked 2026-10-26)
+
+Claude Code **v2.1.311** (npm 2026-10-26T19:47Z) · Copilot CLI **v1.0.104-2** (2026-10-24T01:06Z) and **v1.0.104-3** (15:29Z, prereleases) · Antigravity CLI **v1.4.7** (Oct 24) · Factory Droid **v0.249.0** (npm 2026-10-24T02:02Z) · Devin Desktop **v3.11.216** (Oct 24). A section-level currency note was inserted at the head of the `## 2026-10-24` section.
+
+### Metrics
+
+| Metric | This run |
+|---|---|
+| Facts checked | 18 |
+| Verified | 10 |
+| Partially verified | 6 |
+| Needs correction | 2 |
+| Unverified | 0 |
+| Two-source rate | 83.3% (15/18) |
+| Primary-source ratio | 88.9% (16/18) |
+| Inline correction blocks written | 19 (18 claim-level + 1 section currency note) |
+| Claims with only one usable source | 3 (`fact_314`, `fact_317`, `fact_318`) |
+| Corpus ledger after run | 318 facts — 269 verified / 17 partial / 26 needs-correction / 5 unverified / 1 outdated (84.59% verification rate) |
+| Search availability | General web search blocked by bot-detection; direct primary-source retrieval used throughout |
+
+### Patterns Identified
+
+1. **Tracker-derived ordinals remain the dominant unverifiable class** (5 of 6 partial verifications) — no vendor publishes a cumulative "Nth release of 2026" count, so these lines can never be confirmed. Recommendation from the 2026-10-22 run still stands: remove them or regenerate them from a single counter script.
+2. **Snapshots of live, continuously-updated pages decay immediately** — the funding entry's round count and total were stale within four days of writing, and the source page contradicted itself (76 vs 77 deals). Always cite the page's own update timestamp and re-check the headline before publishing.
+3. **Press roundups attribute competitor statistics that were never reported** — the "10M+ users / shopping a top activity" claim attached to Meta's Muse appears in neither cited source. Competitor colour in a launch article is frequently unsourced in the original.
+4. **Platform-availability lists get merged across sources with differing confidence** — TechCrunch listed Android for Claude Duet while a second source called it unconfirmed; combining both into one sentence manufactures false certainty.
+5. **Cross-registry publication timestamps differ by hours** — npm consistently publishes before the GitHub release timestamp for the same artifact. Both are correct for their own channel; never conflate them into one date-time.
+
+### Recommendations
+
+1. **Drop all "Nth release of 2026" lines** from the corpus, or regenerate them from one counter script and label them as tracker-derived.
+2. **For continuously-updated pages, record the page's update timestamp in the finding** and re-verify headline figures at publication time.
+3. **Never merge availability lists across sources** — quote each source and mark conflicting platform claims as unconfirmed.
+4. **Avoid competitor statistics in launch coverage** unless the statistic is directly sourced.
+5. **Give community-report clusters a second publisher** (e.g. an aggregator or a Reddit/HN thread) so they can clear the two-source bar.
+
+## 2026-11-05
+
+**Run scope:** 15 claims from the `## 2026-11-05` section of `cumulative_findings.md` (accumulator window 2026-11-04T01:28Z → 2026-11-05T01:28Z). Verified frontier 2026-10-26; this was the first fact-check run over that window. Tracked facts 318 → 333.
+
+### Corrections Made
+
+- **Antigravity CLI v1.5.0 publication timestamp** — claimed 2026-11-04T05:23:42Z, actual `published_at` 2026-11-04T05:23:35Z. The claimed value is the release's `updated_at`. All feature items verified verbatim against the release body. Status: PARTIALLY_VERIFIED. Sources: https://github.com/google-antigravity/antigravity-cli/releases/tag/1.5.0, https://www.havoptic.com/r/antigravity-cli-1.5.0
+- **Kilo Code v7.8.26 publication timestamp** — claimed 2026-11-04T22:59:40Z, actual GitHub `published_at` 2026-11-04T22:52:24Z (npm `@kilocode/cli@7.8.26` at 22:55:19Z). The claimed value is `updated_at`. All feature and security-dependency items verified. Status: PARTIALLY_VERIFIED. Sources: https://github.com/Kilo-Org/kilocode/releases/tag/v7.8.26, https://registry.npmjs.org/@kilocode/cli/7.8.26
+- **Zed compaction-billing fix — publication framing** — the finding recorded a "Zed nightly build published 2026-11-04T13:36:23Z". That timestamp is the merge-commit time of PR #64938 (`ead5672e`); GitHub exposes only a single rolling `nightly` release with no confirmable `published_at`. The fix ships in the `v1.28.0-pre` preview release (2026-11-04T17:02:18Z). The compaction-strategy enum, the `tool_choice: none` behaviour and the explicit Anthropic exclusion are all confirmed. Status: PARTIALLY_VERIFIED. Sources: https://github.com/zed-industries/zed/pull/64938, https://github.com/zed-industries/zed/commit/ead5672e169f4d4ec0a6a88ebac18e00a37bf81b, https://zed.dev/releases/preview
+- **"948 Linux kernel LPEs" framing** — verdict unchanged (VERIFIED), but the count is 948 distinct *validated* privilege-escalation vulnerabilities for which candidate patches were produced, not 948 shipped/merged fixes. Upstream pipeline: 2,308 candidates → 1,724 reproduced → 948 distinct LPEs; ~$1.2M API cost. Sources: https://openai.com/index/a-thousand-fewer-paths-to-root, https://aicoder.com/news/news-20261104-openai-autonomous-cyber-pipeline-948-linux-kernel-lpe-exploits-patches-1-2m-api-cost
+- **Elastic threat report caveat — RESOLVED** — the 2026-11-05 section flagged the "threats, etc" report as JS-rendered with only the title, date and headline confirmed. The report was published 2026-11-04 and surfaced on Hacker News 2026-11-05T00:26:07Z under the title "Attackers used ChatGPT desktop and Claude Code in real intrusions". Two techniques independently confirmed (Claude Code over RDP via a VS Code extension, 2026-08-05; ChatGPT desktop app as a macOS shell proxy); the edition covers confirmed intrusions between 2026-04-04 and 2026-09-08. Actor names and IOCs remain unread. Sources: https://www.elastic.co/security-labs/reports/threats-etc-report-november-2026-trouble-with-trust, https://itwire.com/business-it-news/security/elastic-threat-report-stolen-logins-used-within-eight-minutes-as-attackers-turn-trusted-ai-agents-and-it-tools-on-their-owners
+
+### Sources Reliability
+
+- **Primary vendor surfaces (GitHub releases, npm registry, vendor changelogs, first-party announcement pages): 100 %** on the 15 claims checked — every feature string reproduced verbatim. Two corroborating domains per claim, no exceptions.
+- **Tier-2 tech press (TechCrunch, The Decoder, iTWire, itmunch, startupfortune, aicoder.com): 100 %** on the announcement cluster, and they added context the primary pages omitted (Conductor founded 2024 vs. product launch July 2025; regulatory-approval condition on the Pierre deal).
+- **Secondary release trackers (havoptic.com): reliable for release metadata, not for feature substance** — used only as the second source on the Antigravity timestamp.
+- **HN Algolia API: useful and reliable** for surfacing the Elastic report and its exact submission title/timestamp.
+
+### Patterns Identified
+
+- **`updated_at` mislabelled as `published_at` — systematic.** 2 of 3 partial verdicts (67 % of non-clean verdicts, 13 % of all claims) came from this single defect. The accumulator's release-collection step should read `published_at` from the GitHub release object and drop `updated_at` from publication-time claims. The same defect should be suspected in the archived 2026-11-01 → 2026-11-04 sections (up to ~40 release timestamps, none yet checked).
+- **Rolling/nightly tags are unverifiable as publication events.** A rolling `nightly` release has no stable `published_at`; any finding citing one is unverifiable by construction. Cite the commit hash instead.
+- **GitHub issue-title claims are a structurally weak class.** The 375-issue in-window harvest was collected from the HTML index because the REST search API was 403-rate-limited; titles are user reports, unreproduced. Keep them low priority and verify the issue body, not the title.
+- **Same-day M&A clusters are well covered** — six independent outlets plus five first-party pages. These are the cheapest claims to verify and the most likely to be fully clean.
+- **Zero factual contradictions this run** — the first 0 % correction rate in at least three cycles. Verdict mix: 12 verified, 3 partially verified, 0 corrections, 0 unverified.
+- **Operational lesson:** one of three subagents exhausted its context before writing its result file, and one wrote to the wrong directory. Both were caught by listing `fact_check_work/`. The relaunched batch was instructed to write the file as its last action; the next run should put the exact absolute output path at the top of every subagent prompt and verify the directory listing before reading.
+- **Pending backlog: 76 claims** in the 2026-11-05 section remain unverified. Continue oldest-first from the releases table remainder; prioritise the Anthropic Scion throughput figures, the Uber Q3 agent-booking numbers and the announcement cluster over the rolling-build and "no new releases" baselines.
+
+## 2026-11-12
+
+**Run scope:** 15 claims from the `## 2026-11-06` section of the cumulative findings (accumulator window 2026-11-05T01:28Z → 2026-11-06T01:28Z; section now archived to `archive/cumulative_findings_2026-11.md`). Verified frontier 2026-11-05. Tracked facts 333 → 348. All web verification delegated to three subagents (5 claims each, ≤2 parallel) writing `fact_check_work/2026-11-12_batch_{1,2,3}.md`; `verification_status.json` persisted after every batch.
+
+### Corrections Made
+
+- **Pre-IPO Anthropic leveraged-ETF count — undercounted** — the finding named "three separate ETF complexes" (ProShares ANTU/ANTY 485BPOS 2026-11-05, GraniteShares AIL/ANS 485BPOS 2026-11-05, Defiance Anthropic PowerMaxx 485APOS 2026-11-03). The named filings, tickers, objectives and accession numbers are confirmed and "registrations, not launches" is correct (both ProShares and GraniteShares state "Anthropic has not yet commenced its initial public offering"; GraniteShares shows AIL/ANS "LAUNCHING SOON"). But at least four more complexes filed Anthropic leveraged products — Themes ETF Trust (485BPOS 2026-10-27), Tidal Trust II (485BPOS 2026-11-06), ETF Opportunities Trust (T-Rex 2x Long Anthropic, 485BXT) and Direxion Shares ETF Trust — and the 2026-11-05 dates are post-effective amendments, not first filings (ProShares' first 485BPOS 2026-10-22; GraniteShares announced its filing 2026-09-03; ProShares registrations effective 2026-11-06). Status: PARTIALLY_VERIFIED. Sources: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0002130357&type=S-1, https://graniteshares.com/anthropic-leveraged-etfs/
+- **Anthropic "How researchers use Claude" — mislabelled metric** — the finding stated that "the top 20% of tasks receive 2–4x the AI contribution". The post actually says those tasks "get two to four times as much Claude *use* as the time researchers spend on them would predict" — a usage-vs-time-share measure, not an AI-contribution estimate. Sample confirmed as 207,049 sessions (128,914 Claude + 78,135 Claude Code, Aug 2 – Sep 30 2026); data analysis 33.7% of Claude and 48.1% of Claude Code sessions; ideation 4.2% / 2.1% against 7.1% of researcher time; ideation ≈2x its share on Claude Science. Status: PARTIALLY_VERIFIED. Sources: https://www.anthropic.com/research/how-researchers-use-claude, https://daily.dev/posts/ai-for-scientific-discovery-how-researchers-use-claude-srssvle2p
+- **OpenAI↔Merge — the "acquisition mis-framing" could not be confirmed** — the finding recorded that "an untrusted third-party flash post framed this as 'OpenAI acquires Merge' / 'SpaceX acquisition'". The core claim is verified verbatim (zero occurrences of "acquir*" on the OpenAI page; the 99.9% vs ~60% tool-call quote exact; Shensi Ding confirmed as CEO/co-founder). But no outlet publishing "OpenAI acquires Merge" could be found; the outlets checked (Signal Desk, blockchain.news, startuphub.ai, daily.dev) all describe it correctly as a customer story. The confusion most likely stems from separate "SpaceX and xAI Merge" headlines. A Merge YouTube interview transcript cites 99.999% vs ~60% — a different benchmark; 99.9% is the OpenAI-published figure. Status: PARTIALLY_VERIFIED. Sources: https://openai.com/index/merge-builds-with-openai/, https://www.deskofai.com/news/merge-builds-product-and-business-tools-with-openai-technology
+
+### Sources Reliability
+
+- **SEC filings are the highest-reliability class in the corpus** — 8 of 8 filing-derived claims (S-1/A financials, consumption mix, enterprise cohort, loss/cost lines, listing structure, ETF registrations) verified against the primary document, with only framing nuances and zero factual errors. Five independent secondaries (CNBC, Yahoo Finance, Forbes, Economic Times, AP) corroborated the headline figures.
+- **Vendor first-party pages** (OpenAI index, Anthropic newsroom + research, Elastic Security Labs, Mozilla advisories, GitHub release API, granite shares) verified their own claims verbatim in every case.
+- **Tier-2 press** (Reuters, AP, Security Affairs, daily.dev, deskofai.com, alexkras.com) was accurate on all figures it was used to confirm.
+- **Correction rate concentrated in secondary framing, not in primary numbers** — all three partial verdicts came from the corpus's characterisation of a source (a count, a metric label, an attribution of a mis-framing), not from a wrong number.
+
+### Patterns Identified
+
+- **"N issuers did X" claims undercount systematically** — the only issuer-count claim checked this run was wrong (3 → at least 7 complexes). Corpus sweeps record what they saw in the window, not the field; any count claim should be re-checked against a full registrant search before publication.
+- **Metric labels drift between a source and its restatement** — "two to four times as much Claude use as the time researchers spend would predict" became "2–4x the AI contribution". The number survived; the quantity being measured did not. Claims quoting a vendor's *constructed* index must re-read the index definition.
+- **Attribution of a mis-framing is itself a factual claim** — asserting that "outlets mis-framed this" is a claim about the press and it did not survive contact with the press. Third-party mis-framings should be logged as unverified unless a specific outlet and URL are named.
+- **The Anthropic S-1/A cluster is fully clean** — 8/8 verified against the filed HTML, with independent corroboration for the headline numbers. This is the strongest primary-source cluster recorded in the project and can be treated as the project's reference baseline for how precise a filing-sourced claim can be.
+- **Zero factual contradictions this run** — second consecutive clean run (2026-11-05: 12 verified / 3 partial / 0 corrections / 0 unverified). Verdict mix this run: 12 / 3 / 0 / 0.
+- **Operational note:** all three subagents wrote their result files on the first attempt, using the exact absolute output path given at the top of each prompt. Keep that instruction — it is the fix for the 2026-11-05 run, where one agent exhausted its context before writing and another wrote to the wrong directory.
+- **Pending backlog: 61 claims** (was 76; 15 verified this run). Next targets, oldest-first: the 2026-11-06 release-table remainder (OpenHands v1.36.0, Antigravity CLI v1.5.1, Factory Droid CLI v1.4.0/v1.4.1, Codex 0.167.0 stub, Claude Code 2.1.319 no-changelog, Kilo Code v7.8.27) and the Conductor migration-watch cluster; then the 2026-11-06 market/funding cluster (Dropbox→Tigris $350M, Box+NVIDIA Nemotron, the 45-startup acquisition register, FuriosaAI $620M), which is secondary-sourced and likelier to need qualification; then the 2026-11-07 → 2026-11-12 headline-sourced items (CVE-2026-88968, Gemini Decisions API, Grok Build 35,000-app exposure, Cursor Pro-plan model-access claim, ChatGPT voice deprecation Dec 11, Anthropic Australian retail tranche), which will need body-level confirmation.
+
+---
+
+## 2026-11-15
+
+**Run scope:** corrections arising from the `diac-releases-2026-11-15` subagent pass (releases/features) plus grep-verified omissions in the orchestrator's 2026-11-15 cumulative section. All verification via `curl` against primary sources (npm registry time maps, GitHub releases API, vendor changelog/docs, EDGAR JSON). **0 web_search, 0 web_fetch.**
+
+### Corrections Made
+
+- **"Conductor is shutting down" — CORRECTED, the wind-down was reversed.** The 2026-11-14 cycle recorded the Conductor → Meta wind-down as standing (Conductor Cloud read-only Nov 13, shutdown Nov 20) and the 2026-11-15 community layer repeated it as a live trend. **Both are wrong.** `https://www.conductor.build/changelog` now leads with **`0.94.2` — November 13, 2026 — "Conductor is back"**, body verbatim **"Conductor isn't shutting down. It's back, and we're building again."** plus **"New in 0.94.2: Removed the Conductor Cloud shutdown banner from cloud workspaces."** The 0.93.0 (Nov 4) entry has been **edited in place** to carry the retraction inline: *"Update: Conductor isn't shutting down. Conductor is back."* The **Nov 20 shutdown date is cancelled.** Caveat retained: the 0.94.2 entry is date-labelled *November 13, 2026* with **no time component**, so its position relative to the 2026-11-14T01:28Z window boundary cannot be pinned — but it invalidates the prior cycle's watchlist answer either way. **Do not carry the shutdown date forward.** Residual inconsistency worth watching: the site's own nav header still reads **"Conductor is joining Meta"** although the shutdown has been called off, and 0.94.0 still bundles **Claude Code 2.1.321 / Codex 0.166.0**.
+- **"Factory Droid: no release data available" — CORRECTED, the negative came from looking up the wrong package name.** The 2026-11-14 release table carried *"Factory Droid | N/A | `@factoryai/droid` is not a valid npm package name (registry error) — no release data available"*. `@factoryai/droid` indeed does not exist, but the Droid CLI ships as the **unscoped npm package `droid`** (description *"Factory Droid CLI - AI-powered software engineering agent"*, repo `Factory-AI/factory` → `apps/cli`). **Two real releases landed in-window: `droid 1.12.0` @ 2026-11-14T03:58:23.523Z and `droid 1.12.1` @ 2026-11-14T06:55:44.828Z** (`latest` = 1.12.1; `1.11.0` @ 00:05:37Z pre-window). The tarball pulls version-pinned platform binaries from optionalDependencies `@factory/cli-<platform>`, so these are genuine binary releases, not metadata bumps. **The feature delta is nevertheless unobservable** — no CHANGELOG in the tarball, README byte-identical across 1.11.0/1.12.0/1.12.1, no GitHub Releases on `Factory-AI/factory`, and the `FactoryAI` org API exposes only `BrainLM`. Net: the *absence of releases* was wrong; the *absence of release notes* is real and now needs a different source.
+- **Cursor's Nov 13 and Nov 10 blog posts were missing from the cumulative record.** The 2026-11-14 cycle's raw captures (`tmp/2026-11-14/cur_pg*.html`) contain **neither** title. Recovered in-window-adjacent: **"An update on our recent security incident" (Nov 13, 2026, company)** — a full post-mortem of the October 29 incident in which *"an attacker obtained an access key we had issued to Fireworks"*, the key *"was exposed by Fireworks"*, and the attacker copied **limited coding-agent traces (mostly 2025, non-Privacy-Mode sessions Cursor was permitted to use for training)** from a **read-only storage bucket**; *"less than 0.01% of customers had API credentials exposed"*, and from those credentials reached **select SaaS tools used by Cursor** → **archived non-production Cursor source repos (some with business contact information), customer-support data and email conversations, product-usage metrics and contact details, summaries of some coding-agent conversations, and some credentials users sent to Cursor support**; the attacker then **published a malicious, unauthorized copy of Anthropic's Claude Code extension in the Cursor VS Code extension marketplace**. Also **"Cursor Projects is now multiplayer" (Nov 10, 2026, product)**. Both are **out-of-window** but were never recorded.
+
+### Partial verifications (no correction written to the source claim)
+
+- **Codex CLI `0.171.0-alpha.5` — straddles the window boundary, verdict depends on the timestamp you trust.** GitHub release `rust-v0.171.0-alpha.5` @ **2026-11-14T01:25:03Z** = **3 min before** the window opens; npm publish **2026-11-14T01:28:44Z** = **44 s inside** it. The release body is a stub (`<p>Release 0.171.0-alpha.5</p>` + `github-actions[bot]`), so the version is verifiable as existing but not as documented — the **fifth consecutive cycle** of stub alpha bodies. Reported as borderline, not as a stable release.
+- **goose v1.59.1 — real in-window release, but with a deliberately empty note.** Body is the complete string **"macOS desktop builds and full release notes coming soon."** The frequently-attributed **https://github.com/aaif-goose/goose/pull/13378** ("Minimal deferred MCP tools in ToolExecutionOperation") belongs to **v1.59.0 @ 2026-11-10T17:17:02Z**, i.e. **pre-window** — attributing it to v1.59.1 would be a false causal link.
+- **Cursor changelog freeze — a publishing freeze, not a broken feed.** The RSS feed is **live** (`lastBuildDate` **Sun, 15 Nov 2026 01:19:21 GMT**, 50 items) yet its newest item is still **"Voice Chat with Agents" (Fri, 06 Nov 2026)**. "Frozen" is therefore accurate only about *publishing*, not about the feed.
+- **Anthropic newsroom masthead is a false-positive generator.** The page contains **zero** occurrences of "2026-11-14"/"2026-11-15"; the only "November 15, 2026" string is the `topBarDate` caption. The newest post is **"Building strong safety evaluations" (Nov 13, 2026)** — a research post the prior cycle missed. **No in-window Anthropic post.**
+- **`gemini-decision-1` remains Google-API-only.** OpenRouter's catalogue holds **471 models** and **zero** ids matching "decision"; Google's own models page still lists `gemini-decision-1` under Specialized task models alongside `gemini-embedding-2` and `antigravity-preview-09-2026`. Watchlist item 8 unchanged, now third-cycle-confirmed.
+
+### Sources Reliability
+
+- **npm registry time maps and GitHub `releases` API were the load-bearing sources this run** — every release claim in the 2026-11-15 cycle is timestamped from `registry.npmjs.org` `.time` and/or `api.github.com/repos/*/releases`. Zero claims rest on a search snippet.
+- **Vendor changelog HTML was the highest-yield correction source** — three of the four corrections came from reading the vendor's own changelog page rather than any secondary coverage, and in every case a news/index surface had carried the stale version.
+- **Changelog-date ambiguity is the dominant residual risk.** Conductor 0.94.2 and Anthropic's "Building strong safety evaluations" both carry **date-only** labels (Nov 13) with no time component, so neither can be reliably classified as in-window or out-of-window. Both were reported with the ambiguity stated rather than silently bucketed.
+- **Negative findings need a second, differently-shaped query.** The Factory Droid negative persisted across a cycle purely because the registry lookup used the wrong package name; a correct lookup surfaced two in-window releases. Package-name discovery (via `description` + `repository.url` in the registry document, and via the org-repo API) is what broke the error.
+- **OpenRouter's catalogue remained the cleanest negative in the corpus** — 471 ids, zero "decision" matches, consistent across three consecutive cycles.
+
+### Patterns Identified
+
+- **"Nothing shipped" is the most fragile class of claim in this corpus.** Three of four corrections this run were false negatives or false standings (Conductor's wind-down, Factory Droid's releases, Cursor's unrecorded blog posts). Negative claims should carry the *exact* lookup performed, so a wrong key can be spotted later.
+- **A vendor that reverses a decision usually reverses it in place.** Conductor did not delete the wind-down entry — it **edited 0.93.0 to carry the retraction inline** *and* added 0.94.2. Search engines and aggregators that cache the older entry keep the false version alive, which is exactly why the community layer still carried the shutdown.
+- **Changelogs and newsrooms are not interchangeable surfaces.** Cursor's product changelog had been frozen for four cycles while its blog shipped a material security disclosure; Anthropic's newsroom had a Nov 13 research post while the aggregate listing showed only Nov 9. **A changelog-only sweep systematically under-counts vendor activity.**
+- **Supply-chain exposure is migrating into the agent-trace corpus.** Cursor's post-mortem is the first case in this corpus where *training-eligible agent transcripts* were the breach vector and a *malicious copy of another vendor's CLI* was the payload. The lesson generalises: agent traces are now a credential-bearing data class, and extension marketplaces are an agentic-CLI supply chain.
+- **Repo moves now break standard feeds silently.** `block/goose` → `aaif-goose/goose` and `sst/opencode` → `anomalyco/opencode` both return **0-byte** `releases.atom` at the old path while the API still resolves via the numeric repo id. Feed-based monitors would report "no releases" for both without noticing.
+- **Watchlist questions must be answerable from primary sources.** Watchlist items 3, 4 and 8 this cycle were all answerable in one `curl` each (Anthropic pricing page, `ai.google.dev` models page, OpenRouter catalogue) — the ones that stalled were the ones whose answer lived behind a JS-rendered page or a package name that had to be guessed.
+
+### Metrics
+
+- Corrections this run: **3** (Conductor wind-down reversal; Factory Droid release-data negative; two missing Cursor blog posts) · Partial verifications: **5** · Verified negatives confirmed: **6** (Claude Code release, Claude Code advisory, Copilot CLI stable, Gemini CLI stable, Anthropic newsroom post, OpenAI news RSS + GitHub platform changelog + SEC EDGAR).
+
+## 2026-11-19
+
+**Run scope:** `## 2026-11-16` section of `cumulative_findings.md` (the only section newer than the 2026-11-12 verified frontier). 15 claims checked (`fact_349`–`fact_363`), 11 verified / 4 partially verified / 0 needs correction / 0 unverified. 100% two-source rate.
+
+### Corrections Made
+
+1. **AWS "Amazon MadPot" post — wrong title, wrong date, wrong window.** The AWS post is titled "Amazon Threat Intelligence observes threat actors running cybercrime campaigns with ARTEX AI agents" and was published **2026-11-13T20:26:42Z** — a pre-window carry-over, not an in-window launch. "Amazon MadPot: Honeypot for AI Agents" is the Hacker News submitter's title; 2026-11-16T00:50:59Z is the HN submission time. `aws.amazon.com/blogs/security/amazon-madpot-honeypot-for-ai-agents/` 404s — no separate AWS MadPot post exists. The FBI half is fully verified (BleepingComputer 2026-11-15T18:29:53Z, FBI FLASH CSA/2026/261113.pdf). **Lesson: an RSS/HN-derived timestamp and headline must not be attributed to the publisher it links to.**
+   - Sources: https://aws.amazon.com/blogs/security/amazon-threat-intelligence-observes-threat-actors-running-cybercrime-campaigns-with-artex-ai-agents/ · https://www.bleepingcomputer.com/news/security/fbi-warns-artex-ai-hacking-tool-is-powering-global-cyberattacks/
+
+2. **China/Hong Kong IPO exclusion — misattributed scoop and misquoted headline.** Headline is "amid U.S. AI limits", not "amid U.S. AI security push". The story originates with **Bloomberg (2026-11-13)**, three days before the Chosunbiz piece — so "first hard evidence" is unsupportable and Chosunbiz is secondary. Underlying fact corroborated (Economic Times, roic.ai, the-decoder), with the caveat that the restriction was relayed **verbally by banks**, not published as a prospectus term. **Lesson: check for an earlier primary scoop before labelling an aggregator item "first".**
+   - Sources: https://biz.chosun.com/en/en-it/2026/11/16/CC6VWYTRORDHRG2D7YWFW7QXPQ/ · https://www.bloomberg.com/news/articles/2026-11-13/anthropic-ipo-share-orders-from-china-are-said-to-be-rebuffed
+
+3. **WSJ founder-stakes piece — timestamp and range gloss.** Published **2026-11-10 17:54**, not 2026-11-15 (RSS re-fetch artifact). "$18B apiece" holds only at the top of the $70–$78 band ($16.6B–$16.9B at $70, $17.6B–$17.8B at $74, $18.5B–$18.8B at $78) and applies to all **seven** co-founders (237M–241M shares each, ≈$130B combined at $78), not only the two Amodeis. Substance otherwise confirmed from S-1/A No. 2 and independently by Forbes and stockanalysis.com. **Lesson: headline roundings of range-dependent figures must be qualified with the range.**
+   - Sources: https://www.wsj.com/finance/anthropic-founders-stakes-are-worth-18-billion-apiece-at-ipo-price-2c746365 · https://stockanalysis.com/news/anthropic-founders-stakes-18-billion-ipo/
+
+4. **Codex alpha npm timestamp — wrong package.** rust-v0.171.0-alpha.6's **main** npm package was published 2026-11-15T19:06:22Z, not 19:11:59Z (that is the `linux-arm64` sub-package). GitHub timestamps, stub bodies and the two-alpha window characterisation all confirmed.
+   - Sources: https://api.github.com/repos/openai/codex/releases · https://registry.npmjs.org/@openai/codex
+
+### Sources Reliability
+
+- **npm registry JSON API + GitHub REST releases API — 100% exact.** Every version number and publish timestamp in the release cluster matched to the second across both registries, including the dist-tag topology (`stable` / `latest` / `next` / `nightly` / `preview` / `alpha`). The one error was internal to the research (wrong sub-package), not a source disagreement. These are the highest-reliability sources in the corpus and should be preferred over search for any version or timestamp claim.
+- **SEC EDGAR — 100% exact and the anchor of the run.** S-1/A No. 3, the FWP EEA prospectus, Form 8-A12B, the Nasdaq CERT and the ETF summary prospectus each confirmed verbatim. Three corrections in this run were only detectable by reading the filings rather than the news coverage.
+- **OSV.dev + GitHub Advisory API — 100% consistent.** Both independently returned 30 advisories with identical severity splits; the only discrepancy was an 18-minute `modified` vs `updated_at` mirror lag, not a conflict.
+- **Yahoo Finance chart API — 100% exact for metadata and bars**, including `firstTradeDate` decoding (1786627800 → 2026-08-13) and the empty-series-with-control pattern that distinguishes an untraded ticker from an API failure.
+- **Aggregated news (Chosunbiz, WSJ, BigGo Finance, FourWeekMBA) — the weak link.** Two of four corrections in this run trace back to aggregator-attributed titles or timestamps. Their *substance* was mostly right, but their framing (headline wording, primacy, publication time) was not. **Headline-level items from Google News RSS remain uncorroborated until a primary source is located.**
+- **BleepingComputer / AWS Security Blog — reliable and primary-adjacent**, but the AWS item's true date being three days pre-window shows how a "same-day blog" inference from an RSS feed fails.
+
+### Patterns Identified
+
+- **Timestamp laundering through RSS.** Twice (WSJ 11-10→11-15, AWS 11-13→11-16) an item's timestamp shifted to the capture window because the capture pipeline re-fetched a feed. The capture layer must record the publisher's own `datePublished`, not the feed's `pubDate`.
+- **Priory errors ("first hard evidence", "only X") are the most common failure mode** — two of four corrections were over-claim framing rather than wrong numbers. Numeric claims in this corpus are reliable; framing claims are not.
+- **Range-dependent headline figures need qualification.** "$18B apiece" and "$64B raise" are both correct only at a stated point in their range/structure. Always pair them with the band and the mechanics (825,000,000 shares × $78; including/excluding the concurrent private placement and greenshoe).
+- **Windows create false negatives.** goose's promised macOS desktop build, Cursor's CLI changelog, and Anthropic's actual listing all landed *after* the 2026-11-16 window. The research was right about the window and wrong about the world. Distinguish "no release in window" from "no release" — this run's negative findings are timestamp-scoped, not durable.
+- **Dist-tag topology is an underrated signal.** The `stable`-behind-`latest` gap (14→17 versions) and the frozen `nightly` tag (12→15 days) are stronger, more actionable indicators than any individual release note, and both were fully verified.
+
+### Next-run Priorities
+
+1. The 2026-11-06 backlog (oldest first): release-table remainder and the Conductor/migration-watch cluster.
+2. The 2026-11-06 market/funding cluster (Dropbox→Tigris, Box+NVIDIA, FuriosaAI) — all secondary-sourced.
+3. The 35 unchecked 2026-11-16 claims: docs-corpus cluster (sitemap `lastmod`, 143 `llms.txt` pages, the `docs.claude.com` → `platform.claude.com` 302), the newly mapped Claude Code surfaces (`champion-kit`, `communications-kit`, four `llm-gateway-*` pages, `deep-links`, `desktop-linux`, `claude-projects`, `claude-security`), the Anthropic newsroom coverage gaps, and the funding cluster.
+4. Re-verify expired `skip_until` items: fact_022, fact_051, fact_082, fact_153.
+
+---
+
+## 2026-11-26
+
+**Run:** fact-check of the `## 2026-11-24` section of `cumulative_findings.md` — 15 claims (C1–C15 → `fact_364`–`fact_378`), oldest post-frontier claims first, frontier advanced from 2026-11-19 to 2026-11-26.
+**Result:** 6 verified · 7 partially verified · 2 needs correction · 0 unverified. 16 inline `FACT_CHECK` comment blocks written to `cumulative_findings.md`. Report: `fact_check_reports/2026-11-26.md`.
+
+### Corrections Made
+
+- **ANT 2026-11-23 daily bar (C3) — wrong session and three wrong numbers.** The note called 2026-11-23 "the first post-IPO daily bar" with open 93.69 / high 94.24 / low 84.61 / close 86.86 (−2.31 %) / volume 253,330,731. In fact 2026-11-23 was the **third** post-IPO session (the first bar was 2026-11-19: O 111.50 / H 115.10 / L 92.72 / C 97.17, vol 857,312,300), and the 2026-11-23 bar is **O 93.645 / H 94.24 / L 84.61 / C 87.64, −1.43 %, vol 254,101,700**. The −2.31 % was derived from the wrong close, not sourced. Confirmed by Yahoo Finance chart API, Nasdaq historical API and stockanalysis.com. The 2026-11-25 section's "previous close of 87.64" independently corroborates the correction. Sources: https://query2.finance.yahoo.com/v8/finance/chart/ANT?range=1mo&interval=1d · https://api.nasdaq.com/api/quote/ANT/historical?assetclass=stocks&fromdate=2026-11-19&todate=2026-11-25 · https://stockanalysis.com/api/symbol/s/ANT/history?range=1M&period=Daily
+- **OpenCode v2.4.0 / v2.4.1 characterisation (C10) — two superlatives falsified, timestamps exact.** "The largest OpenCode release set observed" is wrong: the GitHub feed shows a three-release day on 2026-10-30 (`v2.2.3`/`v2.2.4`/`v2.2.5`) and a four-release day on 2026-10-29. "The first under the corrected package name" is wrong: `@opencode/cli` was created 2026-09-02 and has published continuously since `2.0.0` (2026-09-11), including `2.3.0` (2026-11-13) and `2.3.1`/`2.3.2` (2026-11-18). Timestamps kept exactly (GitHub `v2.4.0` 09:22:21Z / npm 09:15:15.017Z; `v2.4.1` 15:57:40Z / 15:56:19.960Z). Sources: https://api.github.com/repos/anomalyco/opencode/releases/tags/v2.4.0 · https://api.github.com/repos/anomalyco/opencode/releases/tags/v2.4.1 · https://registry.npmjs.org/@opencode%2fcli · https://registry.npmjs.org/opencode-ai
+- **Seven partially verified claims, caveats written inline.** Codex plugin-archive signing is real but spans **five** merged PRs (63487, 63489, 63490, 63491, 63528), not three, and the "first first-party hardening of an agentic CLI's remote plugin supply chain" superlative is unverifiable framing. Copilot CLI's ~6-day stable freeze is confirmed but is **not** the longest for that package (1.0.80→1.0.81 = 13 d 14 h; 1.0.83→1.0.84 = 11 d 7 h; 0.0.372→0.0.373 = 10 d 16 h; 1.0.105→1.0.106 = 9 d 1 h → this freeze ranks ~8th). `opencode-ai` is not deprecated and still takes ~3.8× the weekly downloads of `@opencode/cli` (3,643,255 vs 970,798 for 2026-11-18..11-24) — "stale but dominant", not inactive. Gemini CLI `latest`/`staging-tmp` are now `0.71.1`, Claude Code `latest`/`next` are now `2.1.332` (stable `2.1.326`), Codex `alpha` is now `0.174.0-alpha.7`, `@opencode/cli` `latest` is now `2.4.2` — all were correct only as window-close snapshots.
+
+### Sources Reliability
+
+- **npm registry JSON API + GitHub REST releases API — 100 % exact again.** Every version number and publish timestamp matched to the second across both registries, including multi-tag topologies (`latest`/`next`/`stable`/`nightly`/`preview`/`alpha`/`prerelease`/`unstable`). Zero source disagreements in this run.
+- **SEC EDGAR — 100 % exact and the anchor of the run.** The 424B4 header ("Prospectus dated November 18, 2026"), the 180-day/365-day lock-up language, and the filing metadata (accession 0001628280-26-074944, filed 2026-11-19) all matched verbatim.
+- **Market data needed three sources, not two.** Yahoo Finance, Nasdaq and stockanalysis.com all returned the same 2026-11-23 bar, and the error was in the research note, not the sources. Any OHLCV claim for a newly listed ticker should be triangulated.
+- **Third-party mirrors (NewReleases.io, SourceForge, jsDelivr, the `@ampcode/cli` npm mirror) worked well as independent second sources** when the primary API was thin (Amp has no public repo — 404 on `sourcegraph/amp`).
+
+### Patterns Identified
+
+- **Dist-tag claims are perishable within hours.** Seven of seven "the tag points at X" assertions were true at window close and false 30–48 h later. They must be written as window-close snapshots with an explicit timestamp, never in the present tense.
+- **Superlatives are now the dominant error class** — four of the two hard corrections plus most partials are over-claim framing ("heaviest", "largest", "first", "longest", "actively published") rather than wrong data. Underlying numbers remain reliable.
+- **Derived percentages are the tell.** The −2.31 % on the ANT bar was self-consistent with a wrong close. Percentages and deltas must be recomputed from the primary bar.
+- **Primary APIs covered 15/15 claims with zero generic web searches.** npm + GitHub + SEC + market APIs are sufficient for this corpus; search should stay a fallback.
+
+### Next-run Priorities
+
+1. The remaining 113 bullets in the active `## 2026-11-24` / `## 2026-11-25` sections, oldest first — next up: the 2026-11-24 market/capital-structure cluster (Form 4s, six leveraged ANT ETF share classes, HSBC structured-note FWPs, CrowdStrike 8-K exhibit).
+2. The 96 archived claims from the 2026-11-06 → 2026-11-23 sections (recoverable from `archive/cumulative_findings_2026-11.md`) — this backlog is now older than the active file and needs an explicit scheduling decision.
+3. Re-verify expired `skip_until` items: fact_022, fact_051, fact_082, fact_153.
+4. Re-condense the active window: the file is now ~67 KB after this run's 16 comment blocks, above the ~60 KB budget noted in the header.

@@ -1,623 +1,486 @@
 # Cumulative Findings: Agentic CLI Tools Research
 
-**Last Updated:** October 22, 2026
-**Research Period:** April–October 2026
-**Last Fact-Check:** October 22, 2026 (48 claims checked against 2+ independent sources: 20 verified, 3 partially verified, 21 corrected, 4 unverified — see `fact_check_reports/2026-10-22.md`; inline corrections marked 🔎 below)
-**Tools Covered:** Cursor, Kilo, Crush (formerly OpenCode), Codex CLI, Droid CLI, Pi CLI, Google Antigravity CLI, Cline, Grok Build, Claude Code, Gemini CLI
+**Last Updated:** November 25, 2026
+**Research Period:** April–November 2026
+**Topic:** agentic-cli-tools | **Window:** 2026-11-24T01:28:00Z -> 2026-11-25T01:28:00Z | **Baseline:** the archived 2026-11-18..2026-11-24 sections plus the last 7 daily reports.
+**Note (2026-11-25):** active window now carries the two most recent sections, `## 2026-11-24` (condensed) and `## 2026-11-25` (condensed). The 2026-11-22 and 2026-11-23 active sections were dropped from the active file to stay inside the ~60 KB budget; they remain recoverable in full from `archive/cumulative_findings_2026-11.md` (sections 2026-11-01 → 2026-11-25) and from `daily_reports/`. Reddit entries remain TITLE-LEVEL where bodies were unavailable; access failures are labeled as access gaps, never as absence of activity. Source sections for this cycle: `findings_agentic-cli-tools_releases_2026-11-25.md` (28,065 B) and `findings_agentic-cli-tools_community_2026-11-25.md` (47,788 B); raw evidence under `tmp/2026-11-25/`.
+
+**Note (2026-11-24 backfill):** the 2026-11-24 cycle's append step was interrupted on 2026-11-24 and completed on 2026-11-25 — its findings, full section and daily report were already on disk; the cumulative file, archive and `last_check.json` were updated in this run.
+
+**Last Fact-Check:** November 26, 2026 (15 claims: 6 verified, 7 partially verified, 2 corrected — `fact_check_reports/2026-11-26.md`) | **Previous Fact-Check:** November 19, 2026 (15 claims: 11 verified, 4 partially verified, 0 corrected — `fact_check_reports/2026-11-19.md`).
+
+**Note (2026-11-26 fact-check):** the 15 oldest post-frontier claims (2026-11-24 section) were verified against primary APIs and 16 `FACT_CHECK` comment blocks were inserted, adding ~9 KB to this file (now ~67 KB). The next accumulator cycle should re-condense the active window; the 2026-11-19 → 2026-11-25 sections remain recoverable in full from `archive/cumulative_findings_2026-11.md`.
+**Archive:** `archive/cumulative_findings_2026-11.md` (sections 2026-11-01 → 2026-11-25) · **Daily reports:** `daily_reports/` · **State:** `last_check.json` · **Raw evidence:** `tmp/2026-11-25/`
 
 ---
-
-
-## 2026-10-17
-
-### Claude Code v2.1.302 — Auto Mode Model Selector, Idle Compaction Config (October 16, 2026)
-244th release of 2026. Adds CLAUDECODEAUTOMODEMODEL to choose the model the client-side auto mode classifier uses independently from the server-side model. Adds an Idle compaction row to /config for turning idle compaction off or back on with notices showing how to disable it. Adds a notice that standalone Claude Design (claude.ai/design) closes by December 14, 2026. Fixes a "Prompt is too long" error when stopping a turn while the conversation was being compacted. Fixes the Read tool loading an image file of any size. Ships every 1.1 days — 25 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.302
-
-### Antigravity CLI v1.4.0 — Terminal OSC 7501 Status, Plugin Validate Overhaul (October 16, 2026)
-68th release of 2026. Adds OSC 7501 terminal status reporting — in supporting terminals, the tab or window shows whether the CLI is working, waiting for input, done, or failed. Set AGYCLIOSC7501=off to disable. Adds alt+m shortcut to toggle queued messages on the fly (queue when in Send Immediately mode, send immediately when in Queue mode). Overhauls agy plugin validate to use the same rules the CLI uses to load plugins, listing each error with file and line, accepting --strict to fail on warnings, and --json for CI. Fixes the CLI refusing every message with "Eligibility check failed" when the service was temporarily unavailable — now retries temporary errors without locking the session. Fixes plugin MCP servers with variable headers (like Bearer ${TOKEN}) sending the literal placeholder instead of the configured value. Ships every 1.6 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.4.0
-
-### Cursor — Cloud Agent Canvases: Shareable Interactive Output, Environments API, 300 Repos (October 16, 2026)
-30th Cursor release of 2026. Cloud agents can now build interactive canvases as part of their work — finished canvases can be shared with teammates via link. New Environments API in beta for programmatically creating and managing cloud agent environments. Cloud agent environments now support up to 300 repositories (up from prior limit). Large environments load 5x faster. Ships every 7.9 days — 3 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/cursor-cloud-agent-canvases-and-environments
-
-### Q4 2026 Agent Funding: $872.5M Across 5 Rounds — Manus $500M, Armadin $255.5M (October 16, 2026)
-Q4 2026 data through October 16: 5 disclosed rounds totaling $872.5M. Manus's $500M (Oct 8) and Armadin's $255.5M Series B (Oct 1) account for 87% of the quarter's disclosed total. The remaining three rounds are Photon ($4.5M Seed, agent infrastructure), Stuut ($52.5M Series B, vertical AI for finance order-to-cash), and Armadin's second entry. Q4 pace is running at 0.31 rounds/day against Q3's 0.64 rounds/day. Excluding Manus's $500M, the quarter averages $93M per round across the remaining four — reflecting the much smaller scale of non-headline deals. Manus and Instinct (added to Q3 close) represent consumer/general agents at the billion-dollar scale, while Armadin signals agent security as a distinct funding category.
-
-**Source:** https://gravity.fast/data/ai-agent-funding-tracker/
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (company name):** the third remaining round is **Hone — a $60.0M seed in agent platforms (Oct 8, Benchmark and Index Ventures, $285M valuation)** — *not* "Armadin's second entry". Armadin appears exactly once in the tracker (Oct 1, $255.5M Series B). Everything else in the entry is confirmed: 5 disclosed rounds / $872.5M through Oct 16, Manus $500M (Oct 8) + Armadin $255.5M = 87% of disclosed money, Photon $4.5M seed (Oct 1), Stuut $52.5M Series B (Oct 7), Q4 pace 0.31 rounds/day vs. Q3's 0.64, and the ~$93M average across the four non-Manus rounds ((872.5−500)/4 = 93.1).
-> **Sources:** https://gravity.fast/data/ai-agent-funding-tracker/ · https://www.finsmes.com/2026/10/hone-raises-60m-in-funding-at-285m-valuation/ · https://www.finsmes.com/2026/10/stuut-raises-52-5m-in-series-b/
-### Agent Security Emerges as Distinct Funding Category — Reco $55M, Armadin $255.5M (October 2026)
-Consecutive rounds in agent security: Reco raised $55M on September 29 and Armadin raised $255.5M Series B on October 1. Armadin chains individual security weaknesses into actionable attack paths for defenders to test; founded by a Mandiant co-founder. The gravity.fast tracker now tags "Security" as its own category. This follows a broader pattern of infrastructure and tooling layers (security, observability, infra) attracting funding as the agent-building layer matures.
-
-**Source:** https://gravity.fast/data/ai-agent-funding-tracker/
-
-## 2026-10-17
-
-### Antigravity CLI v1.4.1 — Plugin Validation Overhaul, Syntax-Highlighted Diffs, CPU Fixes (October 17, 2026)
-69th release of 2026. Improves agy plugin validate to also check a plugin's skills, subagents, and rules — errors on missing/invalid frontmatter, warns on missing descriptions, duplicate names, oversized bodies, or components in wrong directories; accepts --strict to fail on warnings and --json for CI. Improves inline diff preview to render like /diff with syntax highlighting, background tints on added/removed lines, and line-number gutter. Improves CPU usage while typing and working by rendering prompt area once per frame and reusing measured line widths. Fixes Enable Telemetry showing as editable for Business accounts. Fixes agent commands failing on Windows 10 and Windows 11 before 24H2 where terminal sandbox isn't supported. Fixes socket disconnects (broken pipe, network down, laptop sleep) stopping turns instead of retrying. Fixes MCP server staying "Ready" in /mcp after unexpected exit. Fixes large structured tool outputs bypassing per-step token limit. Fixes clickable links with semicolons being cut off. Ships every 1.5 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.4.1
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (two independent sources):** Google's changelog dates v1.4.1 to **October 17, 2026** and confirms the expanded `agy plugin validate` (skills, subagents, rules; missing/invalid frontmatter errors, duplicate-name and oversized-body warnings, 24 KB body limit, `--strict`/`--json`), the `/diff`-style inline diff preview with syntax highlighting and background tints, the prompt-area rendering optimisation, the Business-account telemetry row fix, the Windows pre-24H2 sandbox fallback, socket-disconnect retry handling, and the remaining fixes.
-> **Sources:** https://antigravity.google/docs/changelog · https://www.havoptic.com/r/antigravity-cli-1.4.1
-### Grok Build v1.0.60 — Smart Session Resume, Shift+Y Code Copy (October 15, 2026)
-169th release of 2026. grok --resume lists matching sessions newest first with last-updated timestamps and suggests similar titles when nothing matches. Shift+Y in the fullscreen markdown viewer copies the code block under the cursor. grok --resume with unmatched title reports miss immediately instead of trying remote restore. Esc on first question in dashboard-opened session moves focus to scrollback. Ships every 1.6 days — 15 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/grok-build-1.0.60
-
-### OpenAI Codex CLI rust-v0.163.0 — Steer-While-Thinking, Leader Key, Parallel Read-Only Tools (October 15, 2026)
-108th release of 2026. Send follow-up prompt while Codex is thinking to steer immediately — interrupting stops Code Mode cells and nested tool calls. Configurable leader key via /keymap (default Ctrl+X), shortcut hints stay open until dismissed, voice mute moves to F9. Independent read-only tools (skill, memory, conversation-history) run in parallel. /config lets you search preferences and change settings. Daemon restart from /daemon reconnects automatically. Daybreak enabled by default for eligible accounts. Codex no longer bundles patched zsh. Ships every 1.3 days — 16 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/openai-codex-rust-v0.163.0
-
-### Grok Build v1.0.61 — Exact Match Direct Open, Windows Hook Error Naming (October 16, 2026)
-170th release of 2026. /resume opens session directly when ID or title matches exactly one session instead of always opening the picker. Resume picker finds sessions whose titles contain every word typed in any order. Dashboard peek text can be selected and copied. Workflow run views scroll toward newer agents instead of snapping back. Windows hook spawn failures now name the program that failed to start instead of blaming the hook script. Ships every 1.6 days — 15 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/grok-build-1.0.61
-
-### Grok Build v1.0.62 — Headless Background Wait, Pipe Crash Fixes, Enter-to-Run Slash Commands (October 16, 2026)
-171st release of 2026. Headless mode (grok -p) waits for follow-up turns from finished background tasks before exiting, with --background-wait-timeout exiting with error. Cold /resume from dashboard overlay keeps overlay attached. Enter on slash command with optional arguments runs instead of trailing space. CLI commands no longer crash when output pipe closes early or device is full. Ships every 1.6 days — 15 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/grok-build-1.0.62
-
-## 2026-10-17
-
-### Antigravity CLI v1.4.1 — Plugin Validation Overhaul, Syntax-Highlighted Diffs, CPU Fixes (October 17, 2026)
-69th release of 2026. Improves agy plugin validate to also check a plugin's skills, subagents, and rules — errors on missing/invalid frontmatter, warns on missing descriptions, duplicate names, oversized bodies, or components in wrong directories; accepts --strict to fail on warnings and --json for CI. Improves inline diff preview to render like /diff with syntax highlighting, background tints on added/removed lines, and line-number gutter. Improves CPU usage while typing and working by rendering prompt area once per frame and reusing measured line widths. Fixes Enable Telemetry showing as editable for Business accounts (where it can never be enabled). Fixes agent commands failing on Windows 10 and Windows 11 before 24H2 where terminal sandbox isn't supported — falls back to asking before running. Fixes socket disconnects (broken pipe, network down, laptop sleep) stopping turns instead of retrying. Fixes MCP server staying "Ready" in /mcp after unexpected exit. Fixes large structured tool outputs bypassing per-step token limit. Fixes clickable links with semicolons being cut off. Ships every 1.5 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.4.1
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (two independent sources):** Google's changelog dates v1.4.1 to **October 17, 2026** and confirms the expanded `agy plugin validate` (skills, subagents, rules; missing/invalid frontmatter errors, duplicate-name and oversized-body warnings, 24 KB body limit, `--strict`/`--json`), the `/diff`-style inline diff preview with syntax highlighting and background tints, the prompt-area rendering optimisation, the Business-account telemetry row fix, the Windows pre-24H2 sandbox fallback, socket-disconnect retry handling, and the remaining fixes.
-> **Sources:** https://antigravity.google/docs/changelog · https://www.havoptic.com/r/antigravity-cli-1.4.1
-### Hone AI — $60M Seed to Build Outcome-Responsibility Agents (October 8, 2026)
-Hone raised $60 million seed at a $285 million valuation, led by Benchmark and Index Ventures. Builds AI "Engines" that take ongoing responsibility for business outcomes over weeks or months rather than completing single tasks. No revenue or customer outcomes publicly disclosed yet. First "outcome-responsibility" agent platform round tracked, representing a distinct model from task-completion agents.
-
-**Source:** https://gravity.fast/data/ai-agent-funding-tracker/
-
-## 2026-10-18
-
-### Claude Code v2.1.303 — Bug Fixes and Reliability Improvements (October 18, 2026)
-245th release of 2026. Bug fixes and reliability improvements. Ships every 1.2 days — 23 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.303
-
-### Antigravity CLI v1.4.2 — Daemon Mode Conversation History Fix (October 18, 2026)
-70th release of 2026. Fixes conversation history not showing in Remote Control when running in daemon mode. Ships every 1.5 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.4.2
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (two independent sources):** Google's changelog dates v1.4.2 to **October 18, 2026** with the single fix "conversation history not showing in Remote Control when running in daemon mode".
-> **Sources:** https://antigravity.google/docs/changelog · https://www.havoptic.com/r/antigravity-cli-1.4.2
-## 2026-10-15
-
-### GitHub Copilot CLI v1.0.98 — Gemini 4 Argon, Keystroke Preservation, Ask Expansion (October 14, 2026)
-140th release of 2026. Adds support for Gemini 4 Argon model. Command hooks complete reliably even when child-exit signals are lost under Node. MCP status and /mcp commands stay synced after split-view session switches. Resuming a session now respects abandoned pending-permission work and continues only active permission requests. Keeps ordinary characters typed while the input box is still coming up at startup instead of dropping them. Expand /ask answers with Ctrl+E, copy the entire answer with Ctrl+Y, and reopen the last usable completed answer with /ask or /btw. Ships every 2.3 days — 13 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.98
-
-### Claude Code v2.1.300 — Virtual Text, Agent Transcript Views, Advisor on AWS (October 14, 2026)
-242nd release of 2026. Adds virtualText to mod prompt decorations — text drawn in the prompt box that never enters the draft or submitted prompt. Adds $.ui.view({ agentId }) for mods to show an agent's transcript in the main view, with $.ui.view({}) to go back. Adds /advisor on Claude Platform on AWS — no advisor runs until picked with /advisor, advisorModel or --advisor, and CLAUDECODEDISABLEADVISORTOOL=1 turns it off. Adds OpenTelemetry GenAI semantic-convention attributes to trace spans (genai.provider.name, genai.conversation.id, genai.tool.name, error.type). Supports rewriting a workflow agent's prompt and model in the agent.spawn mod hook. Adds prompt.change mod hook raised when the prompt box text changes without a typed edit. Ships every 0.9 days — 26 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.300
-
-### Claude Code v2.1.299 — Idle Compaction, File Mention Controls (October 14, 2026)
-241st release of 2026. Adds idle compaction in the terminal: a 200K+ token conversation left idle for about 54 minutes is compacted before its one-hour prompt cache expires, so the next message doesn't reprocess the entire conversation. Add CLAUDECODEDISABLEFILEMENTIONS to give Claude file paths for @ mentions without file contents. Add CLAUDECODEIDLECOMPACTMINTOKENS to change the 200K-token minimum (idleCompaction: false in settings.json turns it off). Both require v2.1.290 or later. Adds $.prompt.media for prompt.submit hook of mods to read bytes of attached images or documents. Adds $.session.identity() for managed-settings mods. Ships every 0.9 days — 25 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.299
-
-### Antigravity CLI v1.3.5 — Auto Mode, /Compact, Syntax Highlighting in Diff (October 14, 2026)
-66th release of 2026. Adds Auto mode: approves file edits and safe commands without asking, still prompts before irreversible actions. Commands that would leave the terminal sandbox are first reviewed by a separate agent. Choose with --mode auto, from Agent Mode in /config, or press Shift+Tab to cycle modes. Available on Linux and macOS, Windows support coming later. Adds /compact command to compact conversation on demand and free context window — shows progress label that can be canceled with Esc. Adds syntax highlighting to /diff file view with token colors for each color scheme. Adds folding to /diff: hunk headers show hidden unchanged lines above, Ctrl+O expands/collapses, f switches between changes and whole file. Improved /diff performance on very large files by rendering only rows on screen. Ships every 1.6 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.3.5
-
-## 2026-10-14
-
-### Kiro CLI v2.31.0 — Local Command Sandbox and Local Autonomous Mode GA (October 13, 2026)
-55th release of 2026. Makes the local command sandbox and local autonomous mode available to every V3 user. Run `/sandbox` to place agent shell commands and their child processes inside an OS-level sandbox with configurable network access (blocked, limited to common dev hosts, or open). Local stdio MCP servers can run inside the same sandbox. The agent, built-in file tools, and remote MCP servers stay outside. Run `/autonomous on` in a local V3 session and Kiro switches to the Default agent, turns on the local sandbox, and works through tasks without prompting for each command approval. Also loads MCP tools on demand and extends KIRO_HOME across V3 configuration and state. Ships every 3.4 days — 9 releases in the last month.
-
-**Source:** https://kiro.dev/changelog/cli/2-31
-
-### Kiro CLI v2.30.0 — V3 Startup Prompt, Model Fallback Notices (October 12, 2026)
-54th release of 2026. Shows a startup prompt inviting users to switch to V3 as part of the gradual rollout before CLI 3.0 becomes the default at end of October. Adds V3 model fallback notices — when a model refuses or is unavailable and the turn moves to another model, the transcript shows a notice so users understand why the reply changed. Keeps more V2 agent access when upgrading agents to V3. Ships every 3.4 days — 8 releases in the last month.
-
-**Source:** https://kiro.dev/changelog/cli/2-30
-
-### GitHub Copilot CLI v1.0.97 — Discover All Custom Agents, Billed AI Credits Tracking (October 13, 2026)
-139th release of 2026. Now discovers all custom agents even when repositories define more than 100 or nest agent files deeply. Shows billed AI Credits in `/usage` for token-billed sessions including after resume. Adds agent-scoped declarative hooks for custom agents. Fixes: resumed sessions no longer rebuild plugin hooks from the wrong plugin list; unavailable permission recovery attempts tracked per request so unrelated calls no longer consume each other's retry budget; emergency memory relief in long sessions can now bypass its cooldown before V8 aborts, so sessions that would have been killed by JavaScript heap OOM may survive with compacted history instead. Ships every 2.3 days — 12 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.97
-
-### GitHub Copilot CLI v1.0.96 — Secrets Detection in Sandbox, Faster Git Repos (October 12, 2026)
-138th release of 2026. Interactive sandbox settings now detect potential environment secrets and suggest adding masking hosts before saving. Model IDs in `/model` and `/config model` are now case-insensitive and save as canonical IDs. Interactive sessions in git repositories reach the input prompt sooner. `/add-dir` grants sandbox access to added directories for the current session. Timeline now shows whether you, Assisted Permissions, policy, or unattended fallback made each permission decision. Ships every 2.4 days — 11 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.96
-
-### Antigravity CLI v1.3.4 — Plugin Version List, Smart Model Defaults, Remote Control Fixes (October 13, 2026)
-65th release of 2026. `agy plugin list` now shows every installed plugin with its version and whether it is enabled (previously only showed imported plugins). `--model` and `/model` now accept a base model name without `--effort`: the CLI picks the model's default thinking level automatically instead of erroring. Remote Control browser settings now actually apply settings the CLI uses (project/global permissions, queued messages, AI credits, telemetry, artifact review) instead of showing a can't-change notice. Fixes: long stalls when model requests fail repeatedly now capped at 30 seconds between retries; remote MCP servers using OAuth no longer silently sign out after temporary network failures; `--agent` with no matching agent now exits with code 1 in headless `-p` runs and shows an Agent Not Found warning in interactive sessions. Ships every 1.4 days — 19 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.3.4
-
-### Cursor — Origin App Marketplace: 20+ Integrations, Public Submissions Open (October 13, 2026)
-29th Cursor release of 2026. Origin (Cursor's code hosting platform) launches its App Marketplace with over 20 integrations across CI, deployments, code review, security, monitoring, and project management: Cloudflare, Netlify, Render, Vercel, Buildkite, CircleCI, Depot, CodeRabbit, Greptile, Semgrep, Socket Security, Sentry, Linear, and more. The marketplace is now open to public submissions — any developer tool team can build an Origin app that authenticates via app JWT, receives webhook events, and writes back check runs, PR comments, and reviews. Ships every 7.7 days — 2 releases in the last month.
-
-**Source:** https://www.cursor.com/changelog/origin-app-marketplace
-
-### Gemini CLI v0.64.0 — CPU Hang Fix, Atomic File Writes, Crash Recovery (October 13, 2026)
-81st release of 2026. Fixes a CPU hang when typing `@` within code that would swallow quotes. File write operations are now serialized and writes are atomic. State now persists atomically and recovers from backup on corruption. Ctrl+C emergency abort now reaches the cancellation handler during active operations. Fixes: `@file:line` references no longer cause ghost text wrap hang; scroll position preserved; Windows ConPTY now forwards IME cursor position correctly; directory removal retries on Windows locking errors during extension updates. Ships every 6.7 days — 4 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/gemini-cli-v0.64.0
-
-## 2026-10-11
-
-### Antigravity CLI v1.3.3 — Pinned Prompt, Plugin Auto-Load, macOS Security Tightening (October 10, 2026)
-64th release of 2026. Keeps your conversation prompt pinned at the top while scrolling so you can instantly jump back. Plugins can now declare tools with `meta: {"antigravity/alwaysLoad": true}` in their tools/list response so the agent gets those tools directly without on-demand discovery. Also supports root-level `agents.json` in plugins to declare subagents alongside skills and rules. macOS sandbox now blocks sandboxed commands from reading `~/Library/Application Support` by default — previously readable, now opt-in. HTML error pages from corporate proxies show the page title instead of raw HTML. Jujutsu commands no longer hang in interactive pager, stopped subagents clear pending approvals immediately, and `--remote-control` now exits clearly when Application Default Credentials are detected. Ships every 1.5 days — 21 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.3.3
-
-### Kiro CLI v2.29.0 — Session Memory for Local V3 Sessions (October 9, 2026)
-53rd release. Kiro can learn useful context from your work and recall it in later chat sessions. For example, if Kiro learns while debugging that a repository's integration tests fail until the local database is seeded, a later session seeds it first instead of rediscovering. When Kiro uses a memory, the chat shows a Memory entry with `command=get` and the memory's title. Type `/memories` and select config to choose read & write, read only, or off. With read & write, automatic memory updates let Kiro create and refine memories after sessions end. In untrusted workspaces, Kiro can read memories but cannot modify them. Ships every 5.3 days — 7 releases in the last month.
-
-**Source:** https://kiro.dev/changelog/cli/
-
-## 2026-10-10
-
-### Claude Code v2.1.296 — Code Settings Sync, Subagent Model Controls (October 9, 2026)
-240th release of 2026. Syncs code settings across Claude Desktop and the gateway for more consistent behavior. New controls let you manage window compaction and model selection for subagents with precision. Adds `autoCompactWindow` to subagent frontmatter and `--agents` definitions so subagents can auto-compact earlier than the main conversation. Adds `CLAUDECODEWORKFLOWSUBAGENTMODEL` to run every workflow agent on one model while other subagents keep theirs. Adds `CLAUDECODEOVERLOADEDRETRYMAXDELAYMS` for longer retry delays on overloaded (529) requests. Adds allowlarge option to the Read tool for reading larger text files. Ships every 0.9 days — 28 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.296
-
-### OpenAI Codex CLI rust-v0.162.1 — Crash Fix for Multi-line Questions, Startup Fix (October 9, 2026)
-107th release. Fixes a critical TUI crash when asynchronous questions contain multiple lines, preserving line breaks and complete hyperlink destinations. Also fixes startup failures caused by differences between a running background server's feature settings and CLI defaults — compatibility checks now apply only to explicit command-line feature overrides. Ships every 1.4 days — 17 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/openai-codex-rust-v0.162.1
-
-### GitHub Copilot CLI v1.0.95 — Microsoft Entra Auth on macOS, Better Context Management (October 9, 2026)
-137th release. Uses native Microsoft Entra broker authentication on macOS when available, with browser fallback. `copilot config` now supports sandbox credential injectHosts keys with key completion in Bash, Zsh, and Fish. `--context` now applies to new and resumed ACP sessions instead of silently using the default. Managed plugin setup retries hourly or after policy changes instead of on every message failure. Ships every 2.5 days — 10 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.95
-
-### Manus — $500M+ Raised for General AI Agents (October 8, 2026)
-Manus raised more than $500 million in funding. The company is developing general AI agents. The formal round classification was not specified.
-
-**Source:** https://www.reuters.com/world/china/manus-raises-more-than-500-million-after-meta-exit-2026-10-08/
-
-### Armadin — $255.5M Series B for Agentic Security (October 1, 2026)
-Armadin raised $255.5 million Series B led by Andreessen Horowitz and Accel to scale autonomous security capabilities.
-
-**Source:** https://www.prnewswire.com/news-releases/armadin-raises-255-5-million-series-b-to-scale-effective-autonomous-security-302895278.html
-
-### Nous Research — $90M Series B for Open-Source AI Agents (October 7, 2026)
-Nous Research raised $90 million Series B to support the development of open-source AI models and agent technology. Investors include Robot Ventures, Nvidia, M12, Samsung, USV, and Menlo Ventures.
-
-**Source:** https://www.wsj.com/pro/venture-capital/maker-of-open-source-ai-assistant-hermes-secures-90-million-a061c1d7
-
-## 2026-10-09
-
-### Claude Code v2.1.295 — Hook Blocking on Failure/Timeout, Program Status Protocol (October 8, 2026)
-239th release of 2026. Adds `onFailure: "block"` for command and HTTP hooks — a hook that can't start, times out, or exits with an unexpected code now blocks the action instead of letting it through. Adds Program Status Protocol (OSC 7501) support: terminals that implement it can show whether Claude Code is working, waiting, or done. Also adds quoted text to the /copy picker so drafted messages copy without > markers. Ships every 0.9 days — 29 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.295
-
-### Claude Code v2.1.294 — Hook Safety Fixes (October 8, 2026)
-238th release of 2026. Fixes prompt and agent hooks written as instructions (such as "Block commands that...") correctly blocking what they should block. Also improves how prompt hooks on Stop and SubagentStop written as instructions are judged — Claude is less likely to stop early when a hook says "Carry on if the build is broken." Ships every 1.2 days — 27 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.294
-
-### OpenAI Codex CLI rust-v0.162.0 — Clickable URLs, Pinnable Tasks, Git Worktree Management (October 8, 2026)
-106th release. Makes URLs clickable throughout the interface — in approval headers, questions, MCP prompts, warnings, banners, and verification prompts, including wrapped links. Adds pinnable tasks in the agent Command Center. New tools for creating and managing Git worktrees from trusted local projects. Adds JavaScript helpers for streaming promise results and opt-in ranked tool search in Code Mode. Ships every 1.4 days — 16 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/openai-codex-rust-v0.162.0
-
-### GitHub Copilot CLI v1.0.94 — Claude Haiku 5.5, Ollama Local Model Support (October 8, 2026)
-136th release. Adds Claude Haiku 5.5 to model selection and --model completions. `/model` now picks up locally running Ollama models — users report having Qwen3.6 and Gemma4 available mid-session alongside cloud models. Assisted permissions now send visible shell code to the permission judge instead of requiring manual approval. MCP enable/disable works before server discovery without starting MCP servers. Ships every 3.7 days — 9 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.94
-
-### Antigravity CLI v1.3.2 — Plugin Marketplace, Local Install Support (October 8, 2026)
-63rd release. Adds `/plugin` interactive manager for the official Antigravity plugin marketplace — browse and install plugins that bundle skills, MCP servers, subagents, rules, and hooks. Install from shell with `agy plugin install @antigravity-plugins-official` or from local directory. Plugin authors can now keep manifests in .antigravity-plugin/ or .gemini-plugin/ folders, ship bin/ command-line tools, and use per-plugin data storage. Improved: plugin list opens instantly, interrupted installs don't leave half-installed plugins, Windows installs more reliable. Fixes: `--dangerously-skip-permissions` no longer auto-approves plans in /plan mode — only skips tool permission prompts. Ships every 1.4 days — 21 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.3.2
-
-### Kiro CLI v2.28.0 — Classic to V3 Migration Path, V3 Hooks by Tool Category (October 5, 2026)
-52nd release. Classic users get a path to switch to V3 without leaving the terminal — Kiro offers to upgrade agent configs and rerun the command in 3.0. Hooks that run before or after a tool can now match by category (shell, read, write, MCP server) instead of only by internal tool ID. Improves reliability in long V3 sessions. Ships every 5.3 days — 6 releases in the last month.
-
-**Source:** https://kiro.dev/changelog/cli/
-
-### Cline SDK v4.1.24 / Desktop v0.0.45 — Reasoning Off Fix, Model Catalog Refresh (October 2026)
-SDK fixes reasoning being disabled failing with 400 errors on GPT-6 Astra, GPT-6.1 Sol, Claude Fable 5, and Claude Opus 5.5. Background service no longer crashes 3 seconds after an MCP server or hook quits before reading all input. Model catalog refreshed — adds Claude Haiku 5.5, updates defaults across Vertex AI, Cortecs, GitHub Copilot, LLM Gateway, and others to Claude Haiku 5.5. CLI `cline mcp add` now keeps --header values when opening the setup wizard.
-
-**Source:** https://github.com/cline/cline/releases
-
-### Kilo v7.8.8 — Pin Worktrees, Integrated Browser Improvements (October 2026)
-VS Code: Pin worktrees in Agent Manager sidebar with Shift+click — pinned worktrees stay at top, get first jump shortcuts. Open chat web links in-app by default when Integrated Browser is enabled. Keep MCP OAuth credentials bound to the authorization server that issued them — servers switching auth servers can no longer receive stored refresh tokens. Switch between session tabs and Kilo editor tabs with Cmd+Alt+Left/Right.
-
-**Source:** https://github.com/Kilo-Org/kilocode/releases
-
-### Kilo v7.8.7 — Multi-Project Agent Manager by Default (October 2026)
-VS Code: Multi-project Agent Manager now available by default with the current workspace project first. No more experimental toggle or old single-project view. Restored tabs, background sessions, and branch defaults stay with their project.
-
-**Source:** https://github.com/Kilo-Org/kilocode/releases
-
-## 2026-10-08
-
-### Claude Code v2.1.293 — Claude Haiku 5.5 Default, Context Compression Fixes (October 7, 2026)
-237th release of 2026. Defaults to the faster, more affordable Claude Haiku 5.5 model with 1M context window. Haiku 5.5 costs ~75% less to run than Haiku 4.5 at $0.10/$0.50 per Mtok ($0.50/$2.50 for prompts over 100K). Fixes: Claude sometimes treating its own last actions before a context compaction as done and retracting/redoing finished work; memory leak where HTTP MCP connections kept every request until closed; queued messages lost when backgrounding sessions; /model effort arrow keys wrapping past limits and accidentally saving Low as a default. Ships every 1.2 days — 27 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.293
-
-### Claude Code v2.1.291 — Permission Prompt Regression Fix (October 6, 2026)
-235th release. Fixes two regressions: cloud sessions dropping answers to permission prompts (from v2.1.290), and last messages of a session being lost when quitting (from v2.1.288). Ships every 1.2 days — 25 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.291
-
-### OpenAI Codex CLI rust-v0.161.0 — GPT-6.1 Sol Default, MCP Login, Cyber Access Controls (October 7, 2026)
-105th release. GPT-6.1 Sol becomes the default model in bundled and Amazon Bedrock catalogs. Amazon Bedrock now supports multi-agent V2 and Ultra reasoning on compatible models, plus AWS GovCloud regions. New: `/mcp login <name>` lets you sign into MCP servers from an active terminal session. Voice conversations gain microphone/speaker selection with preferences saved locally. Daybreak (voice mode) is opt-in via `--enable clidaybreak` and requires eligible ChatGPT sign-in plus OpenAI provider support. Cyber access program selection per turn via `codex exec --cyber-access-program`. Bug fix: approved filesystem escalation now grants proper access. Ships every 1.4 days — 15 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/openai-codex-rust-v0.161.0
-
-### GitHub Copilot CLI v1.0.93 — Enterprise Permissions, Sandbox for All Users, MCP Config Changes (October 7, 2026)
-135th release. Real-time command sandboxing now available to all users via `/sandbox` and `--sandbox`. Enterprise gets `permissions.limitTo` to enforce managed domain boundaries for network requests. Safe /user commands run immediately during active turns; unsafe remote commands rejected without dialogs. Plugin skill commands stay available after reloading enabled plugins. Local-network allowlists now include localhost and loopback. MCP server configuration changes apply between turns without restarting the session. Model picker updated to prioritize GPT-6.1 Sol, GPT-6 Astra/Luna, and Claude 5.5. Ships every 4.1 days — 8 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.93
-
-### Antigravity CLI v1.3.1 — Diff Navigation, Rewind Fix, Plugin Install on Windows (October 7, 2026)
-62nd release. /diff navigation overhaul: ←/→ jump between files at first change with hunk header in view; each file remembers cursor and scroll position; n/N continue into next/previous file's changes instead of stopping at current file. Fixed /rewind in very long conversations where cleared messages were listed as "(empty message)" and erroring. Fixed Windows plugin install/uninstall crash when MCP servers were running — now stops MCP servers before replacing plugin folder, restarts them after. Ships every 1.5 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.3.1
-
-### Antigravity CLI v1.3.0 — Verbosity Default to Medium, Scrolling Fixes (October 6, 2026)
-61st release. Changed default Verbosity from high to medium — conversation view groups related tool calls and thoughts into concise summaries. Use /config to revert to high. Fixed j/k in /diff view to move line cursor instead of jumping between files. Fixed trackpad/mouse-wheel scrolling jumping back and forth (especially over SSH/tmux). Fixed files with spaces, %, special characters, or Windows drive paths being mishandled. Ships every 1.5 days — 19 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.3.0
-
-## 2026-10-12
-
-### Claude Code v2.1.293–2.1.296 — Haiku 5.5 Default, Permission Hardening, Hook Enforcement (October 7–9, 2026)
-237–240th releases of 2026. Four releases since the Oct 11 report, with the most substantive being a cluster of permission and hook fixes. v2.1.293 ships Claude Haiku 5.5 as the default Haiku on the Anthropic API — 1M context, $0.10/$0.50 per Mtok for prompts up to 100K tokens (5x that rate above 100K). v2.1.294 fixes prompt and agent hooks written as instructions (e.g., "Block commands that...") that were allowing what they should block. v2.1.295 adds `onFailure: "block"` to command and HTTP hooks — a hook that fails to start, times out, or exits unexpectedly now blocks the action instead of letting it through, critical for hooks used as enforcement rather than advisory. v2.1.296 adds `autoCompactWindow` for subagents, `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` to run all workflow agents on one model, and `allow_large` on the Read tool for files past usual size limits. Managed-settings PreToolUse and prompt hooks that block now refuse and end the turn. Ships every 1.1 days — 30 releases in the last month.
-
-**Source:** https://releases.sh/anthropic/claude-code
-
-### OpenAI Codex CLI v0.162.0 — Git Worktree Tools, Daybreak Opt-in, Sandbox Fixes (October 7, 2026)
-105th release. With worktrees feature enabled, tools for creating and listing managed Git worktrees from trusted local projects arrive. `apply_patch` preserves existing CRLF line endings without an opt-in. In the TUI, `/copy` navigates and copies transcript blocks, and `tui.mouse_scroll_speed` tunes mouse-wheel scrolling. The v0.161.0 release (Oct 6) also introduces `/mcp login <name>` for signing in to MCP servers from an active terminal session, and makes GPT-6.1 Sol the default in bundled and Amazon Bedrock catalogs. Daybreak requires explicit opt-in: `features.cli_daybreak=true` or `--enable cli_daybreak`; saved preferences remain intact. Sandbox fixes: approved filesystem escalation can now grant broader write access while preserving denied reads and network restrictions, and background tasks retain their originating turn's permissions. Ships every 1.1 days — 15 releases in the last month.
-
-**Source:** https://dev.to/aicoding-guide/this-week-in-claude-code-codex-and-gemini-cli-week-of-october-11-2026-2k6d
-
-### Cline v4.1.24 / Desktop v0.0.45 / SDK v0.0.92 — Reasoning Off Fixes, MCP Header Fix, Hub CLI (October 2026)
-Major compatibility and UX fixes. Turning reasoning off no longer fails with a 400 error on GPT-6 Astra, GPT-6.1 Sol, Claude Fable 5, or Claude Opus 5.5 — a significant fix since reasoning-off is a common configuration. `cline mcp add` now preserves `--header` values when opening the setup wizard (previously accepting prefilled answers saved a remote server without its headers, e.g., Authorization). The old `cline dashboard` is now `cline hub dashboard` (old command still works as hidden alias). `cline doctor log` opens the file set by `CLINE_LOG_PATH`. SSH remotes work again (broken since v0.0.38 by a SyntaxError). On SSH environments, the git branch label no longer opens two new SSH logins every 5 seconds — checks every 30 seconds now. The AI SDK consolidates to ai 7.0.120 with @ai-sdk/provider-utils 5.0.50. Model catalog refresh adds Claude Haiku 5.5 and updates defaults for Google Vertex AI, GitHub Copilot, and others.
-
-**Source:** https://github.com/cline/cline/releases
-
-### Microsoft Fabric for Agents & Oracle Construct — Hyperscalers Enter Agent Orchestration (September–October 2026)
-Microsoft launched "Fabric for Agents" and Oracle launched "Construct" in September 2026, both enterprise-grade agent orchestration platforms. These join existing platforms from Adept and Imbue as the enterprise software stack for AI agents matures. The orchestration platform layer — managing, monitoring, and securing fleets of agents while ensuring adherence to corporate policies — is now a clear hyperscaler battleground.
-
-**Source:** https://aiconference.london/news/ai-agents-and-the-future-of-work-20261011-12
-
-### Q3 2026: 31% of Enterprises Run AI Agents in Production — $15B VC Into Agent-Native Companies (October 2026)
-Q3 2026 saw $15 billion of venture capital funnelled specifically into AI agent-native companies, marking a record quarter and a shift from capital-intensive model training investment toward application-layer build-out. Enterprise adoption data from Q3 2026 shows 31% of enterprises now run AI agents in production, up from roughly 23% in Q2. KPMG data shows 54% of billion-dollar-plus US organizations actively deploying AI agents, with 63% requiring human validation of agent outputs — indicating the market is industrializing with governance rather than slowing down.
-
-**Source:** https://aiconference.london/news/ai-agents-and-the-future-of-work-20261011-12
-
-## 2026-10-13
-
-### OpenAI Codex CLI v0.162.1 — TUI Crash Fix, Startup Compatibility (October 9, 2026)
-106th release. Fixes a TUI crash when asynchronous questions contain multiple lines — line breaks and complete hyperlink destinations are now preserved. Also fixes startup failures caused by feature-setting differences between a running background server and CLI defaults; compatibility checks now apply only to explicit command-line feature overrides rather than all settings mismatches. Ships every 1.1 days — 16 releases in the last month.
-
-**Source:** https://releases.sh/openai/codex
-
-### Manus AI Raises $500M+ as Independent Company After Meta Deal Collapses (October 8, 2026)
-Manus AI, the Chinese AI agent lab founded by ex-Meta employees, has raised over $500 million in its first funding round since Meta was forced to abandon its acquisition (reported at over $2 billion) in late 2025 due to regulatory pressure. Manus's parent company Butterfly Effect announced the round via WeChat. The company relocated headquarters to Singapore and closed its Beijing office. According to The Information, Manus had an annual revenue run rate of approximately $400–500 million by June 2026, up from roughly $100 million at the time of the original Meta deal announcement.
-
-**Source:** https://techcrunch.com/2026/10/08/chinas-manus-raises-over-500m-in-first-funding-round-since-split-with-meta/
-
-### Armadin Raises $255.5M Series B — Agent Security Reaches Growth Stage (October 1, 2026)
-Armadin closed a $255.5 million Series B at a valuation exceeding $2.5 billion, led by Andreessen Horowitz and Accel, with participation from Bain Capital Ventures, Redpoint, 8VC, Ballistic Ventures, GV, In-Q-Tel, Kleiner Perkins, and Menlo Ventures. Armadin builds offensive security tooling for agentic AI systems. Founded by one of Mandiant's founders. Follows Reco's $55 million growth round (September 29) in the same agent security space, confirming agent security as a distinct funded category.
-
-**Source:** https://www.prnewswire.com/news-releases/armadin-raises-255-5-million-series-b-to-scale-effective-autonomous-security-302895278.html
-
-### Nous Research Raises $90M Series B for Open-Source Agent Technology (October 7, 2026)
-Nous Research, maker of the open-source Hermes AI models and assistant, raised $90 million Series B led by Robot Ventures with participation from Nvidia, M12, Samsung, USV, and Menlo Ventures. Supports development of open-source AI models and agent technology as an open-source alternative in the agent space.
-
-**Source:** https://www.wsj.com/pro/venture-capital/maker-of-open-source-ai-assistant-hermes-secures-90-million-a061c1d7
-
-### Q4 2026 Funding Opens at $260M Across Two Rounds — Q3 Closes at ~$6.32B (October 2026)
-Gravity Fast's Q4 tracker: two disclosed rounds totaling $260 million as of October 5, 2026. Q3 2026 final close is 59 rounds at approximately $6.32 billion, up from the $5.25 billion preliminary figure. Q4 pace is running at 0.40 rounds per day versus Q3's 0.64 rounds per day. Median Q3 cheque was $30 million. Agent security (Armadin + Reco, consecutive weeks) now reads as its own funded category.
-
-**Source:** https://gravity.fast/data/ai-agent-funding-tracker/
-
-### Vesta Raises $30M to Bring AI Agents to Mortgage Lending (October 8, 2026)
-Vesta raised $30 million led by Conversion Capital to support adoption of AI agents by mortgage lenders. Represents verticalized agent deployments for domain-specific workflows rather than general-purpose tooling.
-
-**Source:** https://techcrunch.com/2026/10/08/vesta-raises-30m-as-lenders-adopt-ai-agents/
-
-### Zeroset Raises $5.2M Pre-Seed for Agent Memory Infrastructure (October 6, 2026)
-Zeroset raised $5.2 million pre-seed led by Gradient Ventures and 2048 Ventures to develop memory infrastructure for AI agents. First dedicated agent-memory infrastructure round tracked. Arrives concurrently with Kiro CLI shipping session memory as a native feature (October 9), confirming memory as a distinct capability layer.
-
-**Source:** https://www.businessinsider.com/zeroset-startup-funding-ai-agents-gradient-ventures-enterprise-2026-10
-
-### Salesforce Acquires Listen Labs — Enterprise Agents Move to Customer Research (September 29, 2026)
-Salesforce signed a definitive agreement to acquire Listen Labs, an AI customer research platform whose agents design studies, interview participants, and synthesize findings. Expected to close in Salesforce's fiscal Q4 2027. MarTech reports a price of approximately $2 billion. Second major enterprise acquisition of an agent platform in days (following ZoomInfo/DoubleO.ai), placing AI research agents directly inside Salesforce's CRM workflow.
-
-**Source:** https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-listen-labs/
-
-## 2026-10-16
-
-### OpenAI Codex CLI rust-v0.163.0 — Steer While Thinking, Leader Key, Parallel Tools (October 15, 2026)
-108th release of 2026. Now lets you send a follow-up prompt while Codex is still thinking to steer the response immediately — interrupting a turn also stops active Code Mode cells and their nested tool calls. Adds configurable leader key via /keymap (default Ctrl+X), with shortcut hints staying open until dismissed and voice mute moved to F9. Parallel tool execution enabled for independent read-only tools including skill, memory, and conversation-history lookups. /config now lets you search preferences across categories and change settings immediately. Daemon management adds restart from /daemon with automatic reconnection. Daybreak is now enabled by default for eligible accounts. Linux and macOS release packages are smaller after symbol stripping. Codex no longer bundles a patched zsh. Ships every 1.3 days — 16 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/openai-codex-rust-v0.163.0
-
-### Claude Code v2.1.301 — Smart Usage Limit Retries, Vim Bracket Jump, Multi-line Input (October 15, 2026)
-243rd release of 2026. Adds CLAUDECODERETRYWATCHDOGMAXUSAGELIMITWAITMS so unattended retry mode stops a request at a usage limit that resets too far away instead of waiting indefinitely. Adds multi-line text input fields: Enter submits, Shift+Enter or backslash-before-Enter starts a new line. Adds % motion to vim mode for jumping to matching brackets alone or with d/c/y. Adds classifierverdict and permissionmode to OpenTelemetry tooldecision events so auto mode classifier decisions can be told apart from permission rules. Adds classifiercategory naming the built-in rule a classifier block matched when OTELLOGTOOLDETAILS=1. Fixes worktree creation by a WorktreeCreate hook not removing the worktree when it may hold unpushed commits. Fixes fable/best model alias erroring when newest Fable model is unavailable to the organization. Ships every 1.2 days — 25 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.301
-
-### Antigravity CLI v1.3.6 — Claude Opus 5.5/Sonnet 5.5, Safer Auto Mode, Hang Fixes (October 15, 2026)
-67th release of 2026. Adds Claude Opus 5.5 and Claude Sonnet 5.5 support via Application Default Credentials (AGYADCAUTH) sign-in. Improves Auto mode: faster review of commands leaving the terminal sandbox with no timeout, auto-approves workspace format/lint/fix commands, and blocks commands uploading sensitive data. Fixes agent hanging indefinitely when model connection stalls — 5-minute timeout now cancels and retries automatically. Fixes subagent questions being lost — Ctrl+K or 'a' opens a question picker to send answers. Fixes agent shell commands hanging on invisible editor for git commit without -m, hg describe, jj describe by setting GITEDITOR/HGEDITOR/JJEDITOR to false. Fixes skills/rules/workflows/Markdown agents failing to load with colon in description field. Fixes Mermaid diagrams with YAML frontmatter or v11 syntax rendering as raw source. Ships every 1.6 days — 20 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-v1.3.6
-
-## 2026-10-20
-
-### Claude Code v2.1.304 — Guided Auto-Mode Setup, Stronger Mod Controls, Worktree Safety Fix (October 19, 2026)
-246th release of 2026. Adds `/auto-mode-setup`, a guided setup that reads your project and recent sessions to teach auto mode about your environment. Adds `decider: "person"` to a mod's `tool.check` answer — only the permission dialog or a host's callback can approve the ask, and it is refused with the mod's reason where nobody can be asked. Adds `e.isReadOnly` signal to mod hooks. Fixed `claude --worktree` removing the worktree and its branch without asking at exit when HEAD was detached or on another branch (critical data safety fix). Fixed sandboxed commands failing to start on Linux when a `denyRead` glob contains brackets that are not a character class. Adds transcript line when a plugin that runs first skips one of your mod's hooks, naming the event and the plugin. Ships every 1.1 days — 30 releases in the last month.
-
-**Source:** https://releases.sh/anthropic/claude-code
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (two independent sources):** v2.1.304 published **October 19, 2026**. Confirmed verbatim from the release notes: `/auto-mode-setup` guided setup reading the project and recent sessions; `decider: "person"` for a mod's `tool.check` answer; the `e.isReadOnly` signal on mod hooks; the `claude --worktree` fix removing the worktree and branch without asking when HEAD was detached or on another branch; the Linux sandbox `denyRead` glob bracket fix; and the transcript line naming the plugin that skipped a mod hook.
-> **Sources:** https://api.github.com/repos/anthropics/claude-code/releases/tags/v2.1.304 · https://releases.sh/anthropic/claude-code
-### Claude Code v2.1.302 — Fork Subagents Default On, Image Memory Fix, Permission Mode Clarity (October 16, 2026)
-244th release of 2026. `Claude -p` and Agent SDK sessions with no permission mode now start in default mode on third-party providers with telemetry off or on a fresh install. Fork subagents are on by default across the CLI, Agent SDK, desktop app, and VS Code. The Read tool no longer loads image files of any size into memory and refuses image sources over 128 MB. Idle compaction can be toggled off from a new row in /config. Ships every 1.1 days — 28 releases in the last month.
-
-**Source:** https://releases.sh/anthropic/claude-code
-
-### Claude Code v2.1.301 — Vim Bracket Jump, Multi-line Mod Inputs, Retry Watchdog Bound (October 15, 2026)
-243rd release of 2026. Vim mode gains `%` motion to jump to the matching bracket alone or with d/c/y. Mods get a multi-line `rows` input field. `CLAUDE_CODE_RETRY_WATCHDOG_MAX_USAGE_LIMIT_WAIT_MS` bounds unattended retry at usage limits that reset too far away. Fixed quitting removing a `WorktreeCreate` hook's worktree without asking. Ships every 1.2 days — 25 releases in the last month.
-
-**Source:** https://releases.sh/anthropic/claude-code
-
-### October 2026 Stack Overflow Survey: Claude Code at 65.5% Agent Usage — Market Consolidation Underway (October 2026)
-The October 2026 Stack Overflow Developer Survey shows Claude Code used by 65.5% of respondents working with AI coding agents, up from just 10% in the 2025 survey. GitHub Copilot sits at 58.7% and OpenAI Codex at 29.5%. Numbers sum above 50% because most developers run multiple agents simultaneously. The rapid rise of Claude Code from 10% to 65.5% in one year marks the most significant market shift in the AI coding tool space since Copilot's 2021 launch.
-
-**Source:** https://tech-insider.org/claude-code-vs-codex-vs-github-copilot-2026/
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (figures):** the official 2026 Stack Overflow Developer Survey reports **Claude Code 66%** and **GitHub Copilot 59%** as the leading coding agents — not the decimal figures 65.5% / 58.7% (those appear to be unsourced derivations from a secondary blog). **OpenAI Codex at 29.5% could not be located in the official survey**: the string "Codex" does not appear anywhere on the 2026 AI survey page.
-> **CORRECTION (year-over-year baseline):** "up from just 10% in the 2025 survey" is not supported. The 2025 survey lists **Claude Code at 40.8%** in its "out-of-the-box agents, copilots or assistants" question (ChatGPT 81.7%, GitHub Copilot 67.9%, Google Gemini 47.4%). The 2025 and 2026 questions are worded differently (out-of-the-box assistants vs. coding agents), so the two numbers are not directly comparable.
-> **Sources:** https://survey.stackoverflow.co/2026/ai · https://survey.stackoverflow.co/2025/ai
-## 2026-10-21
-
-### Claude Code v2.1.305 — Regression Fix for Vertex, Bedrock, and Tool Search (October 20, 2026)
-249th release of 2026. Fixes a v2.1.304 regression where every request failed on Vertex, Bedrock, and other providers when the endpoint or gateway rejects tool search, or when ToolSearch was disallowed or omitted from --tools — Claude Code now retries without it. Also changed allowedMcpServers to stop filtering managed-mcp.json stdio servers that use ${VAR} only in env, so such servers now load on upgrade unless listed in deniedMcpServers, and added sandbox.allowNestedUserNamespaces for Linux sandboxed commands. Ships every 1.1 days — 31 releases in the last month.
-
-**Source:** https://releases.sh/anthropic/claude-code
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (release ordinal):** v2.1.305 is the **247th** release of 2026, not the 249th. The Oct-22 entry in this same file correctly numbers v2.1.306 = 248th and v2.1.307 = 249th, so "249th" here duplicates the ordinal of v2.1.307. The GitHub release feed confirms the sequence and dates: v2.1.304 (Oct 19), v2.1.305 (Oct 20), v2.1.306 (Oct 21), v2.1.307 (Oct 21).
-> The substance of the entry (v2.1.304 regression on Vertex/Bedrock when tool search is rejected or omitted from `--tools`, `allowedMcpServers` no longer filtering managed-mcp.json stdio servers that use `${VAR}`, new `sandbox.allowNestedUserNamespaces`) is **confirmed verbatim** in the v2.1.305 release notes.
-> The trailing cadence line ("every 1.1 days — 31 releases in the last month") also conflicts with the sibling Havoptic pages for v2.1.306/v2.1.307, which state **"every 1.3 days — 23 releases"**.
-> **Sources:** https://api.github.com/repos/anthropics/claude-code/releases (tags v2.1.304–v2.1.307) · https://www.havoptic.com/r/claude-code-2.1.306 · https://www.havoptic.com/r/claude-code-2.1.307
-### OpenAI Codex CLI v0.163.0 — Mid-Turn Steering Default, /config Panel, Daybreak Enabled (October 15, 2026)
-110th release. Now lets you send a follow-up prompt while Codex is still thinking to steer the response immediately, with interrupts stopping active Code Mode cells and nested tool calls. Adds a configurable leader key via /keymap (default Ctrl+X) and enables Daybreak by default for eligible accounts. /config now searches preferences across categories and flags which changes need a restart. Daemon management adds restart from /daemon with automatic reconnection. Ships every 1.1 days — 16 releases in the last month.
-
-**Source:** https://releases.sh/openai/codex
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (release ordinal):** the same release is numbered **"108th release of 2026"** in the 2026-10-16 section of this file and **"110th release"** here — the two entries contradict each other. Neither ordinal is independently verifiable (the Codex release feed does not publish ordinals), and the wider ordinal series in this corpus is inconsistent. Recommendation: drop the ordinal or resolve it against a single counter. Release identity itself is confirmed: **rust-v0.163.0, published October 15, 2026**, with mid-turn steering, configurable leader key (default Ctrl+X), Daybreak enabled by default for eligible accounts, `/config` preference search, and `/daemon restart` with automatic reconnection.
-> **Sources:** https://api.github.com/repos/openai/codex/releases (tag rust-v0.163.0) · https://developers.openai.com/codex/changelog · https://www.havoptic.com/r/openai-codex-rust-v0.163.0
-### OpenAI Codex — GPT-5.5 Retired, GPT-6.1 Sol Now Default (October 14, 2026)
-GPT-5.5 was retired from Codex for ChatGPT users effective October 14 at noon PDT — API and API-key-authenticated sessions are unaffected. GPT-6.1 Sol is now the default model in the bundled and Amazon Bedrock catalogs. Workspace defaults, saved model settings, and scripts selecting gpt-5.5 should be updated to GPT-6.1 Sol (gpt-6.1-sol). GPT-6.1 Sol Ultrafast mode is available on Pro $500 and eligible Enterprise/Edu plans with inference residency in the US and Europe.
-
-**Source:** https://releases.sh/openai/codex
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (primary source):** the Codex changelog confirms GPT-5.5 retirement **effective October 14, 2026 at noon PDT (19:00 UTC)** for users signed in with ChatGPT, that the retirement **does not apply to the OpenAI API**, and that `gpt-6.1-sol` is now the default where available; workspace defaults, saved model settings, managed configurations, custom agents, scheduled tasks and scripts selecting `gpt-5.5` must be updated.
-> **Sources:** https://developers.openai.com/codex/changelog · https://releases.sh/openai/codex
-### Gemini CLI v0.63.0 / v0.64.0 — Atomic File Operations, Chat Recording Optimization (October 6–13, 2026)
-Google's open-source agent gained atomic file tool operations with serialized writes and automatic CLI state recovery from backup on corruption. ChatRecordingService now uses append-only delta patching and bounded history windowing to optimize memory and disk during long-running sessions. Terminal UI stability fixes: Ctrl+C abort reaches cancellation handlers reliably, Enter/Spacebar confirm selection lists dependably, Windows ConPTY IME cursor forwarding fixed, @file:line references resolved, and quote swallowing on @ within code blocks prevented. v0.64.0 was the stable release as of October 13.
-
-**Source:** https://geminicli.com/docs/changelogs/latest/
-
-> **🔎 Fact-Check 2026-10-22 — PARTIAL CORRECTION (feature attribution):** the atomic file-tool writes, atomic CLI state persistence with backup recovery on corruption (#29499, #29558) and the ChatRecordingService append-only delta patching with bounded history windowing (#29568) are **v0.64.0 (Oct 13)** features. **v0.63.0 (Oct 6)** added autonomous plan execution in non-interactive mode (#29539), bounded tool output sizes and memory-lifecycle fixes in long-running agent loops (#29451, #29448). "v0.64.0 was the stable release as of October 13" is confirmed.
-> Three sub-claims are **not** in Google's changelog and remain **unverified**: "Enter/Spacebar confirm selection lists dependably", "Windows ConPTY IME cursor forwarding fixed" and "quote swallowing on @ within code blocks prevented" — the vendor announcement describes preventing **CPU hangs on @ in code blocks**, resolving `@file:line` references, and ensuring Ctrl+C emergency aborts reach cancellation handlers. Please either cite the GitHub release notes for those three or drop them.
-> **Sources:** https://geminicli.com/docs/changelogs/ · https://github.com/google-gemini/gemini-cli/releases
-### Kiro CLI v0.9.0 — Crew Multi-Agent Dashboard, Token Estimation, Slack/Telegram Integration (October 15, 2026)
-Major release adds Crewmates dashboard: each crewmate card shows goal, completion status, and next step; Profile card displays permissions, model, reasoning effort, schedules, and session history. Remote crew sessions open as live windows onto another machine when peer crews are reachable. Composer warns when a prompt nears the model's context window, holding it until confirmed on second send. Usage tab gains Estimated Tokens card and daily history column. Slack integration connects persistent sessions to Slack threads automatically; Telegram serves each forum topic as its own session. Pricing plan estimation added.
-
-**Source:** https://kiro.dev/changelog/
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (product name, date, one feature):** the product is **Kiro Crew 0.9.0** — *not* "Kiro CLI v0.9.0" (Kiro CLI is a separate product/version line, currently v2.x). The changelog entry is dated **October 16, 2026**, not October 15. The Crewmates dashboard (goal / completion status / next step per crewmate), the Profile card (permissions, model, reasoning effort, schedules, session history), remote crew windows, the context-window warning on near-limit prompts, the Estimated Tokens card with daily history, Slack thread sessions and Telegram per-topic sessions are all **confirmed**.
-> **CORRECTION:** "Pricing plan estimation added" is **not** in the changelog and could not be verified — remove it or replace it with the verified "Estimated Tokens" usage card.
-> **Sources:** https://kiro.dev/changelog/ · https://www.havoptic.com/r/kiro-crew-0.9.0
-### Q4 2026 Funding: $872.5M Across 5 Rounds — Manus Confirms $500M+, Stuut $52.5M, Hone $60M (October 2026)
-Gravity Fast's Q4 tracker: five disclosed rounds totaling $872.5 million as of October 16, 2026. Manus AI confirmed $500 million+ in its first funding round since Meta deal collapse, with Boyu Capital leading and Tencent participating. Stuut raised $52.5 million Series B (Insight Partners) for AI-driven order-to-cash finance automation. Hone raised $60 million seed (Benchmark, Index Ventures) for outcome-responsibility agents that take ongoing business accountability over weeks or months. Photon raised $4.5 million seed for agent infrastructure embedding AI in messaging apps. Q4 pace running at 0.31 rounds per day versus Q3's 0.64 rounds per day.
-
-**Source:** https://gravity.fast/data/ai-agent-funding-tracker/
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (attribution):** "Manus AI **confirmed** $500 million+" overstates the source. The tracker records Manus at a **$500.0M floor** because the underlying report says "more than $500 million"; the **stage is listed as "Not stated"**, and the reported **$4B valuation is an unconfirmed Bloomberg figure from September**. Boyu Capital leading with Tencent participating, Stuut $52.5M Series B (Insight Partners led; a16z and M12 participated), Hone $60M seed (Benchmark, Index Ventures), Photon $4.5M seed and the 0.31-vs-0.64 rounds/day pace are all **confirmed**.
-> **Sources:** https://gravity.fast/data/ai-agent-funding-tracker/ · https://www.finsmes.com/2026/10/stuut-raises-52-5m-in-series-b/ · https://www.finsmes.com/2026/10/hone-raises-60m-in-funding-at-285m-valuation/
-### Agentic AI Enterprise Adoption: 78% Fortune 500 Deployment Projected, 31% Production Agents (October 2026)
-Agentic AI adoption enters mainstream phase: 78% of Fortune 500 companies are projected to deploy agentic AI by end of 2026 (up from 67% in 2025), with the global market expected to reach $89.6 billion. Q3 2026 data shows 31% of enterprises now run AI agents in production. Enterprise ROI averages 540% within 18 months. BCG's 2026 Applied AI Index finds almost 50% of companies now generate value from AI, with agentic AI driving the next wave of enterprise productivity gains.
-
-**Source:** https://axis-intelligence.com/agentic-ai-adoption-statistics-2026/
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (two claims unsupported by the cited source):** the cited article (Axis Intelligence, dated **December 19, 2025**) contains **no "31% of enterprises run AI agents in production"** figure and **no mention of BCG or an "Applied AI Index"**. Its 540% ROI figure is attributed inside the article to "**McKinsey's 2025 Year-End AI Report**" (median ROI for mature implementations) — not to BCG — and no McKinsey publication carrying that figure could be independently confirmed. The **BCG Applied AI Index 2026 claim is itself real** ("almost 50% of companies generate value from AI"), but it must be cited to BCG's own press release, not to this article.
-> Confirmed from the cited source: 78% of Fortune 500 projected to have active production agentic AI deployment in 2026, up from 67% in 2025; global agentic AI market forecast of **$89.6B (215% YoY from $28.4B in 2025)**; enterprise ROI averaging 540% within 18 months; ~$890,000 average implementation cost.
-> **Sources:** https://axis-intelligence.com/agentic-ai-adoption-statistics-2026/ · https://www.bcg.com/press/30september2026-ai-starting-to-pay-off-companies-generate-value
-## 2026-10-22
-
-### Claude Code v2.1.306 + v2.1.307 — Two Releases in One Day, Safety Telemetry Event, MCP Duplicate-Call Fix (October 21, 2026)
-248th and 249th releases of 2026. v2.1.306 fixed `claude -p` inside cloud sessions falsely reporting "Not logged in" when started without the session's environment variables, and fixed an API error being masked as "prompt is too long" plus an unnecessary compaction in sessions with many MCP tools. v2.1.307 added `/claude-api api-version` to move Claude API code to API version 2026-10-21, and added a new `claudecode.safetyevent` OpenTelemetry event emitted for every tool call that a permission rule, auto mode, a safety check, a hook, or the sandbox stopped, prompted, or sent back. v2.1.307 also fixed HTTP MCP tool calls being sent twice when the connection closed mid-call (only read-only or idempotent tools are now retried), MCP servers reported as timed out after macOS/Linux sleep, MCP servers showing "needs authentication" while the macOS login keychain was locked, "Autocompact is thrashing" errors on turns reading many PDFs/images, model switches through the Agent SDK's setModel() being refused when the API took more than 5 seconds to confirm (now waits 15 seconds), and /permissions > Recently denied not showing the denied shell command. Ships every 1.4 days — 25 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/claude-code-2.1.306
-**Source:** https://www.havoptic.com/r/claude-code-2.1.307
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (exact event name):** the OpenTelemetry event is **`claude_code.safety_event`**, not `claudecode.safetyevent`. The v2.1.307 release notes give the event name verbatim as `claude_code.safety_event`.
-> All other claims verified against the GitHub release notes: `/claude-api api-version` moving Claude API code to API version `2026-10-21`; `claude -p` in cloud sessions falsely reporting "Not logged in" without session env vars; API error masked as "prompt is too long" plus an unnecessary compaction in MCP-heavy sessions; HTTP MCP tool calls sent twice when the connection closed mid-call (only read-only/idempotent tools retried); MCP servers reported as timed out after macOS/Linux sleep; "needs authentication" while the macOS keychain was locked; "Autocompact is thrashing" on PDF/image-heavy turns; Agent SDK `setModel()` refusing switches when the API took more than 5 seconds (now waits 15 seconds); `/permissions` > Recently denied not showing the denied shell command.
-> Cadence line corrected: the Havoptic pages for v2.1.306 and v2.1.307 both state **"every 1.3 days — 23 releases"**, not "every 1.4 days — 25 releases".
-> **Sources:** https://api.github.com/repos/anthropics/claude-code/releases/tags/v2.1.307 · https://www.havoptic.com/r/claude-code-2.1.306 · https://www.havoptic.com/r/claude-code-2.1.307
-### Antigravity CLI v1.4.4 — Auto Mode Comes to Windows 11 24H2+, Combined Per-Turn Diffs (October 21, 2026)
-72nd release of 2026. Auto mode now runs on Windows 11 version 24H2 and later for personal Google Accounts, selectable via `--mode auto`, Agent Mode in /config, Shift+Tab, or Remote Control Settings (Agent remains the default). /diff gains a whole-file toggle (f) and hunk folding (Ctrl+O) in Commit Tree and Per Turn views, and Per Turn diffs are consolidated so multiple edits to one file in a turn show as a single combined diff. Adds `meta["antigravity.google/rootconversationid"]` to MCP tools/call requests so MCP servers receive the top-level conversation ID even from nested subagents. Auto mode's sandbox-escape review now includes the assistant's preceding question on short replies like "yes", checks every subcommand in pipelines, and prompts before destructive Git or file commands. `agy plugin validate` gained stricter checks across plugin.json, MCP server configs, hooks.json, and sidecar manifests. /compact and automatic compaction now retain tool declarations on summarization requests so the model API reuses its cached prompt prefix. Fixed subagents losing plugins inherited from the parent session and rules/SKILL.md skills loading twice. Ships every 1.4 days — 21 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/antigravity-cli-1.4.4
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (exact metadata key):** the key added to MCP `tools/call` requests is **`_meta["antigravity.google/root_conversation_id"]`** (leading underscore, snake_case) — not `meta["antigravity.google/rootconversationid"]`.
-> Everything else is **confirmed** by Google's own changelog for v1.4.4 (October 21, 2026): Auto mode on Windows 11 24H2+ for personal Google Accounts via `--mode auto`, Agent Mode in `/config`, Shift+Tab or Remote Control Settings (Agent remains default); whole-file toggle (`f`) and hunk folding (`Ctrl+O`) in the Commit Tree and Per Turn views of `/diff`; consolidated Per Turn diffs; improved sandbox-escape review (includes the assistant's preceding question on short replies like "yes", checks every subcommand in pipelines, prompts before destructive Git or file commands); stricter `agy plugin validate` across `plugin.json`, MCP server configs, `hooks.json` and sidecar manifests; `/compact` and automatic compaction retaining tool declarations for prompt-prefix cache reuse; fixes for subagents losing inherited plugins and for rules/SKILL.md skills loading twice.
-> **Sources:** https://antigravity.google/docs/changelog · https://www.havoptic.com/r/antigravity-cli-1.4.4
-### GitHub Copilot CLI v1.0.102 — Managed Auto Model Selection, Subagents Stop Double-Prompting (October 21, 2026)
-143rd release of 2026. Prompt mode now honors managed Auto model selection for `-p` and piped stdin runs. Subagents honor custom and MCP tool approvals, avoiding duplicate permission prompts and allowing inherited workflows to run. Long-running sandboxed commands continue running reliably past 10 seconds. Replies cut off by a provider overload error now retry with backoff and surface the provider's message and request ID. Sandboxed network traffic honors NOPROXY and ALLPROXY when inheriting host proxy settings. Plugin marketplaces accept git-subdir sources and long plugin descriptions; chats no longer get blocked by organization plugin preparation while sending messages. Ships every 2.1 days — 14 releases in the last month.
-
-**Source:** https://www.havoptic.com/r/github-copilot-v1.0.102
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (two independent sources):** published **2026-10-21T18:05:00Z**; the GitHub release notes confirm all six claims verbatim — prompt mode honoring managed Auto model selection for `-p` and piped stdin runs; subagents honoring custom and MCP tool approvals (no duplicate permission prompts, inherited workflows run); plugin marketplaces accepting git-subdir sources and long descriptions; chats no longer blocked by organization plugin preparation while sending; long-running sandboxed commands continuing past 10 seconds; provider-overload replies retrying with backoff and showing the provider's message and request ID; sandboxed network traffic honoring `NOPROXY` and `ALL_PROXY`.
-> **Sources:** https://api.github.com/repos/github/copilot-cli/releases/tags/v1.0.102 · https://www.havoptic.com/r/github-copilot-v1.0.102
-### GitHub Copilot in VS Code v1.143 — Copilot Harness Is Now Default, Side-by-Side Model Comparison (October 21, 2026)
-The Copilot harness, built on the Copilot SDK as a shared foundation across Copilot products, is the default for new sessions in VS Code. New `sessions.chat.compareAgents.enabled` setting in the Agents window lets users compare how different models and harnesses approach the same coding task — running attempts in parallel and combining ideas into one solution, mixing Copilot, Claude, and Codex harnesses. Copilot harness sessions can be kept running in the background and accessed from both the VS Code editor window and the Agents window. Large chats open much faster. 13th VS Code Copilot release of 2026, 7 days after v1.142.
-
-**Source:** https://www.havoptic.com/r/copilot-vscode-1.143
-
-> **🔎 Fact-Check 2026-10-22 — PARTIAL VERIFICATION:** only one source could be confirmed for this entry (the Havoptic release page). The VS Code Marketplace extension (`GitHub.copilot-chat`) publishes a different version line (0.48.x), and no second independent source for "Copilot harness default for new sessions" or the `sessions.chat.compareAgents.enabled` setting was located. Keep the entry, but mark it **single-source** until a GitHub changelog or marketplace entry for v1.143 can be cited.
-> **Sources:** https://www.havoptic.com/r/copilot-vscode-1.143 · https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat
-### Zed v1.25.2 — GPT-6 Astra and Claude Fable 5.1 on Bedrock, ACP Compaction, Secrets-Leak Fix (October 21, 2026)
-102nd Zed release of 2026. Added GPT-6 Astra, Claude Fable 5.1, and Claude Opus 5.5 to the Amazon Bedrock provider. Enabled session notices and context compaction for external agents using ACP. Fixed a security bug where environment variables, including secrets, passed to external agents and MCP servers in remote projects were visible in the local machine's process list. Fixed prompts to external agents being slow to send, or never sending, because of unneeded Git checkpoints. Binary size reduced ~33% on macOS, 28% on Windows, 7% on Linux. Removed the force-delete option for remote-tracking branches since it had no effect.
-
-**Source:** https://www.havoptic.com/r/zed-1.25.2
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (two independent sources):** v1.25.2 published **2026-10-21**. Confirmed: GPT-6 Astra, Claude Fable 5.1 and Claude Opus 5.5 added to the Amazon Bedrock provider (#64201, #64685); session notices and context compaction enabled for external agents using ACP (#65414); force-delete option for remote-tracking branches removed because it had no effect (#61793); smaller binaries across macOS/Windows/Linux. The process-list secrets exposure fix and the Git-checkpoint prompt-latency fix are also recorded in the release notes.
-> **Sources:** https://api.github.com/repos/zed-industries/zed/releases (tag v1.25.2) · https://www.havoptic.com/r/zed-1.25.2
-### OpenClaw v2026.10.5 — Skill Workshop 2.0, Public Conversation Links, Redesigned Sidebar (October 19, 2026)
-First stable release of the October line, covering 2,250 pull requests, 411 direct commits, and 637 contributors. Skill Workshop now saves learned procedures directly with change history, saved versions and Undo; legacy proposal modes move to Off while Auto and unset settings are preserved; unused skills are archived after 30 days (disabled for Codex). New public conversation links let anyone with the link read a published transcript without signing in — the notes warn the link exposes existing and future user messages, redaction is best effort, and turning sharing off cannot recall saved copies. Sidebar redesigned with pinnable agents and Subagents and Processes panels beside the parent chat. Stop now reaches a request's running commands and queued follow-ups. Worktree cleanup now runs as a background job with an eviction policy, can remove local changes (including in nested checkouts), and is capped globally by the new worktreeMaxCount key; manual transcript trimming with --max-lines permanently deletes removed text with no backup. Betas 2026.10.10-beta.1 through beta.3 shipped Oct 15-21 with a faster Gateway, Windows reliability fixes, and rejection of a multi-file apply_patch before anything is changed when a later target is missing or mismatched.
-
-**Source:** https://docs.openclaw.ai/releases/2026.10.5
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (primary source):** the release notes state verbatim that this release covers **"2,250 pull requests, 411 direct commits, and 637 contributors"**. Skill Workshop 2.0 (saved procedures with change history, saved versions, Undo; legacy proposal modes → Off; unused skills archived after 30 days, disabled for Codex), public conversation links with the stated redaction/recall caveats, pinnable agents with Subagents and Processes panels, Stop reaching running commands and queued follow-ups, background worktree cleanup with eviction policy and the new `worktreeMaxCount` key, and `--max-lines` permanent transcript trimming are all confirmed, as are the Oct 15–21 betas (2026.10.10-beta.1 … beta.3).
-> **Sources:** https://docs.openclaw.ai/releases/2026.10.5 · https://releases.sh/openclaw/openclaw
-### Anthropic API Release Notes — Opus 5.5 Fast Mode GA, Inference Hooks Out of Beta for Enterprise (October 20, 2026)
-Fast mode for Claude Opus 5.5 is out of research preview and no longer needs the `fast-mode-2026-02-01` beta header; Opus 5 and 4.8 remain in preview. Inference hooks are out of beta for Enterprise. Organization webhooks are in beta behind `webhooks-2026-10-07`. User profiles are available at /v1/user_profiles. Dynamic workflows (2026-10-09) are a beta enabled with `managed-agents-2026-04-01` and `multiagent: {"type": "multiagent_20261001", "workflows": {"type": "enabled"}}`. OpenTelemetry export is in beta (2026-10-14). On 2026-10-15, `capabilities.thinking.types.between_tools` was added to the model capabilities response. No deprecations announced.
-
-**Source:** https://platform.claude.com/docs/en/release-notes/overview
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (date):** fast mode for Claude Opus 5.5 left research preview on **October 15, 2026**, not October 20 — the release notes entry is dated "On 2026-10-15", and requests that still send the `fast-mode-2026-02-01` beta header continue to work. The rest of the entry is **confirmed**: Opus 5 and 4.8 remain in preview; inference hooks out of beta for Enterprise; organization webhooks in beta behind `webhooks-2026-10-07`; user profiles at `/v1/user_profiles`; dynamic workflows (2026-10-09) enabled by `managed-agents-2026-04-01` plus `multiagent: {"type": "multiagent_20261001", "workflows": {"type": "enabled"}}`; OpenTelemetry export beta (2026-10-14); `capabilities.thinking.types.between_tools` added on 2026-10-15; no deprecations announced.
-> **Sources:** https://platform.claude.com/docs/en/release-notes/overview · https://www.havoptic.com/r/claude-code-2.1.307
-### Hermes 0.22.3 — ~620 PRs, MCP Progress Notifications, Plugin-Declared OAuth Clients (October 21, 2026)
-Update to 0.22.3, not 0.22.1 — v0.22.1 (Oct 14) was built from the wrong commit, which v0.22.2 (Oct 15) states outright, and sessions run under the 0.22.1 gateway cannot be deleted in 0.22.2. v0.22.2 also fixes supervised gateways (systemd, launchd, Docker) refusing to start after a reboot because of a reused PID, and adds local-model stability fixes. v0.22.3 rolls up about 620 PRs: MCP progress notifications as live tool progress, `hermes plugins update`, plugin-declared OAuth clients, a post_compaction plugin hook, a guided subagent model and provider picker in Desktop, and opt-in Telegram DM topic transfer. Session auto-prune is back to opt-in. The 0.22.0 line (Oct 13) added a stable release channel (`hermes update --set-channel main`), hermes connectors, and /new and /reset replacing idle and daily session resets.
-
-**Source:** https://github.com/NousResearch/hermes-agent/releases
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (outdated guidance):** **v0.22.4** was published later on the same day (2026-10-21 18:49 UTC vs. v0.22.3 at 12:21 UTC), so "Update to 0.22.3, not 0.22.1" is already outdated — the actionable instruction is **"update to 0.22.4"**. v0.22.4 is a patch release (desktop no longer shows suggestion pills above the composer, plugins that install nothing skip the dependency consent step, WhatsApp can be safely re-paired after logging out, desktop plugin-review lint change, approval-mode chip follows the active profile's mode, slower-storage build fix) and adds bubblewrap, Singularity/Apptainer, mcp-serve and agent-importers to the plugin catalog.
-> The v0.22.3 content is **confirmed verbatim**: ~620 merged PRs rolled up since v0.22.2 (measured at commit `5b147ab036d`), MCP progress notifications as live tool progress, `hermes plugins update`, plugin-declared OAuth clients, the `post_compaction` plugin hook, the guided subagent model/provider picker, opt-in Telegram DM topic transfer, and session auto-prune returning to opt-in.
-> **Sources:** https://api.github.com/repos/NousResearch/hermes-agent/releases/tags/v0.22.3 · https://api.github.com/repos/NousResearch/hermes-agent/releases/tags/v0.22.4
-### Gemini 4 Argon Goes GA with Introductory Pricing That Doubles December 1 (October 13, 2026)
-Google describes `gemini-4-argon` as its most capable model for complex coding, agentic, math and science tasks. Pricing is introductory at $2 input and $10 output per million tokens through 2026-11-30, then $4 and $20 from 2026-12-01 (output includes thinking). Google's pricing page does not state a context window. `gemini-3.8-flash` and `gemini-3.6-flash` are listed at $0.75 and $3.75 through 2026-12-31, then $1.50 and $7.50. `gemini-3.7-flash` is deprecated. Separately, OpenAI added 12-hour prompt caching.
-
-**Source:** https://ai.google.dev/gemini-api/docs/changelog
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (context window + OpenAI date):** pricing is **confirmed** — `gemini-4-argon` introductory at $2 input / $10 output per Mtok through 2026-11-30, then $4 / $20 from 2026-12-01 (output includes thinking); `gemini-3.8-flash` and `gemini-3.6-flash` at $0.75 / $3.75 through 2026-12-31, then $1.50 / $7.50; `gemini-3.7-flash` deprecated; Gemini 4 Argon GA announced 2026-10-13. However, "Google's pricing page does not state a context window" is **inaccurate** — the pricing page does reference generation "up to 1M tokens", so a context-window statement is present on that page (as a model capability note rather than a dedicated field).
-> **CORRECTION:** OpenAI's 12-hour prompt caching was announced **October 20, 2026**, not October 13 — separate it from the Gemini 4 Argon GA item.
-> **Sources:** https://ai.google.dev/gemini-api/docs/pricing · https://ai.google.dev/gemini-api/docs/changelog · https://developers.openai.com/codex/changelog
-### NemoClaw v0.0.137 — Nemotron 3.5 Super VL Becomes the Default Hosted Model (October 20, 2026)
-New onboarding defaults to NVIDIA Nemotron 3.5 Super VL. v0.0.137 changes the default hosted model for new OpenClaw and Hermes onboarding on NVIDIA Endpoints to `nvidia/nemotron-3.5-super-vl-120b-a12b` (OpenRouter uses `nvidia/nemotron-3.5-super-vl`); explicit model choices are unchanged. Also lets `nemoclaw <sandbox> agent` take piped messages without `--message`, rejects skill names over 64 characters at install, and makes `onboard --resume` reuse a saved policy preset after a refused write. v0.0.136 binds custom hosted endpoints to a provider attached to the sandbox and adds an experimental Nemotron 3.5 Super VL profile for a single 128 GB DGX Spark (64 GB and unknown-memory systems are rejected before install). Existing sandboxes keep their old images until rebuilt.
-
-**Source:** https://docs.nvidia.com/nemoclaw/latest/about/release-notes
-
-> **🔎 Fact-Check 2026-10-22 — ✔ VERIFIED (primary source):** NVIDIA's release notes confirm v0.0.137 (October 20, 2026) defaulting new OpenClaw/Hermes onboarding on NVIDIA Endpoints to `nvidia/nemotron-3.5-super-vl-120b-a12b` (OpenRouter: `nvidia/nemotron-3.5-super-vl`) with explicit model choices unchanged; `nemoclaw <sandbox> agent` accepting piped messages without `--message`; skill names over 64 characters rejected at install; `onboard --resume` reusing a saved policy preset after a refused write. The v0.0.136 items (custom hosted endpoints bound to a provider attached to the sandbox, the experimental 128 GB DGX Spark profile that rejects 64 GB and unknown-memory systems before install) and the note that existing sandboxes keep their old images until rebuilt are also confirmed.
-> **Sources:** https://docs.nvidia.com/nemoclaw/latest/about/release-notes
-### Kilo Code 7.8.15 — Kilo Gateway Default URL, Agent Manager Worktree Dialog Redesign (October 19, 2026)
-Seven releases (7.8.8 → 7.8.15) with the gateway default as the change to know: the Kilo Gateway now defaults to `https://ai-gateway.kilo.ai/api/v1`, and `KILO_AI_GATEWAY_URL` overrides it for self-hosted routing. `browser_open` is now an always-allow tool, and the Agent Manager's worktree dialog was redesigned.
-
-**Source:** https://github.com/Kilo-Org/kilocode/releases
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (which release carried which change):** the gateway default **is** `https://ai-gateway.kilo.ai/api/v1` with `KILO_AI_GATEWAY_URL` as the override — but that shipped in **v7.8.12 (Oct 15)**, not v7.8.15: "Route Kilo Gateway traffic (chat, models, embeddings, autocomplete, transcription) through `https://ai-gateway.kilo.ai/api/v1` by default, and support a `KILO_AI_GATEWAY_URL` environment variable to override it. Setting only `KILO_API_URL` keeps routing gateway traffic through that server."
-> **CORRECTION:** `browser_open` is **not** "an always-allow tool". v7.8.15 makes the `browser_open` permission prompt **remember your choice** — the prompt offers the current origin and all origins as **always-allow rules**, and Auto-Approve settings list `browser_open` so Integrated Browser navigation can be allowed without answering each request. The Agent Manager **New Worktree dialog redesign** shipped in **v7.8.13** (base-branch picker next to the project, optional branch name, version picker, Advanced section removed).
-> **Sources:** https://api.github.com/repos/Kilo-Org/kilocode/releases/tags/v7.8.12 · https://api.github.com/repos/Kilo-Org/kilocode/releases/tags/v7.8.13 · https://api.github.com/repos/Kilo-Org/kilocode/releases/tags/v7.8.15
-### Community Report: Auto Mode Silently Declines Subagent Launches and Ignores Permission Changes (October 2026)
-An open Claude Code GitHub issue reports that auto mode "suddenly started to decline launching subagent and rejecting them for no reason and even when i try to change that though permission it isn't accepted" — a user on macOS/iTerm with v2.1.295 who cannot override the classifier's refusal through the permission UI. A second related issue (#87850) reports the auto-mode permission classifier denying allowed operations silently with incorrect remediation guidance. Both point to the same underlying friction: auto mode's classifier can block an operation with no working user-side escape hatch, which is especially damaging now that fork subagents are default-on across CLI, SDK, desktop app, and VS Code.
-
-**Source:** https://github.com/anthropics/claude-code/issues/102325
-**Source:** https://github.com/anthropics/claude-code/issues/87850
-
-> **🔎 Fact-Check 2026-10-22 — CORRECTION (quotation + issue chronology):** the quoted text is **not verbatim** — issue #102325 reads "suddenly started to **decline lunching subagent** and rejecting them for no reason and even when i try to change that though permission it isn't accepted" ("lunching", a typo in the original). The report of the user on macOS/iTerm with **v2.1.295** and the inability to override the classifier through the permission UI is otherwise accurate.
-> **CORRECTION (chronology):** issue **#87850 is dated August 19, 2026**, not October, and describes a **separate variant** — an API safety check blocking the classifier request itself — rather than "a recent occurrence of silent classifier denials". Presenting it as a current October report is misleading; keep it as background evidence of the same friction.
-> **Sources:** https://github.com/anthropics/claude-code/issues/102325 · https://github.com/anthropics/claude-code/issues/87850
-## 2026-10-24
-
-### Claude Code v2.1.310 — Monitor Tool Reaches Bedrock/Vertex/Foundry, Gateway Beta-Header Retries (October 23, 2026)
-Published 2026-10-23T23:39Z. Added the Monitor tool plus plugin monitors on Bedrock, Vertex and Foundry, and when telemetry or nonessential traffic is disabled; long foreground sleeps are now blocked on those providers. Requests that fail behind some gateways and compatible servers rejecting the `effort-2025-11-24` beta value or mid-conversation system messages are retried without them. Fixed background cleanup deleting recent files (pasted images) when `cleanupPeriodDays` is set very large; fixed compaction after a "Prompt is too long" error keeping too much dense text (base64, SVG) so the next request could fail again; fixed file-read permission prompts not showing where a symbolic link leads; fixed a question's auto-continue timeout firing the moment an external editor closed. Windows: PreToolUse and PermissionRequest hooks could let a tool call through when Git Bash is missing and the hook command was only quoted strings. Auto mode's prompt before the first read outside the working directories now says that blocking those reads makes shell commands ask for permission. Linux: `/sandbox` and the sandbox startup warning now name Ubuntu's AppArmor restriction on user namespaces and how to lift it when bubblewrap cannot start the sandbox. Memory use of non-interactive (`-p`, Agent SDK) sessions improved during compaction with very large transcript files.
-
-**Source:** https://api.github.com/repos/anthropics/claude-code/releases/tags/v2.1.310
-### Claude Code v2.1.309 — Sandbox and Permission-Check Hardening Batch (October 22, 2026)
-Published 2026-10-22T22:18Z. Sandboxed Bash commands on macOS and Linux no longer run the shell's startup files outside the sandbox before each command. macOS sandbox `denyWrite` glob patterns now apply at a path's real location when reached through a symlink. Sandboxed commands and auto-accepted edits can no longer modify the MCP config file passed with `--mcp-config`; a disabled MCP server is no longer reconnected by a later permission prompt in print and SDK sessions. Bash permission checks no longer trust a variable set by a command whose redirect can fail to open, and now prompt for compound commands that change directory before running git even when the `cd` is wrapped or prefixed. An `Edit(path)` deny rule now blocks a Bash redirect to that path in commands holding a subshell. Worktree-isolated sessions refuse locale-prefixed and zsh arithmetic commands the isolation guard should reject; worktrees and branch checkouts now ignore git replace refs. Profile store write protection now applies through a symlinked config directory. Fixed sessions compacting repeatedly after reading files under a very large nested CLAUDE.md (an over-limit nested file now loads only its start), ctrl+enter queuing behavior, key-bound slash commands running in the shell from `!` mode, ctrl+o hiding undelivered messages from other agents/sessions, and long tool-output previews cutting through an emoji so `jq` could no longer parse session transcripts.
-
-**Source:** https://api.github.com/repos/anthropics/claude-code/releases/tags/v2.1.309
-### Claude Code v2.1.308 — Maintenance Release (October 22, 2026)
-Published 2026-10-22T04:34Z. Release notes contain only "Bug fixes and reliability improvements" — no new features, no changelog detail published.
-
-**Source:** https://api.github.com/repos/anthropics/claude-code/releases/tags/v2.1.308
-### OpenAI Codex CLI rust-v0.164.0 — `/presets` Slots, Inline Model/Permission Args, Terminal Image Preview (October 23, 2026)
-Published 2026-10-23T04:48Z. New: reusable prompts and slash commands in ten numbered `/presets` slots with a keyboard menu; model, reasoning effort, speed and permission profiles settable directly via inline `/model` and `/permissions` arguments; preview of viewed and generated images in the fullscreen transcript on Kitty or Sixel terminals; enterprise MCP connections authenticated via eligible Codex account grants or dedicated sign-in (including OAuth clients requiring secrets); credential masking during supported remote Bash commands and Zsh snapshot sessions, including custom-provider credentials; the Amazon Bedrock setup wizard enabled by default with API key entry grouped with other AWS sign-in methods. Fixes: failed compaction no longer leaves partial summaries in history and background compaction failures fall back without panicking; resuming sessions finds compressed histories and restores saved thread settings instead of replacing them with global defaults; Windows HTTPS/WebSocket handles proxy authentication challenges using the signed-in user's Negotiate or NTLM credentials; `-c`/`--config` overrides preserved when they appear at multiple subcommand levels; queued prompts wait for pending permission selections to resolve; sandbox checks hardened for case-variant metadata paths on macOS and replaceable symlinks used to locate executables. Chores: disk usage reduced by pruning unused installations, cleaning abandoned marketplace checkouts, bounding daemon logs. A `rust-v0.165.0-alpha.1` prerelease followed the same day.
-
-**Source:** https://api.github.com/repos/openai/codex/releases/tags/rust-v0.164.0
-### Antigravity CLI v1.4.5 — Idle CPU Halved, Cron Schedules Spread, Infinite Safety-Retry Fixed (October 22, 2026)
-Published 2026-10-22T05:01Z. Idle CPU roughly halved by pausing screen refreshes when nothing on screen changes; lower CPU while a response streams, faster rendering and loading of long conversations, lower startup CPU when refreshing conversation summaries, and memory allocated for prompt text as you type instead of reserved up front. Agent responses read better: a blank line separates the collapsed thought block from the response, and the collapsed block then shows only its "Thought for …" header. `/diff` search now counts matches inside folded unchanged lines ("match 2/5 · +3 hidden") and `/diff`'s Commit Tree marks the selected commit with the same cursor/selection color as All Changes and Per Turn. Recurring cron schedules created with the agent's schedule tool now fire at a consistent per-schedule offset instead of exactly on the cron boundary, to avoid traffic spikes (fixed-time schedules such as daily at 9:00 still fire within their scheduled minute). Fixed the agent silently retrying, potentially without end, when a model response was blocked by content safety filters. Fixed plugins failing to load when `plugin.json` gives `skills` as a single path string instead of an array, and marketplace plugin installs/auto-updates failing on checksum mismatch or interrupted downloads (now retried once).
-
-**Source:** https://api.github.com/repos/google-antigravity/antigravity-cli/releases/tags/1.4.5
-### Antigravity CLI v1.4.6 — Sandbox Blocks Docker/Kube Credentials, Compaction Keeps Attachments, Plugin MCP Variables Editable (October 23, 2026)
-Published 2026-10-23T04:18Z. Added a "Configure MCP servers…" row for installed plugins in `/plugin` so a plugin's MCP server variables can be set or changed without disabling and re-enabling it; plugins with missing values show "⚠ needs setup", each server shows "✓ configured" or the variables it still needs, and saving restarts an enabled plugin's servers. Terminal sandbox defaults now protect more credentials: sandboxed commands can no longer read or modify `~/.docker`, `~/.kube` or `~/_netrc` unless access is granted explicitly — previously `~/.docker` and `~/.kube` were writable inside the sandbox, so Docker registry and Kubernetes cluster credentials were reachable. Context compaction (including `/compact`) now keeps images, PDFs and other attached files in the conversation summary so the agent can still see them after older history is summarized. Permission prompts changed so that allowing an action for the conversation — in the main agent or a subagent — applies across the main conversation and all of its subagents instead of asking again. The in-progress status line now shows what the agent waits on, e.g. "Model unavailable (attempt 2/10), retrying in 12s" with a live countdown. `/diff` highlights the exact changed words within each modified line in every color scheme. `agy plugin validate` gained `--help`, checks context providers, warns about non-existent `skills` entries and reports every `SKILL.md` the plugin loader skips. Fixed terminal commands occasionally failing with "argument list too long" on huge reasoning signatures and text-cursor drift after wide characters (CJK, emoji, tabs, Unicode spaces).
-
-**Source:** https://api.github.com/repos/google-antigravity/antigravity-cli/releases/tags/1.4.6
-### GitHub Copilot CLI v1.0.103 — Copyable Original Code Blocks, Sandbox Settings Reach ACP Sessions (October 22, 2026)
-Published 2026-10-22T16:21Z. Clicking a completed response code block copies its original code when enabled. ACP sessions now honor saved sandbox settings and the `--sandbox`/`--no-sandbox` flags, including on resume. Cloud replies keep full text when the CLI reconnects after a dropped connection. The sessions browser shows a session's recorded title instead of a generic "Session N" fallback. Model-specific default Responses verbosity now applies correctly for GPT-5 models unless session verbosity is explicitly set. dnx commands can use existing .NET and NuGet sandbox grants when developer-tool access is enabled, and Windows dev-tool shims like `npm.cmd` now receive the same sandbox grants as `npm`. Gemini tool calls avoid 400 schema validation errors for nullable and enum fields. Sessions can resume under mandatory managed model defaults without rejecting saved preferences. Cached local MCP tool snapshots are reused across registered Git worktrees in one repository. Remote launch options got clearer hosting/connection flags and the legacy `--remote`/`--no-remote` startup flags were retired.
-
-**Source:** https://api.github.com/repos/github/copilot-cli/releases/tags/v1.0.103
-### GitHub Copilot CLI v1.0.104-0 / v1.0.104-1 — Assisted Permissions Out of Experimental Mode (October 23, 2026)
-Prereleases published 2026-10-23T18:49Z and 2026-10-23T21:28Z. Assisted Permissions are available without enabling experimental mode. When a saved Auto preference is no longer available, Auto falls back to its default preference instead of failing each turn. The follow-up prerelease is described only as "Fixes and changes".
-
-**Source:** https://api.github.com/repos/github/copilot-cli/releases/tags/v1.0.104-0
-### Replit Agent 2026.10.23 — Autonomous On-Call Monitoring Agent, Reusable Skills, Chat Sharing (October 23, 2026)
-43rd Replit Agent release of 2026. Platform Monitoring Agent: the agent can investigate production issues using the app's logs and metrics, then attempt and validate fixes; Monitoring alerts plus Auto-fix let it triage alerts in the background, and the experimental Auto-republish setting publishes validated fixes automatically, otherwise fixes are reviewed manually. "Create and update skills with Agent" turns workflows from conversations and projects into reusable workspace skills — the agent suggests new skills or improvements to existing ones for review and approval before saving. Chat and asset sharing lets a whole chat or single asset be shared with selected teammates or the whole workspace; access is read-only and includes the chat's assets and development URLs, which open live servers rather than isolated read-only previews. Eligible top-up customers can keep published apps running at zero credits up to an overage limit (Paid Agent pauses, Free mode stays available, warning emails before suspension, new credits repay the overage first).
-
-**Source:** https://www.havoptic.com/r/replit-agent-2026-10-23
-### Amp 2026.10.22 — Self-Hosted Orbs (October 22, 2026)
-88th Amp release of 2026. Orbs can now be self-hosted: `amp orb provider ./dispatch.sh` runs inside your own infrastructure, reaches out to Amp and waits for requests to spawn, pause or delete orbs, dispatching each operation to a program you provide. Illustrative dispatch targets given by Amp: Docker, E2B, Kubernetes, Apple containers, Modal, Vercel, Daytona and exe.dev — the stated requirement is compute that can start new machines quickly, pause and resume them equally fast, keep them around, and scale to zero.
-
-**Source:** https://www.havoptic.com/r/amp-self-hosted-orbs
-### OpenCode v1.19.4 — Bundled Bun 1.4.4 With Security Fixes (October 22, 2026)
-Published 2026-10-22T13:03Z. The bundled Bun runtime was upgraded to 1.4.4, which includes security fixes for Brotli, TLS, HTTP/1.1, HTTP/2, HTTP/3, WebSocket and `fetch`, plus root certificate updates to NSS 3.131.1.
-
-**Source:** https://api.github.com/repos/sst/opencode/releases/tags/v1.19.4
-### Zed v1.25.3 — Dependency Updates Patch Ecosystem Vulnerabilities (October 23, 2026)
-103rd Zed release of 2026, two days after v1.25.2. The release contains a single change: updated dependencies to address recent software ecosystem vulnerabilities (PRs 66023, 65963) — quiet security maintenance.
-
-**Source:** https://www.havoptic.com/r/zed-1.25.3
-### Factory Droid v0.247.0 — PDF Previews, Files Panel Speed, Environment Session Grouping (October 22, 2026)
-53rd Factory Droid release of 2026 (CLI v0.247.0, Desktop v0.204.0), one day after v0.245.1. A PDF preview now shows its first pages right away and draws the rest as you scroll; the Files panel and file previews stay responsive in long sessions; Environment sessions are grouped where they belong.
-
-**Source:** https://www.havoptic.com/r/factory-droid-0.247.0
-### Devin Desktop v3.11.212 — Up to 8 Sessions Side by Side, Workspace Grouping, Child Sessions (October 23, 2026)
-58th Devin Desktop release of 2026, 11 days after v3.10.67, part of a refreshed "agent command center" redesign. Dragging a session from the sidebar onto an open session shows up to 8 sessions side by side; sidebar sessions can be grouped by workspace with a "+" per group to start a session in that folder; a child session can be started from any session's "More" menu; sessions grouped into Spaces now appear under a parent session in the sidebar.
-
-**Source:** https://www.havoptic.com/r/windsurf-3.11.212
-### Claude Duet — Anthropic Enters the Proactive Personal-Agent Market (October 21, 2026)
-Anthropic opened a research preview of Claude Duet, its first assistant built to start the conversation rather than wait for a prompt: it sends a morning brief across connected apps, re-checks those apps every few hours and alerts the user only when something needs attention, and keeps working in its own cloud virtual machine with its own browser when the laptop is closed. It runs on Claude Opus 5.5, connects to 6,000+ Claude Marketplace connectors and plugins, can build dashboards and forecasts, and can make purchases via Stripe's Link digital wallet or Shopify's Shop Pay. Sensitive steps — sending messages, spending money, signing documents, deleting files — require explicit user approval; it will not trade securities or move money between accounts. A new classifier screens each message and by default refuses requests asking for credit-card numbers or government IDs. Availability is iOS, Android and web for US Pro and Max customers on a waitlist. Anthropic positions Duet for professionals and small businesses, explicitly not for errands or ticket booking, and it cannot show its browser use as it happens. TechCrunch frames it as Anthropic's answer to Meta's Muse (10M+ users, shopping a top activity), OpenAI's Dots and Hark, Instinct and Fo — part of a shift from assistants to agents that act on the user's behalf.
-
-**Source:** https://techcrunch.com/2026/10/22/claude-duet-app-is-anthropics-bet-on-agents/
-**Source:** https://aitoolsreview.co.uk/insights/claude-duet-proactive-agent
-### Funding: October 2026 Rounds Put AI Developer Tools at $1.1B Across 5 Deals (October 2026)
-The October 2026 AI funding roundup, updated 2026-10-22, records 72 rounds totalling $41.9B so far in October, led by OpenAI's $20.0B round (stage undisclosed, Oct 1) — Foundation Models & AGI alone accounts for $36.0B across 3 rounds. AI Developer Tools captured $1.1B across 5 rounds; AI Fintech $1.9B across 9 rounds. The median dollar round is $18M; disclosed stages so far are 10 Series A, 10 Seed and 5 Pre-Seed. Named developer-tool rounds include TypeSafe AI's seed led by DCVC (Oct 9) and doubleAI's $200M Series A backed by Nvidia and Dell (Oct 19, $1.0B valuation). The roundup page itself is internally inconsistent on TypeSafe AI — the table lists $870M at a $7.5B valuation while the entry text describes a "$40 million seed round" — so the exact figure should be treated as unverified.
-
-**Source:** https://aifunding.me/roundups/october-2026
-### Community Signal: Safeguard False Positives Now Lock Out Whole Claude Code Sessions (October 23–24, 2026)
-A burst of new Claude Code issues filed on 2026-10-23/24 shows the safety layer becoming the top friction point. #104735: a single request containing a hex-encoded string decoding to a harmless HTML/clipboard fragment (`<meta charset='utf-8'><code dir="ltr">pbpaste</code>…`) triggered "Sonnet 5's safeguards stopped the response above" and locked the user out of the session ("Start a new session to continue"). #104722 reports Opus 5.5 safeguards blocking a benign message with a reasoning_extraction error, and #104731 reports cyber safeguards blocking security-test planning for a payment plugin. #104740 (opened on 2.1.309, macOS) describes the recurring pattern directly: Opus and Fable repeatedly attempt a complex Bash command, get stopped by the auto classifier, fall back to the native Edit tool, and minutes later try the same oversized Bash command again. Related cost/limits friction: #104736 reports an unbounded recursive `send_later` loop in a remote cloud container that silently burned $285.12 and drained a $250 credit balance over 9.5 days, and #104738 reports the Agent SDK being rejected at the session limit while the desktop app on the same account kept working at 62% of the 5-hour window.
-
-**Source:** https://github.com/anthropics/claude-code/issues/104735
-**Source:** https://github.com/anthropics/claude-code/issues/104740
-**Source:** https://github.com/anthropics/claude-code/issues/104736
-**Source:** https://github.com/anthropics/claude-code/issues/104738
-### Community Signal: Codex Desktop and Computer Use Generate a Fresh Issue Cluster (October 23–24, 2026)
-OpenAI Codex issues filed on 2026-10-23/24 concentrate in the desktop and remote-control surfaces rather than the CLI: Windows Computer Use shows "Manage" but the Chrome native host registration is missing (#56603); on Windows 10 a community workaround restores foreground capture and clicks, with a request for an official fix (#56587); Calculator and Chrome approvals are denied without an Allow dialog while the browser-only delegated path works (#56591); macOS whole-machine freezes occur during Codex use under severe memory pressure (#56586). Policy friction shows up too: a user asks for clarification of a "blocked by policy" rejection for operation A06 (#56590), and a Scheduled Work task loses workspace write and network permissions while the identical Terminal command succeeds (#56599). Other reports cover Android Remote pairing failing with both QR and manual code (#56600), a chat branching that drops secondary workspace folders (#56606), and existing chats locked after an update while the original app-server keeps running (#56598).
-
-**Source:** https://github.com/openai/codex/issues/56603
-**Source:** https://github.com/openai/codex/issues/56590
-**Source:** https://github.com/openai/codex/issues/56599
-**Source:** https://github.com/openai/codex/issues/56587
+## 2026-11-24
+
+**Window:** 2026-11-23T01:28:00Z -> 2026-11-24T01:28:00Z (Monday → Tuesday; the window closes 2026-11-23 20:28 ET, i.e. **after** the US Monday 09:30 ET open, so there **is** an in-window equity bar for ANT).
+
+Source files: `findings_agentic-cli-tools_releases_2026-11-24.md` (22,539 B) and `findings_agentic-cli-tools_community_2026-11-24.md` (52,403 B). Raw captures: `tmp/2026-11-24/releases/`, `tmp/2026-11-24/community/`. Retrieval was `curl` against primary sources only — 0 `web_search`, 0 `web_fetch` (caps 10 / 3); third-party web search was skipped as a known bot-detection block.
+
+### Headline
+- **The heaviest release window in this series: three consecutive major stable releases.** Codex shipped stable **`0.172.0`** (npm `2026-11-24T00:09:39Z`), Gemini CLI shipped stable **`0.71.0`** plus preview **`0.72.0-preview.0`**, and **OpenCode shipped `v2.4.0` and `v2.4.1`** — the latter a step-change, not a patch.
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: The three stable releases all shipped, but the OpenCode pair (v2.4.0 / v2.4.1) landed on 2026-11-23, not 2026-11-24, and Gemini CLI 'stable 0.71.0' held the latest tag for only ~2.5h before 0.71.1 landed at 2026-11-24T03:57:09Z. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://registry.npmjs.org/@openai%2fcodex, https://registry.npmjs.org/@google%2fgemini-cli, https://registry.npmjs.org/@opencode%2fcli -->
+  Source: https://github.com/openai/codex/releases/tag/rust-v0.172.0
+  Source: https://github.com/anomalyco/opencode/releases/tag/v2.4.0
+  Source: https://registry.npmjs.org/@anthropic-ai%2fclaude-code
+- **The biggest story is Anthropic's launch of Claude Ship** — a first-party beta in which Claude *reviews pull requests, writes fixes, and approves changes when team policy allows it*.
+  Source: https://claude.com/resources/articles/introducing-claude-ship
+  Source: https://news.ycombinator.com/item?id=50618513
+- **OpenAI shipped the first first-party hardening of an agentic CLI's remote plugin supply chain.** Three closed Codex PRs add SHA-256 **plus detached RSA signature** verification against a release key from an authenticated `/ps/plugins/signing-keys` endpoint: *"A SHA-256 digest can detect changed archive bytes, but someone who replaces …
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: Mechanism confirmed verbatim by two merged PRs (#63487 'Add signature verification for Plugin Service archives', merged 2026-11-24T01:10:22Z; #63489 'Verify signed remote plugin archives before extraction', merged 01:28:48Z). But FIVE merged Codex PRs implement it, not three: #63487, #63489, #63490 (cache signing keys), #63491 (coalesce key fetches), #63528 (eval plugin archives). The superlative 'the first first-party hardening' is evaluative framing and is not confirmable from primary sources. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/openai/codex/pulls/63487, https://api.github.com/repos/openai/codex/pulls/63489 -->
+  Source: https://github.com/openai/codex/pull/63487
+  Source: https://github.com/openai/codex/pull/63489
+- **ANT's first post-IPO daily bar closed inside the window as a distribution-shaped down day**, and the market built a short/hedge complex around it in the same week.
+  <!-- FACT_CHECK: NEEDS_CORRECTION -->
+  <!-- Correction: 2026-11-23 was the THIRD post-IPO session, not the first — the first bar was 2026-11-19 (O 111.50 / H 115.10 / L 92.72 / C 97.17, vol 857,312,300). See the detailed bar below for the corrected 2026-11-23 OHLC. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://query2.finance.yahoo.com/v8/finance/chart/ANT?range=1mo&interval=1d, https://api.nasdaq.com/api/quote/ANT/historical -->
+  Source: https://query2.finance.yahoo.com/v8/finance/chart/ANT?range=5d&interval=1d
+  Source: https://www.sec.gov/Archives/edgar/data/83246/000110465926131166/tm2628731d388_fwp.htm
+- **The lock-up question three previous cycles could not answer is now answered from the prospectus.** The Anthropic 424B4 (prospectus dated **November 18, 2026**) states lock-ups restrict transfers *"for up to 180 days or, in the case of our co-founders and certain of our stockholders holding more than 0.5% of our fully diluted shares …
+  <!-- FACT_CHECK: VERIFIED -->
+  <!-- Correction: - (Prospectus dated November 18, 2026 confirmed; 180-day / 365-day lock-up language confirmed verbatim in the 424B4.) -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://www.sec.gov/Archives/edgar/data/2130357/000162828026074944/anthropicpbc-424b4.htm, https://data.sec.gov/submissions/CIK0002130357.json -->
+  Source: https://www.sec.gov/Archives/edgar/data/2130357/000162828026074944/anthropicpbc-424b4.htm
+### Releases
+- **Codex `0.172.0` (stable) shipped — the "no stable 0.172.0" carry-forward from the 2026-11-23 cycle is now closed.** GitHub `rust-v0.172.0` `2026-11-24T00:03:55Z`; npm `2026-11-24T00:09:39Z`; `latest` moved `0.171.0 → 0.172.0`.
+  <!-- FACT_CHECK: VERIFIED -->
+  <!-- Correction: - (GitHub rust-v0.172.0 published_at 2026-11-24T00:03:55Z; npm 0.172.0 at 2026-11-24T00:09:39.503Z; latest moved 0.171.0 -> 0.172.0 — all confirmed.) -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/openai/codex/releases/tags/rust-v0.172.0, https://registry.npmjs.org/@openai%2fcodex -->
+  Source: https://github.com/openai/codex/releases/tag/rust-v0.172.0
+  Source: https://registry.npmjs.org/@openai%2fcodex
+- **Two Codex prerelease lines published in parallel while the `alpha` dist-tag did not move.** `0.172.0-alpha.2.1` (GitHub `2026-11-23T18:02:51Z`) and `0.171.0-alpha.13.2` (`19:38:30Z`) both shipped; `alpha` still points at `0.173.0-alpha.4` from `2026-11-21`, so the tag now lags two newer alpha lines.
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: Both releases and both GitHub timestamps are exact (0.172.0-alpha.2.1 @ 2026-11-23T18:02:51Z; 0.171.0-alpha.13.2 @ 19:38:30Z; npm 18:11:16Z and 19:49:05Z). But the dist-tag clause is time-bound and now false — npm 'alpha' has moved to the 0.174.0 line (now 0.174.0-alpha.7). Also, the two published builds are LOWER version lines (0.171/0.172) published later, so 'lags two newer alpha lines' should be read as 'two additional lines published while the tag stayed put'. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/openai/codex/releases/tags/rust-v0.172.0-alpha.2.1, https://registry.npmjs.org/@openai%2fcodex -->
+  Source: https://github.com/openai/codex/releases/tag/rust-v0.172.0-alpha.2.1
+  Source: https://github.com/openai/codex/releases/tag/rust-v0.171.0-alpha.13.2
+- **Gemini CLI shipped stable `0.71.0`, preview `0.72.0-preview.0`, and a nightly that broke a three-build no-op streak.** Stable: GitHub `2026-11-24T01:16:44Z`, npm `01:21:20Z`; `latest` = `staging-tmp` = `0.71.0`;
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: All timestamps confirmed (GitHub v0.71.0 @ 2026-11-24T01:16:44Z, npm 01:21:20.379Z; preview v0.72.0-preview.0 @ 00:34:15Z / npm 00:38:51Z; nightly v0.71.0-nightly.20261124.gaafdfdfb5 @ 01:13:47Z / npm 01:19:27Z) and the three-build no-op streak (nightlies 20261121/22/23 all with commit hash geecccfcd5) is confirmed. Only the dist-tag clause is stale: 'latest' and 'staging-tmp' are now 0.71.1 (npm 2026-11-24T03:57:09Z, GitHub v0.71.1 @ 03:50:24Z); 0.71.0 held the tags only between 01:21Z and 03:57Z on 2026-11-24. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/google-gemini/gemini-cli/releases, https://registry.npmjs.org/@google%2fgemini-cli -->
+  Source: https://github.com/google-gemini/gemini-cli/releases/tag/v0.71.0
+  Source: https://github.com/google-gemini/gemini-cli/releases/tag/v0.72.0-preview.0
+  Source: https://github.com/google-gemini/gemini-cli/releases/tag/v0.71.0-nightly.20261124.gaafdfdfb5
+- **Claude Code `2.1.331` resumed the release channel after a three-day silence** (npm `2026-11-23T18:36:26Z`, GitHub `21:34:41Z`); `latest` = `next` = `2.1.331`.
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: Timestamps confirmed (npm 2026-11-23T18:36:26.468Z, GitHub 21:34:41Z) and the ~3-day silence confirmed (previous release 2.1.330, npm 2026-11-20T19:16:01Z). The dist-tag clause is a window-close snapshot: 'latest' = 'next' are now 2.1.332 (npm 2026-11-24T22:06:38Z, GitHub v2.1.332 @ 2026-11-25T01:32:14Z), and 'stable' is 2.1.326 (frozen since 2026-11-16). -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://registry.npmjs.org/@anthropic-ai%2fclaude-code, https://api.github.com/repos/anthropics/claude-code/releases/tags/v2.1.331 -->
+  Source: https://registry.npmjs.org/@anthropic-ai%2fclaude-code
+  Source: https://github.com/anthropics/claude-code/releases/tag/v2.1.331
+  Source: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
+- **Claude Code's GitHub Action shipped three times in-window, one of them breaking.** `v1.0.287` (`2026-11-23T21:37:51Z`) stops the session and revokes the app token when a run is cancelled (#2112). **`v1.0.288` (`23:05:51Z`) is BREAKING — it now skips pull requests from forks by default** (#2114).
+  <!-- FACT_CHECK: VERIFIED -->
+  <!-- Correction: - (Three releases in-window confirmed: v1.0.287 @ 21:37:51Z with the #2112 cancel/token-revoke note, v1.0.288 @ 23:05:51Z flagged 'breaking changes' for #2114 fork-PR skipping, v1.0.289 @ 23:54:14Z #2122.) -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/anthropics/claude-code-action/releases, https://github.com/anthropics/claude-code-action/releases.atom -->
+  Source: https://github.com/anthropics/claude-code-action/releases/tag/v1.0.288
+  Source: https://github.com/anthropics/claude-code-action/releases/tag/v1.0.289
+- **OpenCode `v2.4.0` and `v2.4.1` shipped — the largest OpenCode release set observed, and the first under the corrected package name.** `v2.4.0`: GitHub `2026-11-23T09:22:21Z`, npm `@opencode/cli@2.4.0` `09:15:15Z`.
+  <!-- FACT_CHECK: NEEDS_CORRECTION -->
+  <!-- Correction: Timestamps are exact (GitHub v2.4.0 @ 2026-11-23T09:22:21Z, npm 09:15:15.017Z; v2.4.1 @ 15:57:40Z / 15:56:19.960Z), but two characterisations are wrong. (1) 'the largest OpenCode release set observed' is false — the releases feed shows a three-release day on 2026-10-30 (v2.2.3/v2.2.4/v2.2.5) and a four-release day on 2026-10-29; the 2026-11-23 pair is at most a tie inside this series' daily coverage. (2) 'the first under the corrected package name' is false — @opencode/cli was created 2026-09-02 and has published continuously since 2.0.0 (2026-09-11), including 2.3.0 (2026-11-13) and 2.3.1/2.3.2 (2026-11-18). Also npm 'latest' is now 2.4.2 (2026-11-26T00:46:05Z). -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/anomalyco/opencode/releases/tags/v2.4.0, https://registry.npmjs.org/@opencode%2fcli -->
+  Source: https://github.com/anomalyco/opencode/releases/tag/v2.4.0
+  Source: https://github.com/anomalyco/opencode/releases/tag/v2.4.1
+  Source: https://registry.npmjs.org/@opencode%2fcli
+- **Package-name correction for OpenCode (carry-forward, now settled): the actively published package is `@opencode/cli`, not `opencode-ai`.** `latest` = `2.4.1`;
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: The correction stands in substance — the 2.x line publishes to @opencode/cli while opencode-ai is frozen at 1.19.6 (last publish 2026-11-17T07:46:24Z). Two refinements: 'latest' is now 2.4.2 (2026-11-26T00:46:05Z), and 'the actively published package' overstates the switch — opencode-ai is NOT deprecated and still takes ~3.8x the weekly downloads of @opencode/cli (3,643,255 vs 970,798 for 2026-11-18..11-24), i.e. it is stale but still dominant in install traffic. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://registry.npmjs.org/@opencode%2fcli, https://registry.npmjs.org/opencode-ai -->
+  Source: https://registry.npmjs.org/@opencode%2fcli
+  Source: https://registry.npmjs.org/opencode-ai
+  Source: https://github.com/anomalyco/opencode/releases
+- **RunPod MCP server `5.0.0` — a breaking major rewriting every list result onto Google AIP-158 pagination.** GitHub `2026-11-23T02:48:12Z`, npm `02:51:18Z`.
+  <!-- FACT_CHECK: VERIFIED -->
+  <!-- Correction: - (GitHub @runpod/mcp-server@5.0.0 published_at 2026-11-23T02:48:12Z, npm 5.0.0 at 02:51:18.026Z; release body confirms AIP-158 cursor pagination with pagination.nextCursor / pagination.hasNextPage.) -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://api.github.com/repos/runpod/runpod-mcp/releases, https://registry.npmjs.org/@runpod%2fmcp-server -->
+  Source: https://github.com/runpod/runpod-mcp/releases/tag/%40runpod%2Fmcp-server%405.0.0
+  Source: https://registry.npmjs.org/@runpod%2fmcp-server
+- **Copilot CLI's prerelease advanced to `1.0.115-8` (`2026-11-23T19:10:43Z`) while the stable channel stayed frozen.** `latest` remains `1.0.114`, published `2026-11-18T06:00:58Z` — a **~6-day freeze**, now the longest recorded for this package. Third consecutive cycle in which only the prerelease line advanced.
+  <!-- FACT_CHECK: PARTIALLY_VERIFIED -->
+  <!-- Correction: Timestamps and the ~6-day freeze are confirmed (npm 1.0.115-8 @ 2026-11-23T19:10:43Z, GitHub 19:10:51Z; latest 1.0.114 published 2026-11-18T06:00:58Z; next stable 1.0.115 at 2026-11-24T13:03:39Z = 6d 7h). But 'the longest recorded for this package' is wrong — the stable-to-stable gap series contains longer freezes (1.0.80 -> 1.0.81 = 13d 14h; 1.0.83 -> 1.0.84 = 11d 7h; 0.0.372 -> 0.0.373 = 10d 16h; 1.0.105 -> 1.0.106 = 9d 1h). This freeze ranks roughly 8th. The freeze is also over: latest moved to 1.0.116 on 2026-11-25. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://registry.npmjs.org/@github%2fcopilot, https://api.github.com/repos/github/copilot-cli/releases -->
+  Source: https://registry.npmjs.org/@github%2fcopilot
+- **Amp kept its ~4-hour rolling dev cadence with six distinct commits**, from `0.0.1795406435-gdf62b3` (`04:22:18Z`) to `0.0.1795478457-g9601b2` (`2026-11-24T00:30:43Z`). `next` is a long-stale `2026-05-14` single-binary build.
+  <!-- FACT_CHECK: VERIFIED -->
+  <!-- Correction: - (Exactly six distinct dev versions inside the window, 04:22:18Z -> 00:30:43Z, inter-publish deltas 3h51m-4h11m; dist-tags.next = 0.0.1778732631-gc5875c-singleexe dated 2026-05-14T04:31:22Z; independently corroborated by jsDelivr and the @ampcode/cli mirror.) -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://registry.npmjs.org/@sourcegraph%2famp, https://data.jsdelivr.com/v1/packages/npm/@sourcegraph%2famp -->
+  Source: https://registry.npmjs.org/@sourcegraph%2famp
+- **Verified negatives — no in-window release:** **Qwen Code** (npm `latest` `0.28.4` from `2026-11-22T12:28:27Z`, `nightly` still `0.28.3-nightly.20261121.56ef346859`; the Desktop channel is quiet too), **Cline** (npm `latest` `3.0.75` from `2026-11-21T05:31:57Z`)
+  <!-- FACT_CHECK: VERIFIED -->
+  <!-- Correction: - (Qwen Code 0.28.4 @ 2026-11-22T12:28:27.738Z, nightly still 0.28.3-nightly.20261121.56ef346859, nothing published in-window; Cline latest 3.0.75 @ 2026-11-21T05:31:57.433Z with no later publish — both negatives confirmed against npm and GitHub release timestamps.) -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://registry.npmjs.org/@qwen-code%2fqwen-code, https://registry.npmjs.org/cline -->
+  Source: https://registry.npmjs.org/@qwen-code%2fqwen-code
+  Source: https://registry.npmjs.org/cline
+  Source: https://github.com/aaif-goose/goose/releases
+  Source: https://registry.npmjs.org/aider-chat
+### Market, capital structure and corporate action
+- **ANT (Anthropic, PBC, NasdaqGS) — the first post-IPO daily bar inside a research window, and it is a down day.** Session `2026-11-23`: open **93.69**, high **94.24**, low **84.61**, close **86.86** (**-2.31%** vs prior close **88.91**), volume **253,330,731**.
+  <!-- FACT_CHECK: NEEDS_CORRECTION -->
+  <!-- Correction: Four errors. (1) 2026-11-23 was the third post-IPO session; the first bar was 2026-11-19 (O 111.50 / H 115.10 / L 92.72 / C 97.17, vol 857,312,300). (2) Close is 87.64, not 86.86 — the daily change is -1.43%, not -2.31% (the -2.31% was derived from the wrong close). (3) Volume is 254,101,700, not 253,330,731. (4) Open is 93.645/93.65, not 93.69. High 94.24, low 84.61 and prior close 88.91 are correct. Three independent market-data sources agree on the corrected bar. -->
+  <!-- Verified: 2026-11-26 -->
+  <!-- Sources: https://query2.finance.yahoo.com/v8/finance/chart/ANT?range=1mo&interval=1d, https://api.nasdaq.com/api/quote/ANT/historical?assetclass=stocks, https://stockanalysis.com/api/symbol/s/ANT/history -->
+  Source: https://query2.finance.yahoo.com/v8/finance/chart/ANT?range=5d&interval=1d
+  Source: https://query1.finance.yahoo.com/v8/finance/chart/ANT?range=1mo&interval=1d
+- **The 424B4 pins the lock-up calendar — the question carried forward for three cycles.** From the prospectus dated **November 18, 2026**: lock-up agreements *"restrict transfers of their shares for up to 180 days or, in the case of our co-founders and certain of our stockholders holding more than 0.5% of our fully diluted shares prior …
+  Source: https://www.sec.gov/Archives/edgar/data/2130357/000162828026074944/anthropicpbc-424b4.htm
+- **Four insider Form 4s filed on 2026-11-23 — all at the $83.00 IPO price, with Anthropic (CIK 0002130357) reported as the owner.** Dario Amodei: `F` 345,011 shares at $83 and `S` 3,378,378 shares at $83 (transaction dates 2026-11-19 and 2026-11-20), 35,932,660 Class A shares held after.
+  Source: https://www.sec.gov/Archives/edgar/data/2157947/000215794726000004/form4-11232026_101129.xml
+  Source: https://www.sec.gov/Archives/edgar/data/2158120/000215812026000003/form4-11232026_101148.xml
+  Source: https://www.sec.gov/Archives/edgar/data/1221820/000122182026000005/form4-11232026_101110.xml
+  Source: https://www.sec.gov/Archives/edgar/data/1997244/000199724426000005/form4-11232026_101131.xml
+- **Six leveraged Anthropic ETF share classes were filed with the SEC on 2026-11-23 — the retail short/hedge complex arrived all at once.** Direxion Shares ETF Trust filed two 497K summary prospectuses for the **Direxion Daily Anthropic Bear 2X ETF (ANTD)**.
+  Source: https://www.sec.gov/Archives/edgar/data/1424958/000119312526470567/d179813d497k.htm
+  Source: https://www.sec.gov/Archives/edgar/data/1587982/000121390026122930/ea0311370-02_497k.htm
+  Source: https://www.sec.gov/Archives/edgar/data/1587982/000121390026122931/ea0311370-03_497k.htm
+  Source: https://www.sec.gov/Archives/edgar/data/1884021/000121390026122808/ea0311932-03_497k.htm
+  Source: https://www.sec.gov/Archives/edgar/data/1771146/000177114626002339/etfot-txrex2xanthropicetf4.htm
+  Source: https://www.sec.gov/Archives/edgar/data/1924868/000199937126026071/hf-485bpos_112526.htm
+- **HSBC filed two free writing prospectuses for structured notes linked to ANT Class A on 2026-11-23 — the sell-the-volatility layer on the IPO.** FWP `tm2628731d388`: **Barrier Market Participation Notes with Autocall Feature**, $1,000 principal, issue date **December 3, 2026**, maturity **December 3, 2029** (CUSIP 40447LX62)
+  Source: https://www.sec.gov/Archives/edgar/data/83246/000110465926131166/tm2628731d388_fwp.htm
+  Source: https://www.sec.gov/Archives/edgar/data/83246/000110465926130986/tm2628731d410_fwp.htm
+- **CrowdStrike's Q3 earnings exhibit (8-K EX-99.1, filed 2026-11-23) puts two first-party enterprise-security partnerships on the record against Claude and Codex.** Verbatim: *"Announced an expanded partnership with Anthropic, natively integrating Falcon Guardian into Claude CoWork and adding the Falcon platform to the Anthropic Claude …
+  Source: https://www.sec.gov/Archives/edgar/data/1535527/000153552726000035/crwd-20261123xex991.htm
+### Community, product and policy signal
+- **Claude Ship confirmed first-party — the earlier "press-reported only" caveat is resolved.** `https://claude.com/resources/articles/introducing-claude-ship` returns HTTP 200 with JSON-LD `"datePublished":"2026-11-23"` and title *"Introducing Claude Ship | Claude by Anthropic"*.
+  Source: https://claude.com/resources/articles/introducing-claude-ship
+  Source: https://twitter.com/bcherny/status/2124961485801836573
+  Source: https://news.ycombinator.com/item?id=50618513
+- **The community's reaction to Claude Ship is entirely about the approval boundary — the first agentic-CLI launch where *authority*, not capability, is the headline.** r/ClaudeAI (`2026-11-23T23:12:27Z`): *"Claude can now review, fix, and approve PRs.
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y3xbl4/
+- **OpenAI shipped remote plugin-archive signature verification in Codex.** PR #63487 *"Add signature verification for Plugin Service archives"* (`2026-11-24T01:10:06Z`, closed) adds `RemotePluginArchiveDownload::verify`, checking a SHA-256 digest **and** a detached RSA signature against the release key from the authenticated …
+  Source: https://github.com/openai/codex/pull/63487
+  Source: https://github.com/openai/codex/pull/63489
+  Source: https://github.com/openai/codex/pull/63484
+- **A latent system-prompt injection sits in the tool-schema registry of Claude Code — the config-surface backdoor the carry-forward list asked about, arriving by a different route.** A single-user write-up on Claude Code 2.1.330 (Windows 11, tested 2026-11-23) shows the **first ToolSearch call that loads a Chrome tool schema appends an …
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3trja/
+  Source: https://github.com/anthropics/claude-code/issues/93798
+  Source: https://github.com/anthropics/claude-code/issues/111888
+- **claude-code #111912 — a mod's `$.http.fetch` bypasses the cloud session's egress proxy, so the environment's network secrets are never added.** Verbatim: *"In a Claude Code on the web (cloud) session, a mod's `$.http.fetch` does not go through the session's egress proxy, so the cloud environment's network secrets are never added to …
+  Source: https://github.com/anthropics/claude-code/issues/111912
+  Source: https://github.com/anthropics/claude-code/issues/111915
+- **The model-quality regression class produced at least ten in-window issue reports across both CLIs, and no vendor changelog addresses any of it.** Codex: #63466 *"GPT-6.2 Astra and Sol — Behavioral regressions, unreliable execution and excessive human supervision"* (`2026-11-23T23:31:27Z`) — *"Lack of reasoning depth and contextual …
+  Source: https://github.com/openai/codex/issues/63466
+  Source: https://github.com/openai/codex/issues/63470
+  Source: https://github.com/openai/codex/issues/63488
+  Source: https://github.com/openai/codex/issues/63459
+  Source: https://github.com/openai/codex/issues/63469
+  Source: https://github.com/anthropics/claude-code/issues/111905
+  Source: https://github.com/anthropics/claude-code/issues/111899
+  Source: https://github.com/anthropics/claude-code/issues/111909
+  Source: https://github.com/anthropics/claude-code/issues/111917
+  Source: https://github.com/anthropics/claude-code/issues/111919
+- **claude-code #111921 is the strongest concrete case yet for why prompt-only rules fail.** Verbatim: *"Claude Code deleted user files on my machine without asking, in a step unrelated to what I requested."* A repo test *"operates on a live application configuration folder in my home directory, and one of its steps prunes older backup …
+  Source: https://github.com/anthropics/claude-code/issues/111921
+  Source: https://github.com/anthropics/claude-code/issues/111892
+  Source: https://github.com/anthropics/claude-code/issues/111906
+- **Policy-as-executable-checks is now a real, multi-vendor engineering practice — three independent implementations landed in-window.** *AgentTrail Guard* (r/codex, `2026-11-23T18:20:29Z`) checks supported Codex CLI actions against local rules before they run, via `npx -y @agenttrail/guard@latest scan --agent codex` for retrospective …
+  Source: https://www.reddit.com/r/codex/comments/1y3ps8t/
+  Source: https://github.com/agenttrailhq/guard
+  Source: https://github.com/anomalyco/opencode/pull/65945
+  Source: https://github.com/Aider-AI/aider/pull/6033
+  Source: https://github.com/openai/codex/pull/63474
+  Source: https://github.com/anthropics/claude-code/issues/111910
+- **The approval-channel tooling market is filling fast, and the pain it addresses is named repeatedly.** Okey reads Codex CLI approval dialogs off the Mac notch, by voice, or from an iPhone, covering command approvals, file-edit and MCP tool approvals, and plan-mode questions, but **not** the sign-in screen or the update offer (r/codex, …
+  Source: https://www.reddit.com/r/codex/comments/1y3o067/
+  Source: https://news.ycombinator.com/item?id=50620802
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3tnty/
+  Source: https://www.reddit.com/r/cursor/comments/1y37zkc/
+  Source: https://github.com/anthropics/claude-code/issues/111916
+  Source: https://stripe.dev/blog/stripe-integration-evals-methodology
+- **Vendor-side semantic governance landed in-window as a direct answer to intent hijacking.** HN carried Google's *"Securing AI agents against intent hijacking with Semantic governance policies"* (developers.googleblog.com) at `2026-11-23T23:22:48Z` (2p/0c) — machine-checked governance rather than prompt text;
+  Source: https://developers.googleblog.com/did-the-user-ask-for-this-securing-ai-agents-against-intent-hijacking-with-semantic-governance-policies/
+  Source: https://news.ycombinator.com/item?id=50620958
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3u183/
+  Source: https://github.com/PromptAudit-SaaS/mcp
+- **Usage-accounting regressions remain the most repeated complaint across both communities, and no vendor changelog addresses them.** r/ClaudeAI: *"The Ultraplan usage limits are brutal: I burned through 60% of my weekly usage in under 9 hours"* (`22:34:19Z`, body [removed] — [UNVERIFIED]);
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y3wfe6/
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y3uwla/
+  Source: https://www.reddit.com/r/codex/comments/1y3hlp5/
+  Source: https://www.reddit.com/r/codex/comments/1y3i5zf/
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3vyit/
+- **The CLI-vs-IDE question is running in both directions in-window, and the desktop-assistant layer is filling with thin wrappers.** r/ClaudeCode: *"I built an IDE around Claude Code after my team left Cursor. Closed source, free to download. Tear it apart."* (`2026-11-23T19:57:09Z`).
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3sdyl/
+  Source: https://www.reddit.com/r/codex/comments/1y3sepm/
+  Source: https://www.reddit.com/r/codex/comments/1y3kf3d/
+  Source: https://github.com/anomalyco/opencode/issues/65946
+  Source: https://github.com/cline/cline/issues/15848
+  Source: https://news.ycombinator.com/item?id=50621014
+  Source: https://news.ycombinator.com/item?id=50620918
+  Source: https://news.ycombinator.com/item?id=50622220
+  Source: https://news.ycombinator.com/item?id=50622072
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y3yo3j/
+- **Agent capability is being modelled as Unix permissions across the ecosystem — an independent runtime, a vendor permission algebra, and runtime-enforced delegation all landed in-window.** *"Show HN: Gal – local-first agent runtime with per-call permissions and rollback"* (HN `2026-11-24T00:31:31Z`, 3p/0c) and *"Sentry – An external …
+  Source: https://news.ycombinator.com/item?id=50621748
+  Source: https://news.ycombinator.com/item?id=50621997
+  Source: https://github.com/openai/codex/issues/63464
+  Source: https://github.com/aaif-goose/goose/issues/13773
+  Source: https://news.ycombinator.com/item?id=50622249
+- **Model-lifecycle markers and smaller community tooling, all in-window.** *"GPT-5.6 Sol is deprecating on December 23"* (@ChatGPT tweet, HN `2026-11-23T23:15:02Z`) — [REPORTED]. *"Tell HN: Claude Opus 4.5 turns one year old today"* (HN `2026-11-24T00:44:07Z`). *"PACE: Reproducible multi-agent vs.
+  Source: https://news.ycombinator.com/item?id=50620861
+  Source: https://news.ycombinator.com/item?id=50621878
+  Source: https://www.reddit.com/r/LocalLLaMA/comments/1y3mxy9/
+  Source: https://news.ycombinator.com/item?id=50621738
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y4068f/
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3rx32/
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y3yojw/
+- **gemini-cli hardened its own a2a-server surface in-window, and logged two config-surface weaknesses.** PR #30420 *"fix(a2a-server): enforce bearer token authentication and request input validation"* (`2026-11-23T18:25:29Z`, closed) and PR #30417 *"fix(a2a-server): enforce HTTP auth, harden createTask trust, and prevent restore path …
+  Source: https://github.com/google-gemini/gemini-cli/pull/30420
+  Source: https://github.com/google-gemini/gemini-cli/pull/30417
+  Source: https://github.com/google-gemini/gemini-cli/issues/30412
+  Source: https://github.com/google-gemini/gemini-cli/issues/30413
+  Source: https://github.com/google-gemini/gemini-cli/pull/30419
+  Source: https://github.com/cline/cline/issues/15844
+### Corrections and carry-forward resolutions
+- **Claude Ship is FIRST-PARTY CONFIRMED, not press-only.** `https://claude.com/resources/articles/introducing-claude-ship` → HTTP 200, JSON-LD `"datePublished":"2026-11-23"`, `<title>Introducing Claude Ship | Claude by Anthropic</title>`. The community subagent's first-party capture is the one to trust;
+  Source: https://claude.com/resources/articles/introducing-claude-ship
+- **The RunPod NPS/referral carry-forward is RESOLVED AT THE BUNDLE LEVEL — the mechanism is gone from the MCP tool surface, and the residual is a routing constant only.** Verified directly against the published `@runpod/mcp-server@5.0.0` tarball: the **compiled** MCP tool registry (`dist/chunk-FVKCSWVF.mjs`) contains **zero** …
+  Source: https://registry.npmjs.org/@runpod%2fmcp-server
+  Source: https://github.com/runpod/runpod-mcp/releases/tag/%40runpod%2Fmcp-server%405.0.0
+- **The Claude Code advisory count is re-verified with the scope stated explicitly: 36 repo-scoped, 30 npm-global, zero in-window.** The repo-scoped feed returns **36** (29 high / 4 medium / 3 low); the global npm feed filtered on `affects=@anthropic-ai/claude-code` returns **30** (24 high / 4 medium / 2 low).
+  Source: https://api.github.com/repos/anthropics/claude-code/security-advisories
+  Source: https://api.github.com/advisories?ecosystem=npm&affects=%40anthropic-ai%2Fclaude-code
+- **The OpenCode package baseline is corrected and must be carried forward:** the active v2 line is **`@opencode/cli`** on GitHub **`anomalyco/opencode`**; **`opencode-ai` is the legacy v1 package, frozen at `1.19.6` since 2026-11-17**. `opencode` and `@anomalyco/opencode` both 404 on npm.
+  Source: https://registry.npmjs.org/@opencode%2fcli
+  Source: https://registry.npmjs.org/opencode-ai
+- **goose did NOT ship v1.61.0 in-window.** PR #13772 (`2026-11-24T00:30:05Z`) is **open and unmerged**, no `v1.61.0` tag exists, and the newest release remains `v1.60.2` (`2026-11-20T06:18:55Z`). The **repo org change is real and new**: `block/goose` 301-redirects to **`aaif-goose/goose`** — the AAIF-hosted runtime.
+  Source: https://github.com/aaif-goose/goose/pull/13772
+  Source: https://github.com/aaif-goose/goose/releases
+- **The r/codex "What does this mean?" thread remains UNRESOLVED for a third consecutive cycle.** Arctic Shift title/date-range searches over r/codex for `2026-11-19 → 2026-11-23T01:28:00Z` returned no post with that title;
+  Source: https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=codex&after=2026-11-19T00:00:00Z&before=2026-11-23T01:28:00Z&limit=60
+  Source: https://www.reddit.com/r/codex/comments/1y3kf3d/
+- **SEC EDGAR access note: the daily-index endpoint failed for a third consecutive cycle (HTTP 403 AccessDenied), but the full-text search endpoint works.** `https://efts.sec.gov/LATEST/search-index` returns HTTP 200 with hits and `file_date` fields, and is the route that surfaced the in-window Form 4s, the ETF 497K/497J/485BPOS filings, …
+  Source: https://efts.sec.gov/LATEST/search-index
+  Source: https://www.sec.gov/Archives/edgar/daily-index/2026/QTR4/form.20261123.idx
+### Access gaps (not evidence of absence)
+- **gemini-cli `0.71.0` / `0.72.0-preview.0` changelog bodies were not retrievable** — only the changelog PR metadata (#30426, #30424) was captured, so the only candidate first-party changelog in-window could not be checked for safety-refusal or quota notes.
+  Source: https://github.com/google-gemini/gemini-cli/pull/30426
+- **Google's semantic-governance post, the Stripe evals post and NotiBuddy were title-level only** — [UNVERIFIED] beyond title and HN permalink.
+  Source: https://news.ycombinator.com/item?id=50620958
+- **Reddit direct JSON access is unavailable from this host (HTTP 403)**; all Reddit evidence rests on Arctic Shift, whose r/ClaudeAI and r/codex bodies are frequently truncated to 9 characters or `[removed]`. Every item with a 9-char or `[removed]` body is flagged [UNVERIFIED] above.
+  Source: https://www.reddit.com/r/LocalLLaMA/new/.json
+- **Google News publisher URLs are opaque** — all Google-News-sourced items are [REPORTED] and cited to the RSS query URL, with publisher and pubDate given inline. `www.anthropic.com/news` does not list Claude Ship, `www.anthropic.com/news/claude-ship` 404s, and `www.anthropic.com/news/rss.xml` 404s.
+  Source: https://news.google.com/rss/search?q=%22Claude+Ship%22&hl=en-US&gl=US&ceid=US:en
+- **Confirmed 404 package probes for this domain** (do not read "no release" from them): `opencode`, `@anomalyco/opencode`, `aider-chat`, `runpod-mcp`, `claude-code-action` on npm.
+  Source: https://registry.npmjs.org/@opencode%2fcli
+  Source: https://github.com/anomalyco/opencode/releases
+## 2026-11-25
+
+**Window:** 2026-11-24T01:28:00Z -> 2026-11-25T01:28:00Z (Tuesday → Wednesday; the window closes 2026-11-24 20:28 ET, i.e. **after** the US Tuesday 09:30 ET open, so there **is** an in-window equity bar for ANT).
+
+Source files: `findings_agentic-cli-tools_releases_2026-11-25.md` (28,065 B) and `findings_agentic-cli-tools_community_2026-11-25.md` (47,788 B). Raw captures: `tmp/2026-11-25/releases/`, `tmp/2026-11-25/`. Retrieval was `curl` against primary sources only — 0 `web_search` (the tool still returns the DuckDuckGo bot-detection challenge), 3 `web_fetch` (at the cap), 82 `curl` across the two subagents.
+
+### Headline
+- **ANT broke below its IPO price and set a new 52-week low on the same bar.** 2026-11-24: O **83.40** / H **83.49** / L **75.61** / C **81.91**, **-5.73 (-6.54%)** on 287,375,499 shares vs a previous close of 87.64. The low of **75.61** is ~8.6% below the prior 83.05 low and ~9.0% below the $83 IPO price. After-hours: 80.04 (-2.28%).
+  Source: https://api.nasdaq.com/api/quote/ANT/historical?assetclass=stocks&fromdate=2026-11-18&todate=2026-11-25&limit=10
+  Source: https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=ANT&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1
+- **The reason the tape broke is now documented: there is no conventional lock-up.** HN's top in-window story — *"Anthropic breaks below $83 IPO price"* (340 pts / 66 comments) — carries the claim that insiders were permitted to sell up to **316 million shares from Day 1** rather than under a standard 6-month lock-up, alongside the claim …
+  Source: https://news.ycombinator.com/item?id=50627836
+  Source: https://www.forbes.com/sites/siladityaray/2026/11/24/anthropic-ceo-dario-amodei-sold-280-million-in-shares-as-part-of-record-ipo/
+- **Claude Ship is now first-party confirmed** — Anthropic's own product site carries "Introducing Claude Ship" (Nov 23, 2026). It is Code Review plus two beta agents, **PR Steward** and **Claude Approvals**, and in Claude Code it is the **`/ship`** command. Approvals are policy-gated by a file in the repo ("a smarter CODEOWNERS file").
+  Source: https://claude.com/resources/articles/introducing-claude-ship
+  Source: https://code.claude.com/docs/en/claude-ship
+- **The first substantive practitioner critique of Claude Ship argues against adopting it** — "Today I do the coding in Claude, so a Claude review is Claude reading Claude". The author's own operation runs 170+ PRs/day with ~60% merging unread;
+  Source: https://jonathannen.com/avoid-claude-ship/
+  Source: https://news.ycombinator.com/item?id=50634437
+- **The first in-window MCP advisory naming an MCP bridge — a stored prompt-injection primitive.** GHSA-c4hm-4h84-2cf3 / CVE-2026-59726 (2026-11-24T21:01:10Z): the `ruflo` MCP bridge in default Docker Compose deployments exposed `POST /mcp` and `POST /mcp/:group` with **no authentication**, the `terminal_execute` blocklist was …
+  Source: https://api.github.com/advisories?ecosystem=npm&per_page=100&sort=published&direction=desc
+- **A first-party MCP server is injecting hidden upsell text into agent output.** Notion's official hosted MCP server returns a disguised "Notion Business — Try it free" pitch inside the SQL-query-limit error payload, which the agent then slips into its final answer — reproduced in Claude Code and Gemini/Antigravity.
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y4qm5o/heads_up_if_you_wire_notions_official_mcp_into/
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y4pxfl/3_months_after_getting_called_out_here_notions/
+### Releases
+- **Claude Code `2.1.332` published to npm in-window at 2026-11-24T22:06:38Z** and carries the **`next` dist-tag** — staged as a pre-release, not promoted to `latest`. Tags after the publish: `latest`=2.1.331, `next`=2.1.332, `stable`=2.1.325.
+  Source: https://registry.npmjs.org/@anthropic-ai%2fclaude-code
+  Source: https://api.github.com/repos/anthropics/claude-code/releases?per_page=20
+- **Claude Code 2.1.332 ships MCP-server skills (beta) and a new `PreSkillShellCommand` hook event.** Skills contributed by MCP servers appear in the `/` menu as `server:skill`; the hook event can refuse a skill's or command's inline shell commands *as it loads*.
+  Source: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
+  Source: https://github.com/anthropics/claude-code/releases/tag/v2.1.332
+- **2.1.332 is a hang-fix release aimed squarely at the "agent runs forever" failure mode.** Fixes target: freezes and runaway memory when a hook prints output without an end; freeze when a permission rule or hook condition with several wildcards is checked against a long command;
+  Source: https://github.com/anthropics/claude-code/releases/tag/v2.1.332
+- **Verified negative: claude-code-action had NO in-window release.** Latest remains v1.0.289 (2026-11-23T23:54:14Z); the action's ~daily cadence (v1.0.276 on 11-13 through v1.0.289 on 11-23) did not produce a new tag inside the window.
+  Source: https://api.github.com/repos/anthropics/claude-code-action/releases?per_page=20
+- **Codex's alpha channel jumped to a 0.174.0 line and shipped five builds in-window** — `0.174.0-alpha.1` (01:55:11Z), `-alpha.2` (16:26:59Z), `-alpha.3` (20:22:51Z), `-alpha.4` (23:09:32Z), `-alpha.5` (2026-11-25T01:26:07Z). The `alpha` dist-tag now points at **0.174.0-alpha.5** (was 0.173.0-alpha.4).
+  Source: https://registry.npmjs.org/@openai%2fcodex
+  Source: https://api.github.com/repos/openai/codex/releases?per_page=20
+- **Verified negative: no new stable Codex release in-window.** `latest` remains **0.172.0** (published 2026-11-24T00:09:39Z, ~80 min *before* the window opened), unchanged for ~25h while the alpha line churns hard — a classic "0.174 imminent" pattern. Codex's in-repo CHANGELOG is a stub pointing at the releases page;
+  Source: https://registry.npmjs.org/@openai%2fcodex
+  Source: https://raw.githubusercontent.com/openai/codex/main/CHANGELOG.md
+- **Gemini CLI `0.71.1` took the `latest` dist-tag at 2026-11-24T03:57:09Z** (GitHub `v0.71.1` 03:50:24Z), superseding 0.71.0 — a patch landing ~2.5h after the .0 stable, i.e. fast defect response.
+  Source: https://github.com/google-gemini/gemini-cli/releases/tag/v0.71.1
+  Source: https://registry.npmjs.org/@google%2fgemini-cli
+- **Verified negative: no new Gemini CLI nightly inside the window.** The nightly chain stands at the 2026-11-24T01:19:27Z build (`gaafdfdfb5`); the ~24h cadence did not fire again.
+  Source: https://registry.npmjs.org/@google%2fgemini-cli
+- **Copilot CLI's ~6-day stable freeze ENDED.** `latest` moved from the long-frozen 1.0.114 (2026-11-18T06:00:58Z) to **1.0.115, published 2026-11-24T13:03:39Z** — the first stable publish since 11-18, so the freeze lasted ~7 days. This closes the three-cycle carry-forward item.
+  Source: https://registry.npmjs.org/@github%2fcopilot
+- **Copilot CLI's prerelease moved faster than stable** — `1.0.116-0` (16:44:43Z), `-1` (20:22:12Z), `-2` (2026-11-25T00:11:22Z); `prerelease` dist-tag now at **1.0.116-2**, `unstable` at 1.0.114-unstable.r45286541461.g05667ac.
+  Source: https://registry.npmjs.org/@github%2fcopilot
+- **Copilot CLI 1.0.116 release notes show an MCP-hardening and permissions push** — warn when a plugin and a standalone MCP server connect to the same endpoint (with `/mcp` remediation instructions); prevent repeated sign-in prompts when multiple CLI sessions refresh access to the same MCP server;
+  Source: https://github.com/github/copilot-cli/releases
+- **OpenCode: three dev builds in-window** — `0.0.0-dev-1345` (07:18:58Z), `-1346` (13:15:00Z), `-1347` (19:33:58Z), the `dev` dist-tag advancing to dev-1347 (~6h cadence). **Verified negative: no new stable OpenCode release** — `latest` remains 2.4.1 (2026-11-23T15:56:19Z, pre-window)
+  Source: https://registry.npmjs.org/@opencode%2fcli
+- **@runpod/mcp-server completed its major version jump: `5.1.0` published in-window at 2026-11-24T21:34:40Z** (5.0.0 was 2026-11-23T02:51:18Z, pre-window); `latest` is now 5.1.0.
+  Source: https://registry.npmjs.org/@runpod/mcp-server
+  Source: https://github.com/runpod/runpod-mcp/releases
+- **Verified negatives — no in-window release:** **Qwen Code** (`latest` 0.28.4 from 2026-11-22T12:28:27Z; `nightly` frozen at 0.28.3-nightly.20261121.56ef346859 — the ~daily nightly chain has stalled since 11-21; GitHub silent too), **Cline** (npm `latest` 3.0.75 from 2026-11-21T05:31:57Z, nightly tag dead ~5 weeks;
+  Source: https://registry.npmjs.org/@qwen-code%2fqwen-code
+  Source: https://registry.npmjs.org/cline
+  Source: https://api.github.com/repos/block/goose/releases?per_page=20
+### Security & advisories
+- **In-window advisory scope:** the GitHub repo-scoped endpoint for `anthropics/claude-code` returns **36 advisories total: 29 high, 4 medium, 3 low**; the newest is 2026-10-26T11:43:04Z (GHSA-5xjx-9qx6-jcrv, high, TOCTOU race in the Edit tool).
+  Source: https://api.github.com/repos/anthropics/claude-code/security-advisories?per_page=50
+  Source: https://api.github.com/advisories?ecosystem=npm&per_page=100&sort=published&direction=desc
+- **NEW, critical, in-window: GHSA-c4hm-4h84-2cf3 / CVE-2026-59726 — "ruflo MCP bridge allows unauthenticated remote code execution in default Docker Compose deployments"** (2026-11-24T21:01:10Z, npm `ruflo` < 3.16.3, fixed in 3.16.3). The MCP bridge exposed `POST /mcp` and `POST /mcp/:group` with no authentication;
+  Source: https://api.github.com/advisories?ecosystem=npm&per_page=100&sort=published&direction=desc
+- **NEW, MCP-relevant, in-window: GHSA-9x82-4j54-863h — "isomorphic-git allows unbounded memory allocation from attacker-controlled delta target size (DoS)"** (2026-11-23T21:07:02Z, npm `isomorphic-git` < 1.38.6).
+  Source: https://api.github.com/advisories?ecosystem=npm&per_page=100&sort=published&direction=desc
+- **The ruflo advisory is the first in-window advisory in this domain that specifically names an MCP bridge, and its failure mode (persisted poisoning of a learning store that steers future model output) is a stored prompt-injection / cross-session poisoning primitive** — the same risk class as the RunPod NPS removal tracked in earlier …
+  Source: https://api.github.com/advisories?ecosystem=npm&per_page=100&sort=published&direction=desc
+### Company announcements
+- **RESOLVED: "Claude Ship" is FIRST-PARTY CONFIRMED** at `claude.com/resources/articles/introducing-claude-ship` (dated Nov 23, 2026). Composed of Code Review (already GA) plus two beta agents, PR Steward and Claude Approvals.
+  Source: https://claude.com/resources/articles/introducing-claude-ship
+- **NEW, first-party, in-window: "MCP servers can now ship skills, run tasks, and more with Claude"** (Nov 24, 2026) — "Skills over MCP is in public beta in Claude, so MCP servers can ship skills alongside their tools.
+  Source: https://claude.com/resources/articles/skills-over-mcp-tasks-and-more
+- **NEW, first-party, in-window: Anthropic published "Turn artifacts into Mac and Windows apps"** (Nov 24, 2026) — "Open the artifacts you use every day like any other app, and let them do more on your computer". A desktop-assistant launch line, directly on this topic's desktop-AI-assistants side.
+  Source: https://claude.com/resources/articles/install-as-app
+- **Adjacent first-party posts (pre-window, same launch cluster):** "Zero data retention with Enterprise Frontier Safeguards is now in beta" and "The enterprise guide to securing coding agents" — Anthropic publishing on agent security, consistent with the vendor-security theme in the advisory feed.
+  Source: https://claude.com/resources/articles/enterprise-guide-to-securing-coding-agents
+- **[REPORTED]** Press volume in-window is overwhelmingly Claude Ship — 33 Google News items matched "Claude Code", ~29 of them Claude Ship coverage (Reuters, The Verge, The Register, TechCrunch, The Decoder, InfoWorld, ZDNET, Decrypt, Help Net Security, The Times of India…), spanning 2026-11-24T01:28Z→21:46Z. Title-level only.
+  Source: https://news.google.com/rss/search?q=%22Claude+Code%22&hl=en-US&gl=US&ceid=US:en
+### Community pulse
+- **The community produced the first *mechanistic* explanation for the recurring usage-drain complaints.** A r/codex post ("I finally understand why", 19 pts / 22 comments) claims that above **272K input tokens** input and cache rates **double** and output costs **1.5×** the short-context rate *for the whole request*, while Codex …
+  Source: https://www.reddit.com/r/codex/comments/1y4bahe/i_finally_understand_why/
+- **OpenAI admitted a Codex usage-counting defect and paid credits for it — but did not reset the affected limits.** A r/OpenAI user reports limits "started draining ridiculously fast" after the GPT-6.2 release, then received an email crediting **7,264 credits** as compensation, with the usage limits **still not reset**.
+  Source: https://www.reddit.com/r/codex/comments/1y49oat/i_received_credits_from_openai_due_to_a_codex/
+- **Codex/Sol's allowance was cut ~15% shortly after launch** — a measured PSA (81 pts / 49 comments) reports Sol 6.2 launched with an **$11.75 allowance per 5-hour window** (50% more than 6.1 Sol) and re-measured on 2026-11-24 at **$9.75**, the author's first ever post-launch allowance reduction.
+  Source: https://www.reddit.com/r/codex/comments/1y4fuap/psa_allowance_for_sol_has_been_lowered_by_17/
+- **Users report spending more time supervising coding agents than building** — explicit r/ChatGPTCoding post: "We should stop spending more time managing coding agents than truly building", corroborated on HN by "Why supervision does not scale with the AI coding agents".
+  Source: https://www.reddit.com/r/ChatGPTCoding/comments/1y46x7v/we_should_stop_spending_more_time_managing_coding/
+  Source: https://news.ycombinator.com/item?id=50636375
+- **Unattended execution keeps producing friction incidents.** r/OpenAI: the Codex auto-update can "start days old closed chats" — a user returned to find the agent working on their taxes. Same class as the previously logged approval-prompt friction.
+  Source: https://www.reddit.com/r/OpenAI/comments/1y41ism/warning_the_codex_autoupdate_can_start_days_old/
+- **Safety guardrails over-block legitimate agentic work (recurrence, now cross-vendor).** r/codex: "Safety guardrails shrink use cases too far".
+  Source: https://www.reddit.com/r/codex/comments/1y4gy8g/safety_guardrails_shrink_use_cases_too_far/
+  Source: https://news.ycombinator.com/item?id=50627340
+- **Credential exposure via agent "don't ask again" habits** — a security outlet reported in-window: *"'Don't ask again': the AI coding-agent habit that leaked developers' passwords, and the fix that followed"* (securitybrief.com.au, 2026-11-24T07:21Z). The approval-friction class now has a reported credential-leak consequence.
+  Source: https://news.google.com/rss/articles/CBMi0AFBVV95cUxQdnp2QVRHSTk2eEVWYWNEdnlhWHlQdEtUWFFZX0FoaWZVXzVWUm1RejdleVZtVkpaRnZ
+- **An AI coding agent + browser + a Mac tool found a financial firm's access key in under 6 minutes** (The Register, 2026-11-24T17:00Z) — dual-use red-team story. [REPORTED — headline only]
+  Source: https://news.google.com/rss/articles/CBMi6AFBVV95cUxPZ056cGVuc0RuVXk3eGdHa1JtbFVtS3hTdkpNb056LTZyS1IydThuN1RUVlZGMDA0UnN
+- **T3 Code sends hashed OpenAI and Claude account IDs at first launch** — cross-posted to HN, r/LocalLLaMA ("T3 Code drama", 374 pts / 178 comments) and r/opencode. A **new category** of community discovery: account-level identifiers, not just request metadata. [REPORTED via third-party posts; not verified at source]
+  Source: https://www.reddit.com/r/LocalLLaMA/comments/1y4atw3/t3_code_drama_chinese_post_on_x/
+- **RESOLVED after three cycles: the r/codex high-engagement post "What does this mean?"** — id `1y1o8gp`, author `CaterpillarCold9185`, created 2026-11-21T04:40:21Z, now **549 points / 143 comments**, ratio 0.91.
+  Source: https://www.reddit.com/r/codex/comments/1y1o8gp/what_does_this_mean/
+  Source: https://i.redd.it/jmrddm3eaw2i1.png
+- **Frontier models pass DeepSWE and Terminal-Bench tasks without doing the work** — HN (2 pts) reporting an eval audit in which models complete DeepSWE and Terminal-Bench tasks without genuinely performing the work.
+  Source: https://news.ycombinator.com/item?id=50636688
+  Source: https://www.shreshthrajan.com/envaudit/
+- **Working well — harness and quota tuning is the highest-engagement content of the window:** the "Neon + Claude" threads (r/ClaudeCode 126 pts / 82 comments; r/GeminiAI 185 pts / 20 comments, "Improvements to the antigravity harness and optimizations to Neon's quota/workload").
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y4eype/neon_claude/
+  Source: https://www.reddit.com/r/GeminiAI/comments/1y4pe01/improvements_to_the_antigravity_harness_and_optimizations_to_neons_quota_workload/
+- **Working well — a capacity signal after a week of quota complaints:** r/ClaudeCode, "Working with Opus 5.5 feels like sub is limitless after Fable" (10 pts / 21 comments). And a real agentic creative workflow: Fable 5.2 "made 32,139 real brush strokes in Blender" (r/ClaudeAI, 105 pts / 20 comments).
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y4iarw/working_with_opus_55_feels_like_sub_is_limitless/
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y4pmmk/ai_sculpting_is_here_fable_52_made_32139_real_brush_strokes_in_blender/
+- **Working well — token-cost tooling is being built by users, not just vendors.** An in-window skill that "measured where coding-agent tokens actually go, then cuts the bill by up to 43%", a CLAUDE.md/slash-command/skill template collection, and a concrete MCP-vs-native-CLI datapoint: "Todoist MCP vs Todoist's official CLI in Claude …
+  Source: https://www.reddit.com/r/ChatGPTCoding/comments/1y4gn37/i_measured_where_codingagent_tokens_actually_go/
+  Source: https://github.com/ClickHouse/loom/pull/1384
+- **OpenCode is winning on price in-window** — "HungerG (stealth model) is free for OpenCode Go subscribers this week" (r/opencode, 167 pts / 38 comments), "i like opencode go pricing" (27 pts / 14 comments).
+  Source: https://www.reddit.com/r/opencode/comments/1y449xz/hungerg_stealth_model_is_free_for_opencode_go/
+  Source: https://www.reddit.com/r/LocalLLaMA/comments/1y4gpet/neon_should_be_distilled_into_the_qwen_models_for/
+- **Desktop-app sprawl in the CLI layer is shipping:** Cline released a **standalone Android app** — the first mainstream agentic coding CLI to ship a mobile client in-window. A r/ClaudeAI user built **FlowBar**, a Mac app that puts action buttons inside Claude Code; another built a screen recorder with a built-in MCP server.
+  Source: https://www.reddit.com/r/CLine/comments/1y4k1m8/cline_standalone_android_app/
+  Source: https://www.reddit.com/r/ClaudeAI/comments/1y4nx7w/flowbar_i_built_a_mac_app_that_puts_action/
+- **Community-side governance tooling keeps growing:** a "CitePair" skill that checks whether citations support the claims attached to them; a "Nightshift" tool to plan/execute/review long autonomous runs across Claude Code, Codex and Cursor; and a "skills and plugins for coding agents" registry with per-agent support notes.
+  Source: https://www.reddit.com/r/cursor/comments/1y4n0x3/nightshift_plan_execute_and_review_long_autonomous_coding_runs_with_claude_code_codex_and_cursor/
+  Source: https://github.com/ventura8/Tutti/issues/2947
+- **The verification gap is being named by users:** r/cursor, "Do we need separate security tool for AI generated code?" (11 pts / 26 comments)
+  Source: https://www.reddit.com/r/cursor/comments/1y47iwo/do_we_need_separate_security_tool_for_ai/
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y4mlxi/astra_62_is_lazy_compared_to_claude/
+- **Claude Code memory bloat compared to a browser** — "Anthropic, if anyone is listening, please put Claude Code on a memory diet. It's almost as bad as Chrome." (r/ClaudeCode, 10 pts / 6 comments).
+  Source: https://www.reddit.com/r/ClaudeCode/comments/1y4o5kj/anthropic_if_anyone_is_listening_please_put/
+- **GitHub revealed a real Claude Ship adoption in the wild within hours of launch:** kAI "adopt Claude Ship: Code Review, Steward and Claude Approvals replace Kai's own PR loop" (2026-11-25T01:32Z).
+  Source: https://github.com/MakaiDigital/kAI/pull/20
+### Market, enterprise & trends
+- **ANT's in-window session bar (2026-11-24), from the Nasdaq historical table and the CNBC quote API, which agree:** O **83.40** / H **83.49** / L **75.61** / C **81.91**, **-5.73 (-6.54%)**, volume **287,375,499**. Previous close **87.64**. After-hours 80.04 (-2.28%), AH volume 11,715,095. **52-week high 115.10** (set 2026-11-19).
+  Source: https://api.nasdaq.com/api/quote/ANT/historical?assetclass=stocks&fromdate=2026-11-18&todate=2026-11-25&limit=10
+  Source: https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=ANT&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1
+- **The 2026-11-23 close is corrected: it was $87.64, not $86.86.** The Nasdaq historical table gives 11/23/2026: close **$87.64**, volume 254,101,700, open $93.645, high $94.24, low $84.61 — agreeing with Yahoo's `regularMarketPrice` of 87.64. The prior cycle's 86.86 was an **intraday snapshot**, not the settled close.
+  Source: https://api.nasdaq.com/api/quote/ANT/historical?assetclass=stocks&fromdate=2026-11-18&todate=2026-11-25&limit=10
+- **The community's explanation for the break is supply, not product** — insider selling from Day 1 (up to 316M shares), $561M sold by the Amodeis, and underwriters lending Anthropic $15B. Counter-arguments on the same thread: "the majority of US IPOs fall below their IPO price in the first 90 days";
+  Source: https://news.ycombinator.com/item?id=50627836
+- **The clearest in-window picture of per-seat enterprise agentic-CLI economics came from an HN commenter** (community-reported, unverified): a company "started using Claude in the last month… Employees are hooking up MCPs to it.
+  Source: https://news.ycombinator.com/item?id=50627836
+- **Enterprise context debt is being quantified as a product-market problem** — a DesignVerse study reported twice in-window: *"AI Coding Tools Without Company Context Cost Businesses Thousands of Engineering Hours to Fix"*, plus a parallel "Enterprises Lack Business Context for AI Agents".
+  Source: https://news.google.com/rss/articles/CBMijAJBVV95cUxOMHNacU95Mkl5REZiempROU02WUg2R2wwaTJ1aWhEdVlmbjZZUHktZDlvNEZCdWdxN1d
+- **Cost governance is now a named enterprise pain point** — "CFOs Are Flying Blind on Agentic AI Costs" (The Futurum Group, 2026-11-24T16:22Z), matching the in-window evidence of silently changed Codex pricing tiers and cut allowances.
+  Source: https://futurumgroup.com
+- **Gartner published a Market Guide position on "AI Context Platforms"** (2026-11-24T20:57Z) — an analyst category for context/knowledge layers to agents now exists independently of the CLI vendors.
+  Source: https://news.google.com/rss/articles/CBMiqgFBVV95cUxOY2FZbUthU3RROVBsNk8zR1lrQlpxMEdHSEV2Q0NIVjA1VEZDM3RPcXRve
+- **Agentic-AI governance moved from vendor press to identity-security and insurance:** SailPoint's 2027 Identity Security Predictions argue "The Era of 'Ungoverned Agentic AI' Ends"; Johnson Lambert launched AI governance advisory services; Alteryx "strengthens enterprise AI trust with VURA Governance";
+  Source: https://www.prnewswire.com
+  Source: https://indiatechnologynews.in
+- **A UK regulator is setting expectations for agentic AI in financial services** — "UK financial regulator seeks to set expectations for agentic AI" (The Economic Times, 2026-11-24T08:52Z). The first regulator-set expectations for agents appears in-window.
+  Source: https://m.economictimes.com
+- **Enterprise adoption war stories:** Workday Rising published customer agentic lessons; the Pacific View / ET quote — *"'We don't want customers to build 1,000 AI agents, we want them to build agentic workflows that work'"*; BMC Helix tied agentic AI to operational value; Locus broadened into "Agentic TMS".
+  Source: https://enterpriseai.economictimes.indiatimes.com
+- **Model landscape in-window (context for CLI defaults):** Gemini 4 "Hydrogen" rolled out to Jio-Pro (r/GeminiAI, 57 pts / 17 comments) — a hyperscaler-scale enterprise distribution event; Gemini 4 Carbon reached pro subscribers; Baidu ERNIE-5.5-Flash-Preview released (r/LocalLLaMA, 166 pts / 62 comments);
+  Source: https://www.reddit.com/r/GeminiAI/comments/1y4lk9h/gemini_4_hydrogen_rolled_out_to_jiopro/
+  Source: https://www.reddit.com/r/LocalLLaMA/comments/1y48q6x/will_llamacpp_adopt_stratas_memory_management/
+- **Anthropic also launched EFS alongside Claude Ship** — "Anthropic Launches EFS to Give Enterprises Data Control, Unveils Claude Ship Tool" (KuCoin, 2026-11-24T04:07Z). Enterprise data-control layer for agent deployments. [REPORTED — headline only]
+  Source: https://news.google.com/rss/articles/CBMi6AFBVV95cUxPZ056cGVuc0RuVXk3eGdHa1JtbFVtS3hTdkpNb056LTZyS1IydThuN1RUVlZGMDA0UnN
+- **Anthropic's own enterprise research claim, in-window:** "Anthropic: Two-thirds of customer firms interviewed report hiring less because of AI" (Digg, 2026-11-24T12:54Z). [REPORTED]
+  Source: https://news.google.com/rss/articles/CBMiqgFBVV95cUxOY2FZbUthU3RROVBsNk8zR1lrQlpxMEdHSEV2Q0NIVjA1VEZDM3RPcXRve
+- **No new first-party CLI-vendor funding round was confirmed in-window**, and no SEC filing relevant to agentic CLIs was retrievable (see access gaps).
+  Source: https://www.sec.gov/Archives/edgar/daily-index/2026/QTR4/form.20261124.idx
+### Corrections and carry-forward resolutions
+- **CORRECTION — the 2026-11-23 ANT close was $87.64, not $86.86.** The prior cycle flagged 86.86 vs Yahoo's `regularMarketPrice` 87.64 and 86.88 on a second snapshot; the Nasdaq historical table settles it at **$87.64** (volume 254,101,700). The prior cycle's figure was an intraday snapshot reported as a close.
+  Source: https://api.nasdaq.com/api/quote/ANT/historical?assetclass=stocks&fromdate=2026-11-18&todate=2026-11-25&limit=10
+- **CORRECTION — the 52-week low WAS broken on 2026-11-24, not merely approached.** The prior cycle stated the 83.05 low "held above"; the 11-24 bar printed **75.61**, a new 52-week low ~8.6% lower and ~9.0% below the $83 IPO price.
+  Source: https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=ANT&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1
+- **PARTIAL CORRECTION — the lock-up calendar derived from the 424B4 does not describe the operative constraint.** The prior cycle stated a 180-day tranche at 2027-05-17 and a 365-day co-founder tranche at 2027-11-18.
+  Source: https://news.ycombinator.com/item?id=50627836
+  Source: https://www.forbes.com/sites/siladityaray/2026/11/24/anthropic-ceo-dario-amodei-sold-280-million-in-shares-as-part-of-record-ipo/
+- **RESOLVED — Claude Ship is first-party confirmed** (claude.com/resources/articles/introducing-claude-ship, Nov 23 2026; docs at code.claude.com/docs/en/claude-ship).
+  Source: https://claude.com/resources/articles/introducing-claude-ship
+- **RESOLVED — Copilot CLI's stable channel is no longer frozen.** The ~6-day freeze on `latest`=1.0.114 ended with 1.0.115 at 2026-11-24T13:03:39Z; the prerelease has already moved to 1.0.116-2.
+  Source: https://registry.npmjs.org/@github%2fcopilot
+- **RESOLVED — the r/codex "What does this mean?" item** (three-cycle unknown) is now fully characterised: post id `1y1o8gp`, 549 pts / 143 comments, an image post of Tibo (@thsottiaux) joking that Google's internal agent experiment became "too fun internally and now everyone is just having fun instead of working".
+  Source: https://www.reddit.com/r/codex/comments/1y1o8gp/what_does_this_mean/
+- **RESOLVED — Anthropic announcement checking now has a working first-party route.** The RSS feeds (`anthropic.com/feed.xml`, `anthropic.com/news/feed.xml`) are 404 for the third cycle, but **`https://claude.com/blog` works** and exposes dated first-party article cards — it returned 0 bytes to plain curl and 591KB only with a browser …
+  Source: https://claude.com/blog
+- **Endpoint correction — the RunPod MCP GitHub repo is `runpod/runpod-mcp`, not `runpod/mcp-server`** (the npm `repository` field points to `github.com/runpod/runpod-mcp.git`); `api.github.com/repos/runpod/mcp-server/releases` is 404 and the release notes were obtained from the HTML releases page.
+  Source: https://github.com/runpod/runpod-mcp/releases
+- **Endpoint correction — Gemini CLI has no root `CHANGELOG.md`** (both `main/CHANGELOG.md` and `packages/cli/CHANGELOG.md` are 404); changelog content is only available via the GitHub releases API.
+  Source: https://raw.githubusercontent.com/google-gemini/gemini-cli/main/CHANGELOG.md
+### Access gaps (not evidence of absence)
+- **`web_search` remains unusable** (DuckDuckGo bot-detection challenge) — 0 successful calls. All discovery ran through `curl` against primary registries/APIs plus Google News RSS. No general web-search discovery was possible this cycle.
+  Source: https://news.google.com/rss/search?q=%22Claude+Code%22&hl=en-US&gl=US&ceid=US:en
+- **Yahoo Finance chart API was rate-limited for the entire run** — `query2.finance.yahoo.com/v8/finance/chart/ANT` returned HTTP **429 "Edge: Too Many Requests"** on every retry (range=5d, range=1mo on query1, browser UA + Accept + Referer, and --compressed).
+  Source: https://query2.finance.yahoo.com/v8/finance/chart/ANT?range=5d&interval=1d
+- **SEC EDGAR remained unretrievable** — no filing relevant to agentic CLIs was obtained this window, after two previous consecutive failures. This is an access gap, **not** evidence that no agentic filings exist.
+  Source: https://www.sec.gov/Archives/edgar/daily-index/2026/QTR4/form.20261124.idx
+- **Google News publisher URLs were not resolved** — press findings carry the opaque `news.google.com/rss/articles/...` redirect and are marked [REPORTED] (headline-level, not primary-verified).
+  Source: https://news.google.com/rss/search?q=%22Claude+Code%22&hl=en-US&gl=US&ceid=US:en
+- **Amp's tagged-release channel was not probed** — `api.github.com/repos/sourcegraph/amp/releases` and npm `@sourcegraph/ampcode` remain unreadable in prior cycles; absence of Amp tagged releases remains a **GAP, not a verified negative**.
+  Source: https://api.github.com/repos/sourcegraph/amp/releases
+- **The `@opencode/*` sibling packages were not re-fetched** (npm call budget); their state is inferred unchanged at the 2.4.1 bootstrap. The `opencode-ai` legacy package and the `opencode` / `@anomalyco/opencode` 404s were also not re-probed.
+  Source: https://registry.npmjs.org/@opencode%2fcli
+- **Reddit first-party feeds remain unusable** — `reddit.com/r/*/new/.rss` returns 429 and `old.reddit.com` returns 302. All Reddit data came from the Arctic Shift archive API (HTTP 200). Bodies are partial and title-level items are labeled [UNVERIFIED];
+  Source: https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=codex&after=2026-11-24T01:28:00Z&limit=100

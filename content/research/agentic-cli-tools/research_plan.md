@@ -1,80 +1,36 @@
-# Research Plan: Agentic CLI Tools
+# Research Plan — agentic-cli-tools
 
-## Main Research Question
+**Topic:** Agentic CLI tools and desktop AI assistants
+**Working directory:** /home/devcon/.openclaw/shared-workspace/research/agentic-cli-tools
+**Cycle:** 2026-11-25 (window 2026-11-24T01:28:00Z -> 2026-11-25T01:28:00Z)
 
-Compare and analyze six agentic CLI tools: Cursor, Kilo, Droid, OpenCode, Codex, and Pi. Focus on their agentic loop architectures, agent/skill definition systems, feature comparison, and binary structure analysis without installation.
+## Main research question
+What changed in the agentic CLI tools and desktop AI assistant ecosystem inside the last 24 hours — releases, security advisories, vendor announcements, community signal, and market/enterprise posture?
 
-## Subtopics
+## Subtopics (2 delegated tasks)
 
-### 1. Agentic Loop Architectures
+1. **Releases & security** — `diac-releases-2026-11-25` → `findings_agentic-cli-tools_releases_2026-11-25.md`
+   - npm dist-tag + publish-timestamp deltas for @anthropic-ai/claude-code, @openai/codex, @google/gemini-cli, @github/copilot, @opencode/cli, @qwen-code/qwen-code, cline, @runpod/mcp-server, claude-code-router, claude-code-action
+   - GitHub release tags for anthropics/claude-code, openai/codex, google-gemini/gemini-cli, github/copilot-cli, block/goose, anomalyco/opencode
+   - GitHub advisory feed, filtered for coding-CLI config surfaces and MCP bridges
+   - Vendor changelogs and first-party release notes
+   - Budget: 35 curl calls, 3 web_fetch calls (whole run's web_fetch cap)
 
-**Research Questions:**
-- What is the core agentic loop implementation for each tool?
-- How does each tool handle the observe-think-act cycle?
-- What mechanisms exist for tool selection, execution, and feedback?
-- How are multi-step reasoning and tool chaining implemented?
-- What are the key architectural differences between the tools?
+2. **Community, market & enterprise** — `diac-community-2026-11-25` → `findings_agentic-cli-tools_community_2026-11-25.md`
+   - Reddit (Arctic Shift archive API) across r/ClaudeCode, r/codex, r/ClaudeAI, r/GeminiAI, r/opencode, r/OpenAI, r/ChatGPTCoding, r/cursor, r/LocalLLaMA, r/CLine
+   - Hacker News (Algolia) stories + comment trees
+   - Google News RSS for launch/press signal
+   - ANT equity bar: Nasdaq historical API + CNBC quote API (Yahoo chart API is 429-limited)
+   - Anthropic first-party announcements via claude.com/blog and claude.com/resources/articles
+   - Budget: ~47 curl calls, 0 web_fetch
 
-**Expected Information:**
-- Core loop implementation details
-- Tool orchestration mechanisms
-- State management approaches
-- Error handling and recovery patterns
-- Execution flow diagrams or descriptions
+## Constraints
+- 0 `web_search` usable (DuckDuckGo bot-detection challenge); primary-source `curl` only
+- 3 `web_fetch` calls maximum for the whole run
+- Every bullet ends with a `Source: <URL>` line
+- Press-only items labeled [REPORTED]; title-only/unverified items labeled [UNVERIFIED]
+- Verified negatives recorded as evidence; access failures recorded as access gaps
+- Active cumulative_findings.md stays under ~60 KB; monthly archive holds full-length sections
 
-### 2. Agent and Skill Definition Systems
-
-**Research Questions:**
-- How are agents defined and configured in each tool?
-- What is the skill/plug-in architecture for each?
-- How are new tools/capabilities added to each system?
-- What formats are used for agent/skill definitions (JSON, YAML, code)?
-- How does each tool handle context, memory, and state?
-
-**Expected Information:**
-- Agent configuration schemas
-- Skill/plug-in registration mechanisms
-- Extension APIs and interfaces
-- Examples of custom agent/skill definitions
-- Documentation on extensibility
-
-### 3. Feature Comparison and Binary Analysis
-
-**Research Questions:**
-- What are the core features and capabilities of each tool?
-- What are the limitations and constraints of each?
-- What are the primary use cases for each tool?
-- Can we analyze binary structure/contents from available sources (GitHub releases, docs)?
-- How do the tools compare in terms of:
-  - Supported platforms
-  - Model support (OpenAI, Anthropic, local LLMs)
-  - Programming language/runtime requirements
-  - Performance characteristics
-  - Active maintenance and community
-
-**Expected Information:**
-- Feature comparison matrix
-- Platform and system requirements
-- Supported LLM providers and models
-- Binary distribution methods (if available from web)
-- Release notes and changelog information
-- Community activity indicators
-
-## Synthesis Approach
-
-After gathering findings from all three subtopics, I will:
-
-1. Create a comprehensive comparison table summarizing key differences
-2. Identify architectural patterns and trade-offs
-3. Highlight unique strengths and weaknesses of each tool
-4. Provide recommendations for different use cases
-5. Note any gaps in available information
-
-## Constraint
-
-**DO NOT install any binaries or packages.** Only analyze information available through:
-- Official documentation
-- GitHub repositories and READMEs
-- Release notes and changelogs
-- Public blogs and articles
-- Binary metadata available via web access (strings, file info from repos)
+## Synthesis
+Section written to `tmp/2026-11-25/section_2026-11-25.md` (full, 45,578 B) → condensed to 31,050 B for the active file, published to `cumulative_findings.md`, `archive/cumulative_findings_2026-11.md` (full length) and `daily_reports/2026-11-25.md` (full length).

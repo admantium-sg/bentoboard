@@ -1,0 +1,9 @@
+HTTP/2 200 
+server: nginx
+date: Sat, 28 Nov 2026 09:40:21 GMT
+content-type: text/html; charset=utf-8
+cache-control: no-store
+set-cookie: techaro.lol-anubis-cookie-verification-86a3c3e3=01a22186-f0fe-7298-960a-91c5c057e833; Path=/; Domain=hbubli.cc; Expires=Sat, 28 Nov 2026 10:10:21 GMT; Secure; SameSite=None; Partitioned
+alt-svc: h3=":443"; ma=86400
+strict-transport-security: max-age=15768000
+

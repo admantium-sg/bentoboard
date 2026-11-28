@@ -1,63 +1,47 @@
-# Research Plan: LLM Research Papers from arXiv
+# Research Plan — LLM Papers & Developments (2026-11-11)
 
-## Main Research Question
-What are the latest developments in LLM research as published on arXiv, covering reasoning, architecture, prompt engineering, multimodal models, and benchmarks?
+**Research area:** LLM research papers and developments
+**Topic:** llm-papers-arxiv
+**Run timestamp:** 2026-11-11T17:28Z (2026-11-11 18:28 Europe/Berlin)
 
-## Subtopics to Investigate
+## Situation assessment
 
-### 1. Chain of Thought (CoT) Research & Reasoning Prompts
-- Recent CoT papers on arXiv (2025-2026)
-- Self-consistency and cascade methods
-- Optimized reasoning prompts (ReAct, Tree of Thoughts)
-- Multi-step reasoning improvements
-- Test-time compute scaling
+- **Fresh arXiv batch available.** The cs.CL / cs.LG / cs.AI "new" listings fetched today read
+  "Showing new listings for Wednesday, 11 November 2026" (unlike the Sunday dry-run of 2026-11-08).
+  Harvested to `tmp/nov11/list_cs.{CL,LG,AI}.html`.
+- **725 unique ids** parsed across the three categories (ids 2611.12901–2611.14519 plus a tail of older
+  cross-lists). 203 are *replacement submissions* (revised versions of already-published papers) and were
+  excluded. 668 ids were absent from every previously recorded source (cumulative file, `archive/`,
+  all prior `findings_*.md` and `daily_reports/*.md`, and the Nov 06–Nov 10 batches).
+- **465 of those** passed an LLM-relevance keyword screen (`tmp/nov11/selected.json`); the top 110 by
+  score are in `tmp/nov11/top110.json` and form the pool for Task 1.
 
-### 2. LLM Architecture Innovations & Efficiency
-- New architecture proposals (state space models, mixture of experts)
-- Efficiency improvements (quantization, pruning, distillation)
-- Long-context models and attention mechanisms
-- Training efficiency research
-- Flash attention and derivative techniques
+## Subtopics
 
-### 3. Prompt Engineering Techniques & Optimization
-- Advanced prompting strategies
-- Prompt compression and optimization
-- Automated prompt engineering
-- Few-shot and zero-shot learning advances
-- Constitutional AI and RLHF refinements
+### Task 1 — arXiv paper write-up (delegated subagent, 0 web requests)
+- Select the 30 most significant papers from `tmp/nov11/top110.json` (reasoning/prompting, efficiency &
+  inference, agents & tool use, post-training/RL, safety/alignment, evaluation, interpretability).
+- Output: `findings_nov11_task1.md`, one write-up per paper with headline numbers and a
+  `https://arxiv.org/abs/<id>` source line.
 
-### 4. Multimodal & Specialized LLM Architectures
-- Vision-language models (LLaVA, GPT-4V, etc.)
-- Specialized models (code, math, science)
-- Audio and video understanding
-- Tool use and agent architectures
-- Domain-specific fine-tuning
+### Task 2 — Community pulse + leaderboard delta (delegated subagent, ≤4 web_search, ≤3 web_fetch)
+- Hacker News (Algolia, 24 h window 2026-11-10T17:28Z → 2026-11-11T17:28Z) + comment trees.
+- Reddit r/LocalLLaMA and r/MachineLearning (`/new` + `/top?t=day` RSS).
+- Leaderboard diffs vs. the 2026-11-10 snapshot: Artificial Analysis (homepage payload + changelog),
+  BenchLM, FMRT, BenchLeader, HuggingFace createdAt feed.
+- Output: `findings_nov11_task2.md`.
 
-### 5. Performance Benchmarks, Scaling & Reddit Trends
-- New LLM benchmarks (MMLU successors, reasoning tests)
-- Scaling laws and empirical findings
-- Open-source model releases
-- Reddit community discussions (r/LocalLLaMA, r/MachineLearning)
-- Trending papers and model releases
+## Synthesis
 
-## Key Questions to Answer
-- What are the most impactful recent papers in each subtopic?
-- What trends are emerging in LLM reasoning capabilities?
-- Which open-source models are gaining traction?
-- What are practitioners discussing on Reddit about prompt optimization?
-- What new benchmarks have been proposed for evaluating LLM progress?
+Read both findings files, filter against `cumulative_findings.md` (active window) and the last 7 daily
+reports, append a `## 2026-11-11 (Wednesday Evening)` section to `cumulative_findings.md`, write
+`daily_reports/2026-11-11.md`, and update `last_check.json`.
 
-## Sources to Monitor
-- arXiv cs.CL, cs.LG, cs.AI
-- r/LocalLLaMA, r/MachineLearning, r/LocalLLaMA
-- Hugging Face papers
-- GitHub trending repositories
-- Anthropic, OpenAI, Meta AI publications
+## Budget discipline (this job previously died on context overflow)
 
-## Synthesis Plan
-After subagent completion:
-1. Read all findings_*.md files
-2. Synthesize into research_report.md
-3. Update cumulative_findings.md with date-stamped entries
-4. Write daily_reports/2026-04-24.md
-5. Update last_check.json
+- Main agent: reads only the tail/grep of `cumulative_findings.md` — never in full.
+- Main agent web_search: 0. web_fetch: 0.
+- Task 1: 0 searches / 0 fetches (local data only). Task 2: ≤4 searches / ≤3 fetches, everything else
+  via `curl`.
+- `cumulative_findings.md` must stay under ~60 KB → the outgoing 2026-11-10 section is moved to
+  `archive/cumulative_findings_pre_2026-11-11.md` this run (content preserved, never deleted).

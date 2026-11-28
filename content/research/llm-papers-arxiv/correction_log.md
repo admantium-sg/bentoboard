@@ -1,3 +1,46 @@
+## 2026-11-01 (Sunday Evening) — arXiv Task 1
+
+### Corrections Made
+- **Paper count corrected from "≈93–97" to a hard 94 (VERIFIED)** — the Oct-25/26/27 runs
+  never fired, so the entire 2026-10-25 submission batch was unreported. Re-deriving the
+  candidate pool from the arXiv API (`submittedDate:[202610250000 TO 202611012359]`,
+  cs.CL/cs.LG/cs.AI, 1,702 unique IDs) plus the `/new` + `/recent` listing sweep for all
+  three categories gives **79 API candidates + 18 listing candidates − 3 overlaps = 94 unique
+  never-before-reported IDs**. The "≈93–97" wording in `cumulative_findings.md`,
+  `daily_reports/2026-11-01.md`, `last_check.json` and `tmp/section_nov01.md` has been
+  replaced with the exact figure. **43 of the 94 were written up** (37 detailed in sections
+  A–E, 6 additional in section F).
+- **`tmp/known_ids_nov01.txt` baseline was contaminated and rebuilt (VERIFIED)** — the
+  delivered baseline held **4,286 IDs**, of which **691** were never reported anywhere; only
+  **129** of those appear outside `tmp/`, and they trace back to scratch candidate lists
+  (`tmp/known_ids_oct30_full.txt` 607, `tmp/all_unknown.txt`, `tmp/k31.txt`, `tmp/k31b.txt`,
+  `tmp/ids_wide.txt`, `tmp/list_ids.json`, `tmp/meta.json`) rather than to any written
+  report. This inflated baseline is exactly the artifact that produced the false "347 new"
+  count in a previous run. The file has been rebuilt from the defensible union
+  (`tmp/known_union.txt` 3,609 ∪ `tmp/known_report_final.txt` 1,942 — a strict scan of
+  report artifacts only, excluding every file touched on 2026-11-01) ∪ the 43 IDs written
+  up here = **4,077 unique IDs**. Verification: all 43 reported IDs are present, and the 51
+  screened-but-off-topic candidates are **absent** by design (saved to
+  `tmp/nov01_screened_not_reported.txt`).
+- **Circular self-match avoided (VERIFIED)** — 16 of the 94 pool IDs now appear in
+  `cumulative_findings.md`, `trend_analysis.md`, `last_check.json` and
+  `daily_reports/2026-11-01.md` *because this run reported them*. The strict
+  report-artifact baseline deliberately excludes all 2026-11-01 files for that reason.
+  `pool ∩ known_report_final = ∅` and `pool ∩ known_union = ∅` both hold.
+
+### Abstract-level validation
+- Every quantitative claim in the 37 detailed entries was re-checked by literal string match
+  against the abstract text captured from `export.arxiv.org/api/query`
+  (`tmp/nov01_api_abs.json`): **0 unverified numeric claims** (the only non-matches were
+  entry numbers and arXiv IDs themselves). The 13 listing-derived entries with no cached
+  API abstract were re-fetched live via `curl https://arxiv.org/abs/<ID>` and their figures
+  confirmed (e.g. 2610.37688: 1,000 MASSIVE items × 51 languages, 8.6–11.7 pp coverage gap;
+  2610.37686: ≥10% capture-probability shift in ≤15/90 and 56–74/90 configurations;
+  2610.37671: 3,441 auto-merges, 6.0% Clopper-Pearson upper bound = 205 pairs).
+- All 43 arXiv `/abs/` URLs return HTTP 200.
+
+---
+
 ## 2026-10-01 (Thursday - 20:00 UTC)
 
 ### BenchLM September 30 Ranking Corrections (3 errors found)
@@ -1628,3 +1671,98 @@ Claude Duet 502/460 → 536/500 · OpenAI CLI 206/96 → 220/107 · WorldTUI 405
 Live leaderboards and counter values were captured without an as-of stamp and then presented as stable facts; the largest error (flint "no benchmark table") came from a model card never being opened. Corrections were applied inline in `cumulative_findings.md` as `<!-- FC-2026-10-22 ... -->` comments.
 
 **Recommendations:** fetch `fmrt.ai/api/leaderboard.json` at write time and derive all counts from that one response; timestamp or omit like/point counters; quote and link model cards directly; record original publication dates for re-reported posts; treat Reddit-only claims as UNCONFIRMABLE while Reddit returns HTTP 403 from this host.
+
+## 2026-10-29
+
+### Corrections Made
+- **BenchLeader re-baseline index-score drops (PARTIALLY_VERIFIED)** — The Oct 28 section asserts Opus 5.5 max 72.6 → 69.8, Gemini 4 Argon 70.8 → 66.0, Muse Wonder Full 70.7 → 62.7, and Kimi K3.1 Pro 66.8 → 59.8 / #29 → #41. None of the asserted before/after pairs could be confirmed from any source; the live 2026-10-29 BenchLeader board shows Opus 5.5 max 69.1, Gemini 4 Argon high 65.8 and Kimi K3.1 Pro 61.3, and the 2026-10-28 digest records only rank movements. The AA Index v5 composition (60% private test sets; FrontierCode 2.0 and Terminal-Bench-Science added; GDPval-AA v2.1 / SciCode / AA-LCR v1.1 removed) and every cost-per-task change (Opus 5.5 max $5.98/M → $10.04/M, +68%; GPT-6.1 Terra max $0.40/M → $0.96, +138%; Gemini 4 Argon high +137%; Sonnet 5.5 max +83%) were confirmed and left unchanged. Sources: artificialanalysis.ai (AA Index v5 article, 2026-10-27), benchleader.com digest-2026-10-28, benchleader.com AA v5 board.
+- **Mistral Large 4 active-parameter precision** — "~52B active" refined to "~52B active headline; 49B active per token excluding embeddings and output layers" per the Hugging Face model card for `Mistral-Large-4-1T-A52B`. All benchmark figures (FrontierCode 2.0 19.7%, AA Coding Agent Index 48% on ~47% fewer tokens, Terminal-Bench 4.0 41% / +13 pp with 30% fewer output tokens, three reasoning modes) confirmed against the Mistral announcement and testingcatalog.
+
+### Sources Reliability
+- arXiv abstract pages were exact for all 12 paper claims checked; no arXiv-ID mislabeling (unlike the BitsMoE case of 2026-06-25).
+- alphaxiv.org, arxiv.deeppaper.ai, papers.cool, huggingface.co/papers and testingcatalog.com reproduced abstracts faithfully and added corroborating detail.
+- The SEC S-1 for Anthropic PBC was readable and every financial line in the Oct 28 entry matched the filing.
+- Live leaderboard snapshots remain the least reliable class: index/leaderboard score pairs are not reproducible after the fact because only current values are exposed.
+
+### Patterns Identified
+- **Correction concentration:** 14 of 15 claims verified clean; the single partial came from a snapshot-vs-rebaseline score pair on BenchLeader. This continues the pattern that live leaderboard numbers, not paper results, generate the corrections.
+- **Ranged claims need the range qualifier:** several papers' headline ranges (23–31 points, 13–24 points, 0.1 points, 19.7%–2.69×) are averages across models or configurations and read as universal when quoted bare. Carry the qualifier into the claim text.
+- **Vendor-reported benchmarks are confirmed-as-reported only:** FrontierCode 2.0 is Cognition-private and cannot be independently audited, so "verified" here means the vendor published the figure, not that the figure is reproducible.
+- **Run budget:** 15 claims / ~30 searches completed within the cap. One subagent (batch 2, first attempt) died on context compaction before writing its result file; relaunching with an instruction to write incrementally after each claim fixed it. Keep that instruction in the subagent prompt.
+
+## 2026-10-30
+
+### Corrections Made
+- **Transposed Hacker News item IDs in the 2026-10-29 Task 2 report (VERIFIED)** — `findings_oct29_task2.md` attached `https://news.ycombinator.com/item?id=50284255` to the Mistral Large 4 open-weights story and `…/item?id=50289418` to the Claude Code background-transcript gist. Re-read via `hn.algolia.com/api/v1/items/<id>` on 2026-10-30 confirms the mapping is the other way round: **50289418 = "We're releasing the weights of Mistral Large 4"** (1656 points / 427 comments) and **50284255 = "Claude Code regularly sends each background agent's transcript to its model"** (573 points / 234 comments). Titles, scores and timestamps in the Oct 29 report were correct; only the two HN links were swapped. Corrected in `findings_oct30_task2.md`.
+
+### Sources Reliability
+- **Phorion security advisory (phorion.io) was the single most valuable fetch of the window.** The Claude Code extension backdoor is covered by three separate HN submissions, but only Phorion's page was readable from this host (HTTP 200) and it contains the full technical chain, the affected version (2.1.313), the containment status (Cursor pulled the release from its marketplace, NPM and the VSCode registry) and published IOCs. The DoublePulsar write-up returned **HTTP 403** and the Cyberplace Mastodon post is **JS-gated** (230-char no-JS notice), so both are title/engagement only.
+- **Epoch AI patch-gap report (epoch.ai) read cleanly (HTTP 200)** and is the only source that carries first-party experimental detail for the GLM 5.3 / Firefox patch-gap result, including the ~$1,000-per-version cost, the affected version window (17 Sep – 26 Oct), the Firefox 159.0 mitigation and the explicit statement that no provider safeguards or refusals were triggered.
+- **Reddit remained blocked at the JSON layer for a second consecutive day** (HTTP 403 on reddit.com and api.reddit.com; mirrors returned 429/410/403/000). RSS worked but exposes no engagement data, so Reddit reporting is again titles + timestamps only — a repeat of the coverage regression flagged on 2026-10-29.
+
+### Patterns Identified
+- **Leaderboards diverge by more than methodology.** Gemini 4 Carbon is #1 on AA (59) and #1 on BenchLM (88.38, `estimated`, 90% interval 78.66–98.10) but #2 on BenchLeader (68.9) and **absent from FMRT** for a second day. Three of the four boards rank it top-two or top-three; the fourth has never played it. Report the disagreement rather than a consensus rank.
+- **BenchLM staleness is a recurring trap.** `lastUpdated` remained `2026-10-29` on the 2026-10-30 fetch, identical to the previous day's file. Always print the `lastUpdated` field next to BenchLM numbers; otherwise a stale board reads as a daily snapshot.
+- **HF download-count deltas across days are not a fixed panel.** The top-100 by downloads produced *negative* deltas (e.g. `Qwen/Qwen3-4B` −1,492,032), which is impossible as real demand loss. Treat cross-day HF download deltas as roster-churn artefacts and use them only directionally for models entering from outside the list.
+
+## 2026-11-12
+
+### Corrections Made
+- **No content corrections.** All 15 claims checked in this run matched their sources on every cited figure; no status changes, no precision edits.
+- **Recovery of an orphaned run (operational, not a content correction).** The 2026-11-05 fact-check run wrote `fact_check_work/2026-11-05_batch_1.md` and `_batch_2.md` (10 claims, C1–C10, all VERIFIED with two sources each) but never persisted them — no report file, no `verification_status.json` entries, no comments in the findings file, and a planned batch 3 (C11–C15) never ran. This run re-recorded those 10 results from disk as fact_395–fact_404 and inserted the missing `<!-- FACT_CHECK: -->` comment blocks into `archive/cumulative_findings_2026-10.md`, section `## 2026-10-28`. C11–C15 were verified fresh today by one subagent (`fact_check_work/2026-11-12_batch_1.md`).
+
+### Sources Reliability
+- **arXiv abstracts were exact for 15/15 paper claims.** Every ID resolved to the stated paper, and every figure (1.24–1.32× vs BF16, 21.0% vs 18.2% vs 14.6%, Δ = Cov(A,C)/P(C=1), OR = 1.70 at p<1e-6, N_c ≃ ln(1/δ)/(λ²G), 51/242/219, 70%/36%/56%, 98.1% accuracy at 17.8% reads, +20.7%/+21.2% over GEPA/ACE, 1.8% vs 9.3% PPL) appeared verbatim in the abstract or paper body.
+- **alphaxiv.org was the workhorse second source** (13 of 15 claims) and added corroborating detail beyond the abstract (S3R per-step timings 3,243/4,018/3,607 ms on Qwen3-8B; C14 point estimates 50.7% vs 58.1%); huggingface.co/papers served as the second source for C15.
+- **No live leaderboard or vendor-benchmark claims were in this batch** — every claim was an arXiv paper claim. That is why the correction count is zero: the historical weak classes (BenchLeader/AA index snapshots, vendor-reported benchmarks, HF trending rotations) all remain in the open backlog for later runs.
+
+### Patterns Identified
+- **Persist-or-lose is the dominant operational failure mode.** Three of the last four runs left orphan files instead of committed state. Discipline adopted: subagent writes `fact_check_work/<date>_batch_<N>.md` → main agent reads the compact result file → `verification_status.json` is rewritten after every batch of ~5 claims → comments are inserted into the findings file with targeted line edits.
+- **Verification throughput, not source quality, is now the constraint.** The open backlog after the frontier is ~543 claim units (redefined scope) against a 15-claim cap; at this rate the 2026-10-30 → 2026-11-12 material (499 units) needs ~33 more runs. Recommendation: raise MAX_CLAIMS to 30 and run two subagent batches per invocation, or spread the daily check across a rolling 2–3 day window.
+- **Scope creep in the pending counter must be labelled.** The `pending_claims` figure moved 54 → 543 purely because the unit definition widened from "two sections" to "all sections after the frontier"; the previous number was never a global count and would have been read as a regression otherwise. Keep the definition in the report body every time the number changes.
+- **Orphaned batch files are worth reusing, not re-verifying.** The 10 recovered claims cost zero searches because the evidence was already two-source and the underlying abstracts are stable. The cost is a `verified_date` that reflects the recording date rather than the fetch date — acceptable for arXiv abstracts, wrong for anything currency-sensitive.
+
+## 2026-11-19
+
+### Corrections Made
+- **"AA index 48" for GPT-6.1 Terra (C6) — stale.** Live Artificial Analysis now reports Intelligence Index 51 (raw 51.33), rank #31/95. The Oct 28 value of 48 was revised upward; the snapshot can no longer be reproduced. Status: PARTIALLY_VERIFIED. Every other element of the "Other releases" claim was confirmed exactly: Terra pricing $1/$5 with $0.05 cached input, DeepMind Genie 4 as a natively multimodal world model anchored on Gemini Omni (research preview for trusted testers), and Liquid AI LFM3 as six 2B-class models (text, vision, audio, omni, decision) trained from LFM3-1.7B-Base with a tri-hybrid of 13 convolutions + 5 SWA (256-token window) + 6 global attention layers, 22T pretraining tokens, 256K context, hardware-in-the-loop search over 14 device/backend combinations.
+- **"792 points" attached to the Exponential Time Hypothesis (C6) — mislabeled and stale.** The number is the Hacker News score of the ETH submission, not a research score; it now reads 805 points / 302 comments (story 2026-10-26T21:59Z). The OpenAI research release itself is confirmed: "The Exponential Time Hypothesis is false" is a titled section (proof found Oct 16, Lean-formalized Oct 17, 2026), alongside the Kakeya/local-smoothing and QCD/Standard-Model-completion results and the four stated transparency principles.
+- **Hugging Face trending snapshot (C8) — rotated out of reproduction.** All three repos exist with matching identities and licenses (RecursiveSI/flint created 2026-10-21 apache-2.0; Nanbeige/Nanbeige4.3-33B created 2026-10-24 apache-2.0; deepseek-ai/DeepSeek-V4.1-Flash-1017 created 2026-10-17 mit), which corroborates the late-October picture, but the current trending top-25 is entirely different (higurashi-ai/Haru-4B, tencent/Hy4-flash, apple/FastFrames-L, …). flint is out of the top-25 and has since grown 14,047 → 62,433 downloads / 1,144 → 1,439 likes; DeepSeek-V4.1-Flash-1017 grew past the quoted 116,770 to 502,094 downloads / 5,977 likes, so the "+60% in four days" understated the longer-run curve. The "33B" parameter count for Nanbeige4.3-33B was not independently confirmed from API metadata. Status: PARTIALLY_VERIFIED.
+- **Reddit community pulse (C9) — engagement counts not reproducible.** Reddit returns HTTP 429 for both RSS and permalink fetches and the Redlib mirror sits behind an Anubis browser challenge. Titles, subreddits and October dating are confirmed for four of seven posts ("Dirt cheap GPUs coming next year" /r/LocalLLaMA/comments/1xhep6w/, "Models disappearing from Huggingface" /r/LocalLLaMA/comments/1xd7ptj/ dated 2026-10-23, "ICLR 2027 is still handing out desk rejects" via AGI Hunt / GEORecall, and the Kimi K3.1 cyber-data item — Moonshot announced on Oct 23 2026 that it stripped cyberattack material, with an internal xdev-bench-hard exploit score falling 90.5% → 81.0% ahead of the Nov 4 open-weight release). The specific vote/comment pairs remain unverified, and "The Paper Reviewing Process is Now in Critical Condition", "Papers with Code is now open-source" and the Qwen Flash Next / Cohere pair could not be independently confirmed at all. Status: PARTIALLY_VERIFIED.
+- **2610.36660 title (C10) — naming nit, no status change.** The paper's full title is "The View from Nowhere: Population-Centered Agent Evolution" (Shuo Yan, Ningning Hou, Haoyu He, Haochen Pei, Shang Gao; v1 Oct 27, v2 Oct 29 2026); "Population-Centered Evolution" is the method name, not the standalone title. `huggingface.co/papers/2610.36660` returns 404 — the paper is not referenced from any HF repo README, so that domain cannot serve as a second source. All quantitative claims match verbatim: 72.1% SWE-bench Verified, 96.7% Polyglot, +3.2 / +5.9 pp over a strong group-evolution baseline, coverage-vs-best gap reduced by one third on SWE-bench and closed on Polyglot. Status remains VERIFIED.
+
+### Sources Reliability
+- **arXiv and mirrors were exact for 12 of 12 paper claims.** Every arXiv ID resolved to the stated paper and every cited figure appeared verbatim in the abstract: 19.7–34.2% / 13 operating points (2610.36109), proportional allocation (2610.35698), 97/85/10% ASR and 3× FLOPs (2610.37657), 26 heads / 17.7% / 74.6 vs 140.1 (2610.37126), 91.2% Wilson LB / 91.1% false refusal / 1.1% (2610.35226), 72.1% / 96.7% (2610.36660), 62.7→28.5% / 72.9% / ~95% (2610.37434), 35.2 vs 94.8 / 87.7% / r = 0.945 (2610.37157), 19 of 83 / 67.6→91.9% / 91.8% (2610.36623), 99.51% / 4.06% (2610.37062), +9.4 pp / ~25% (2610.36901). Second sources came from emergentmind, alphaxiv, Semantic Scholar and OpenAlex — all four carried identical abstracts.
+- **Vendor pages were authoritative but currency-sensitive.** OpenAI's Terra launch post, DeepMind's Genie 4 post and Liquid AI's LFM3 post confirmed their claims verbatim; Cloudflare's `blog.cloudflare.com/kv-cache-exposure-remediation/` confirmed the 155-response figure and the 681,280-token threshold exactly.
+- **The three PARTIALLY_VERIFIED claims were all currency or access failures, not factual errors.** The underlying entities, prices, mechanisms and counts hold; what failed was reproducing a snapshot taken three weeks earlier. Two sources were hard-blocked (Artificial Analysis bot detection initially, Reddit HTTP 429 + Redlib Anubis challenge).
+
+### Patterns Identified
+- **Point-in-time snapshots decay in three weeks; entity identity does not.** Splitting each community claim into "does the entity/figure exist" (holds) and "can the snapshot be reproduced" (fails) is the only workable split for leaderboard, trending and social claims. Recommended status rule going forward: entity exists + mechanism confirmed + snapshot unreproducible → PARTIALLY_VERIFIED, never NEEDS_CORRECTION.
+- **"792 points" is a category error waiting to happen.** An HN score sat next to a research claim with no label, and it read like a paper metric. Any numeric snapshot in these findings should carry its source class inline (HN points / AA index / HF trending score / Reddit votes).
+- **The 15-claim cap is the binding constraint, and it is binding on the wrong claims.** This batch spent 3 of 15 slots on 12 arXiv abstracts that are cheap to verify and cannot decay, and 2 slots on the three community claims that are expensive and decay fast. Recommendation: run the community/leaderboard claims on a shorter rotation (weekly) and spend most of the daily cap on arXiv claims, where verification is fast and stable.
+- **Subagent context collapse is real and reproducible.** The first `fc-batch2` subagent died at compaction while chasing the OpenAI research index (JS-rendered) and left no output file. The successful pattern was: pre-emptively cap per-claim tool calls, ban raw HTML dumps to stdout, and instruct the subagent to append each claim to its output file as it finishes rather than accumulating and writing once. The second attempt (`fc-batch2b`) completed all five claims.
+
+## 2026-11-26
+
+**Run scope:** 15 claims (C16–C30) from the `2026-10-29 (Thursday Evening)` section of `archive/cumulative_findings_2026-10.md`. Result: 6 VERIFIED, 8 PARTIALLY_VERIFIED, 1 NEEDS_CORRECTION, 0 UNVERIFIED. Corrections applied as targeted `FACT_CHECK` comment blocks in `archive/cumulative_findings_2026-10.md` (15 blocks); `cumulative_findings.md` was not rewritten. Full report: `fact_check_reports/2026-11-26.md`.
+
+### Corrections Made
+- **Gemini 4 Carbon's BenchLeader rank "#9 (65.1)" with "28 configurations inside the margin" (C29) — unsupported.** No retrievable snapshot matches. The closest evidence (BenchLeader archive, 2026-11-03) places Carbon at "#2 of 586" with index "69.0 ±3.2" and "17 other configurations score within its margin", behind leader Claude Opus 5.5 (max) "at 69.1"; live on 26 Nov it is "#2 at 69.4" with "11 configurations sit within Claude Fable 5.2's margin of error". Both the rank and the margin count in the claim contradict the closest available evidence. The BenchLM half of the same claim was confirmed exactly from the archived Oct-29 page (rank 1, score 88.38, `evidenceStatus: estimated`, 90% interval 78.66–98.10, `coverageValidated: false`, ordering rule "conditional ranges do not establish rank confidence"), as was the roster churn (MiniMax M3.1 Flash 67.39 → 59.71, rank 28 → 54; Qwen3.8-Flash-Next 62.99 → 55.8, rank 48 → 65). Status: PARTIALLY_VERIFIED. Secondary note: the claimed interval "spanning roughly ranks 1–12" covers roughly the top 10 scored models.
+- **"Claude Code regularly sends each background agent's transcript to its model" — wrong Hacker News item ID (C25).** The claim cites `news.ycombinator.com/item?id=50289418`, which is in fact "We're releasing the weights of Mistral Large 4" (1,732 points). The correct item is **50284255** — "Claude Code regularly sends each background agent's transcript to its model" (live 591 points / 236 comments; the claim's 530/215 is plausible for the Oct 29 snapshot). Every substantive element of the claim was confirmed against the linked gist: the ~30-second re-send cycle, the 3-word `agent_summary` status line, the ~15–20% token burn, and the Bun preload that disables it. Status: NEEDS_CORRECTION (identifier only).
+- **Base repository like count for Mistral Large 4 (C22) — drifted.** Now **1,686** likes versus the **1,146** recorded at snapshot time. All repository names and creation dates were confirmed as stated. The accompanying superlative — "the fastest third-party quantization turnaround observed in this tracking window" — is subjective and unverifiable against a moving leaderboard. Status: PARTIALLY_VERIFIED.
+- **"Still gated — not publicly available" for Gemini 4 Carbon (C28) — expired, not wrong at the time.** Accurate on 2026-10-29; Carbon has been publicly available since **2026-11-10** (HN story 50442303 "Gemini 4 Carbon is now available"; FMRT model page "Released 2026-11-10"). Every Artificial Analysis figure in the claim was confirmed verbatim. HN counters drifted to 1019 points / 803 comments. Status: PARTIALLY_VERIFIED.
+- **"FMRT now advances daily" (C30) — imprecise.** FMRT's `generatedAt` changes on every fetch, not once per day (observed 21:46:00Z → 21:48:34Z minutes apart). The Oct-29 snapshot itself cannot be independently confirmed: no Wayback snapshot of fmrt.ai exists (`archived_snapshots: {}`) and FMRT exposes no rating-history API (`/api/model*.json` and `/api/history*.json` both 404). The claim is internally consistent and corroborated by FMRT model pages (Gemini 4 Carbon "Released 2026-11-10"; Gemini 4 Argon "Retired 2026-11-11, superseded by gemini-4-carbon after Carbon public paid API availability 2026-11-10"; Kimi K3.1 Pro "Released Oct 23, 2026", open-weight). Live FMRT has drifted to motions 850, Fable 5.2 #1 1859.6, Opus 5.5 1845.4, Kimi K3.1 Pro 1678.1, Gemini 4 Carbon 1613.8. Status: PARTIALLY_VERIFIED.
+- **HN engagement counters drifted upward on every remaining community claim (C23, C24, C26, C27).** Qwenputer 663/139; DAYJOB: Tax 248/164 → live 267/174; Nemotron 3.5 Transcribe 126/23 → live 134/26; Cursor Agent SDK 139/130 → live 143/132. All non-HN substance in these claims was confirmed exactly, including the Qwenputer implementation details (RV32IM+Zba core, 11 extra layers, Gated DeltaNet layers as RAM, ADDR/VAL/STEP execution, riscv-tests pass, qemu match, 18 million instructions free-running with zero errors, ~3,200 CPU tokens/s on an L4, 18.8 GB checkpoint) and the Nemotron figures (40/31/13 languages, one hour, 8 speakers, 30B total / ~4B active, AA-WER 2.8%, AgentTalk 1.8%, Open ASR 5.33/4.62/10.98%, medical 45.8%). Status: PARTIALLY_VERIFIED for each.
+
+### Sources Reliability
+- **arXiv and mirrors were exact for 6 of 6 paper claims.** Every quoted figure appeared verbatim in the abstract: 27.6% / +6.4 pp (2610.36469), ~half the evaluation cells across four benchmarks and two frameworks (2610.37276), 37.3 vs 18.7 and 45.00 vs 27.00 with the blinded-audit correctness caveat (2610.37375), the gating/reversal argument and monotonicity replacement (2610.36437), asymptotic identification/extrapolation/certification with the Gaussian proof and two lower bounds (2610.37523), 79%/45% vs 29%/1.3% at 0.1% FPR with survival under quantization, pruning and RL (2610.37266). Second sources were emergentmind (4) and alphaxiv (1); all carried identical abstracts.
+- **Wayback was the decisive tool where leaderboard claims were concerned.** BenchLM (2026-10-31) and BenchLeader (2026-11-03) both archived cleanly and settled the C29 question decisively. fmrt.ai archived nothing and exposes no history API, so its Oct-29 state is simply unrecoverable — the reason C30 landed on PARTIALLY_VERIFIED rather than UNVERIFIED is that the claim's internal consistency and the model-page release/retirement dates all check out.
+- **HN counters must be read through Algolia by story ID, not from the live page.** All five HN-based claims were resolvable this way; every counter had drifted upward, consistent with a four-week-old snapshot.
+
+### Patterns Identified
+- **The 15-claim cap is still bound on the wrong claims, for the third consecutive run.** Six cheap, non-decaying arXiv claims took 40% of the budget; the five community/leaderboard claims that actually rot took the rest. The recommendation to move community/leaderboard claims to a slower rotation has now been made twice and should be acted on — a weekly community rotation plus a larger arXiv rotation would cover far more ground per day.
+- **Check the Wayback CDX API before accepting any leaderboard snapshot.** One CDX call decides VERIFIED vs UNVERIFIABLE. It also directly exposed that the C29 BenchLeader figures had no retrievable origin — the cheapest possible check would have caught it.
+- **Discrete availability states expire silently; numeric counters drift visibly.** "Still gated" (C28) was true when written and false four weeks later with no signal that it had gone stale, whereas a drifted point count is obviously a drifted point count. Both need flagging, but state flips need it sooner — an availability claim should carry a "as of" date.
+- **Superlatives are unfalsifiable as stated.** "Fastest third-party quantization turnaround observed" (C22) can never be verified against a moving leaderboard. Superlatives should be reformulated as dated observations at the source.
+- **Anchor-based insertion is strictly safer than line-number insertion.** The first two apply passes used line numbers captured from an earlier file state and produced duplicated and misplaced comment blocks (14 blocks landed at shifted offsets; three anchors matched the wrong claim). Reverting and re-applying with content anchors scoped to the section range produced 15/15 correct placements. Future runs should anchor on a distinctive substring of the claim line and verify placement afterwards.
+- **Subagent context collapse struck again, and the fix is now well understood.** The first batch-3 subagent died at compaction while extracting SVG chart data from an FMRT model page, leaving no output file. The re-run with a hard per-claim tool-call cap, no raw HTML dumps to stdout, and incremental appends to the output file completed all five claims. The rule "write each claim's result as it is finished, never accumulate" is the operative lesson.
